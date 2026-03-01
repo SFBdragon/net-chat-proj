@@ -29,10 +29,22 @@ class TestMAP(unittest.TestCase):
         ]
 
         for request in cases:
-            json_str = request.json()
+            json_str = request.model_dump_json()
             output = map.parse_request_header(json_str)
             self.assertEqual(request, output)
-        self.assertEqual(5 - 3, 2)
+
+    def test_response_header_parse(self):
+        cases: list[map.Response] = [
+            map.GenericResponse(version="1.2", serverID="01234598765", status="OK"),
+            map.ImAliveResponse(
+                version="0.1", serverID="253", status="OK", isOutdated=True
+            ),
+        ]
+
+        for response in cases:
+            json_str = response.model_dump_json()
+            output = map.parse_response_header(json_str)
+            self.assertEqual(response, output)
 
 
 def dummy_request_header(

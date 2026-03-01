@@ -4,7 +4,7 @@ MAP: Messaging Application-layer Protocol
 This file provides functions, types, and utilities for working with MAP data.
 """
 
-from typing import Literal, Optional
+from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
@@ -41,14 +41,14 @@ class BaseRequest(BaseModel):
     model_config = ConfigDict(strict=True)
 
     version: str
-    user_id: str = Field(alias="userID")
-    server_id: str = Field(alias="serverID")
+    userID: str
+    serverID: str
 
 
 class ImAlive(BaseRequest):
     type: Literal["IM_ALIVE"]
-    local_ip: str = Field(alias="localIP")
-    after_event_id: Optional[int] = Field(alias="afterEventID")
+    localIP: str
+    afterEventID: Optional[int]
 
 
 class Register(BaseRequest):
@@ -63,48 +63,48 @@ class CreateGroup(BaseRequest):
 
 class PutMessage(BaseRequest):
     type: Literal["PUT_MESSAGE"]
-    group_id: int = Field(alias="groupID")
+    groupID: int
     length: int
 
 
 class PutFile(BaseRequest):
     type: Literal["PUT_FILE"]
-    group_id: int = Field(alias="groupID")
-    file_name: str = Field(alias="fileName")
+    groupID: int
+    fileName: str
     sha256: str
 
 
 class PutMember(BaseRequest):
     type: Literal["PUT_MEMBER"]
-    group_id: int = Field(alias="groupID")
-    add_user_id: str = Field(alias="addUserID")
+    groupID: int
+    addUserID: str
 
 
 class GetEvents(BaseRequest):
     type: Literal["GET_EVENTS"]
-    group_id: Optional[int] = Field(alias="groupID")
-    after_event_id: Optional[int] = Field(alias="afterEventID")
-    before_event_id: Optional[int] = Field(alias="beforeEventID")
+    groupID: Optional[int]
+    afterEventID: Optional[int]
+    beforeEventID: Optional[int]
 
 
 class GetAlive(BaseRequest):
     type: Literal["GET_ALIVE"]
-    group_id: int = Field(alias="groupID")
+    groupID: int
 
 
 class GetPeer(BaseRequest):
     type: Literal["GET_PEER"]
-    group_id: int = Field(alias="groupID")
-    peer_user_id: str = Field(alias="peerUserID")
+    groupID: int
+    peerUserID: str
 
 
 class FileRequest(BaseRequest):
     type: Literal["FILE_REQUEST"]
-    group_id: int = Field(alias="groupID")
+    groupID: int
     sha256: str
 
 
-Request = (
+Request = Annotated[
     ImAlive
     | Register
     | CreateGroup
@@ -114,18 +114,19 @@ Request = (
     | GetEvents
     | GetAlive
     | GetPeer
-    | FileRequest
-)
+    | FileRequest,
+    Field(discriminator="type"),
+]
 
 
 class GenericResponse(BaseModel):
     version: str
-    server_id: str = Field(alias="serverID")
+    serverID: str
     status: str
 
 
 class ImAliveResponse(GenericResponse):
-    is_outdated: bool = Field(alias="isOutdated")
+    isOutdated: bool
 
 
 class FileRequestResponse(GenericResponse):
