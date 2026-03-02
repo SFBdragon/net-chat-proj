@@ -97,4 +97,43 @@ async def get_server_id():
         else:
             return None
 
+async def get_events(user_id, from_event_id=0, to_event_id=0):
+    async with aiosqlite.connect(db_name) as db:
+
+        event_upper_limit = ""
+        if (to_event_id != 0):
+            event_upper_limit = f"AND eventID < {to_event_id}"
+
+        cursor = await db.execute(f'''
+            SELECT * FROM events
+            WHERE eventID > {from_event_id}
+            ''' + event_upper_limit + '''
+            AND toGroupID IN (
+                SELECT groupID from memberships
+                WHERE userID == {user_id}
+            )
+        ''')
+
+        rows = await cursor.fetchall()
+        await cursor.close()
+        if rows:
+            return rows
+        else:
+            return None
+
+async def check_membership(user_id, group_id):
+    async with aiosqlite.connect(db_name) as db:
+        cursor = await db.execute(f'''
+            SELECT * FROM memberships
+            WHERE groupID == {group_id}
+            AND userID == {user_id}
+        ''')
+        row = await cursor.fetchone()
+        await cursor.close()
+        if row:
+            return True
+        else:
+            return False
+
+
 
