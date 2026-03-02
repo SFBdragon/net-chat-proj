@@ -78,7 +78,6 @@ async def init_db() -> str:
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS server (
                     serverID TEXT,
-                    protocolVersion TEXT,
                     PRIMARY KEY (serverID)
                 )
             """)
