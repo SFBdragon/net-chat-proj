@@ -6,9 +6,17 @@ This file provides functions, types, and utilities for working with MAP data.
 
 from typing import Annotated, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 HEADER_BODY_DELIMITER = b"\x03"
+
+STATUS_OK = "OK"
+STATUS_BAD_REQUEST = "BAD_REQUEST"
+STATUS_MISSING_FIELD = "MISSING_FIELD"
+STATUS_INCOMPATIBLE_VERSION = "INCOMPATIBLE_VERSION"
+STATUS_UNKNOWN_SERVER = "UNKNOWN_SERVER"
+STATUS_UNKNOWN_USER = "UNKNOWN_USER"
+STATUS_FILE_UNAVAILABLE = "FILE_UNAVAILABLE"
 
 
 def split_header_and_body(data: bytes) -> tuple[bytes, Optional[bytes]]:
@@ -19,18 +27,35 @@ def split_header_and_body(data: bytes) -> tuple[bytes, Optional[bytes]]:
         return (data, None)
 
 
-def decode_header(header: bytes) -> str:
-    """
-    Attempt to decode the header as UTF-8.
-
-    Errors: `UnicodeDecodeError`
-    """
-
-    return header.decode("utf-8")
+class Status(Exception):
+    def __init__(self, status: str):
+        self.status = status
+        super().__init__(status)
 
 
-def parse_request_header(json_str: str) -> Request:
-    return TypeAdapter(Request).validate_json(json_str)
+def parse_request_header(header_bytes: bytes) -> Request:
+    try:
+        header_json = header_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        raise Status(STATUS_BAD_REQUEST)
+
+    try:
+        header: Request = TypeAdapter(Request).validate_json(header_json)
+    except ValidationError as ve:
+        for error in ve.errors():
+            if error["type"] == "missing":
+                print(str(error))
+                raise Status(STATUS_MISSING_FIELD)
+            elif error["type"] == "extra_forbidden":
+                # TODO extra field error?
+                raise Status(STATUS_BAD_REQUEST)
+            else:
+                print(str(error))
+                exit(1)
+
+        raise Status(STATUS_BAD_REQUEST)
+
+    return header
 
 
 def parse_response_header(json_str: str) -> Response:
@@ -129,8 +154,8 @@ class ImAliveResponse(GenericResponse):
     isOutdated: bool
 
 
-class FileRequestResponse(GenericResponse):
+class BodyResponse(GenericResponse):
     length: int
 
 
-Response = GenericResponse | ImAliveResponse | FileRequestResponse
+Response = GenericResponse | ImAliveResponse | BodyResponse

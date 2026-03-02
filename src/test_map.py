@@ -1,4 +1,9 @@
-"""Run with"""
+"""
+Test the functionality of map.py
+
+Run with:
+- uv run src/test_map.py
+"""
 
 import unittest
 
@@ -25,12 +30,29 @@ class TestMAP(unittest.TestCase):
 
     def test_request_header_parse(self):
         cases: list[map.Request] = [
-            dummy_request_header(),
+            map.ImAlive(
+                version="1.2",
+                userID="dan",
+                serverID="394075623",
+                type="IM_ALIVE",
+                localIP="1.2.3.4",
+                afterEventID=None,
+            ),
+            map.GetEvents(
+                version="1.2",
+                userID="dan",
+                serverID="394075623",
+                type="GET_EVENTS",
+                groupID=123,
+                afterEventID=None,
+                beforeEventID=None,
+            ),
         ]
 
         for request in cases:
-            json_str = request.model_dump_json()
-            output = map.parse_request_header(json_str)
+            request_json = request.model_dump_json()
+            request_bytes = request_json.encode("utf-8")
+            output = map.parse_request_header(request_bytes)
             self.assertEqual(request, output)
 
     def test_response_header_parse(self):
@@ -45,23 +67,6 @@ class TestMAP(unittest.TestCase):
             json_str = response.model_dump_json()
             output = map.parse_response_header(json_str)
             self.assertEqual(response, output)
-
-
-def dummy_request_header(
-    version="1.2",
-    user_id="alex",
-    server_id="0123456789",
-    local_ip="1.2.3.4",
-    after_event_id=123,
-) -> map.ImAlive:
-    return map.ImAlive(
-        version=version,
-        userID=user_id,
-        serverID=server_id,
-        type="IM_ALIVE",
-        localIP=local_ip,
-        afterEventID=after_event_id,
-    )
 
 
 if __name__ == "__main__":

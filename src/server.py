@@ -1,67 +1,204 @@
 import asyncio
 import socket
 import threading
+import time
 
 import db
+import map
 
 SERVER_IP = "0.0.0.0"
 SERVER_TCP_PORT = 3030
 SERVER_UDP_PORT = 3031
 
+MAP_VER = "1.0"
 SERVER_ID = ""
 
-# Map of UserIDs to time since
-alive_users: dict[str, float] = {}
+LIVENESS_TIMEOUT = 5.0
+
+# Map of UserIDs to
+# 1. Time since epoch of last IM_ALIVE
+#   - Needed to track liveness
+# 2. The client's IP on its LAN
+#   - Necessary for initiating P2P
+user_liveness: dict[str, tuple[float, str]] = {}
 
 
-async def tcp_server_raw(host, port):
-    """Raw TCP server using sock_* methods."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((host, port))
-    sock.listen(5)
-    sock.setblocking(False)
+class MapStreamBuffer:
+    def __init__(self, sock: socket.socket):
+        self.sock = sock
+        self.buffer = bytearray()
 
-    loop = asyncio.get_event_loop()
+    async def _recv_into_buffer(self, size=4096):
+        """Receive data and append to buffer."""
 
-    print(f"TCP server listening on {host}:{port}")
+        loop = asyncio.get_event_loop()
 
-    while True:
-        client_sock, addr = await loop.sock_accept(sock)
-        print(f"TCP connection from {addr}")
-        asyncio.create_task(handle_tcp_client(client_sock, addr))
+        data = await loop.sock_recv(self.sock, size)
+        if not data:
+            raise ConnectionError("Socket closed")
+        self.buffer.extend(data)
+
+    async def read_header(self) -> bytes:
+        """Read and consume bytes until delimiter is found."""
+        while True:
+            try:
+                idx = self.buffer.index(map.HEADER_BODY_DELIMITER)
+                result = bytes(self.buffer[:idx])
+                del self.buffer[: idx + 1]  # consume including delimiter
+                return result
+            except ValueError:
+                # delimiter not found, need more data
+                await self._recv_into_buffer()
+
+    async def read_body(self, size: int) -> bytes:
+        """Read exactly n bytes."""
+        while len(self.buffer) < size:
+            await self._recv_into_buffer()
+
+        result = bytes(self.buffer[:size])
+        del self.buffer[:size]
+        return result
 
 
 async def handle_tcp_client(sock, addr):
     """Handle a TCP client connection."""
+
+    print(f"TCP connection from {addr}")
+
     loop = asyncio.get_event_loop()
 
     try:
+        stream = MapStreamBuffer(sock)
+
         while True:
-            data = await loop.sock_recv(sock, 1024)
-            if not data:
-                break
-            print(f"TCP received: {data}")
-            await loop.sock_sendall(sock, data)  # Echo
+            header_bytes = await stream.read_header()
+            print(f"> TCP received from {addr}: {header_bytes}")
+
+            response_body = None
+
+            try:
+                header = map.parse_request_header(header_bytes)
+
+                if header.serverID != SERVER_ID:
+                    raise map.Status(map.STATUS_UNKNOWN_SERVER)
+
+                match header:
+                    case map.GetPeer():
+                        # TODO validate that peerUserID and userID are in groupID
+
+                        try:
+                            t, ip = user_liveness[header.peerUserID]
+                        except KeyError:
+                            raise map.Status(map.STATUS_UNKNOWN_USER)
+
+                        if time.time() - LIVENESS_TIMEOUT < t:
+                            response_body = ip.encode("utf-8")
+                            response_header = map.BodyResponse(
+                                version=MAP_VER,
+                                serverID=SERVER_ID,
+                                status=map.STATUS_OK,
+                                length=len(response_body),
+                            )
+                        else:
+                            response_header = map.GenericResponse(
+                                version=MAP_VER,
+                                serverID=SERVER_ID,
+                                status=map.STATUS_FILE_UNAVAILABLE,
+                            )
+                    case _:
+                        print(f"TODO handle {type(header)}")
+                        return
+
+            except map.Status as s:
+                response_header = map.GenericResponse(
+                    version=MAP_VER, serverID=SERVER_ID, status=s.status
+                )
+
+            response_json = response_header.model_dump_json()
+            response_bytes = response_json.encode("utf-8")
+
+            print(f"< TCP sending to {addr}: {response_json}\x03")
+            await loop.sock_sendall(sock, response_bytes)
+            await loop.sock_sendall(sock, b"\x03")
+
+            if response_body:
+                print(f"< TCP sending to {addr}: {response_body}")
+                await loop.sock_sendall(sock, response_body)
+    except ConnectionError as _:
+        pass
     finally:
         sock.close()
         print(f"TCP closed: {addr}")
 
 
-async def udp_server_raw(host, port):
+async def tcp_server_raw(host: str, port: int):
+    """Raw TCP server using sock_* methods."""
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
+        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server.bind((host, port))
+        server.listen(10)
+        server.setblocking(False)
+
+        loop = asyncio.get_event_loop()
+
+        print(f"TCP server listening on {host}:{port}")
+
+        while True:
+            client_sock, addr = await loop.sock_accept(server)
+            asyncio.create_task(handle_tcp_client(client_sock, addr))
+
+
+async def handle_udp_request(sock, data, addr, loop):
+    """Handle a single UDP request."""
+
+    print(f"> UDP received from {addr}: {data}")
+
+    try:
+        header = map.parse_request_header(data)
+
+        if header.serverID != SERVER_ID:
+            raise map.Status(map.STATUS_UNKNOWN_SERVER)
+
+        # Only IM_ALIVE requests should arrive on UDP.
+        if not isinstance(header, map.ImAlive):
+            raise map.Status(map.STATUS_BAD_REQUEST)
+
+        # TODO validate userID
+        # TODO check if outdated
+
+        user_liveness[header.userID] = time.time(), header.localIP
+
+        response = map.ImAliveResponse(
+            version=MAP_VER, serverID=SERVER_ID, status=map.STATUS_OK, isOutdated=True
+        )
+    except map.Status as s:
+        response = map.GenericResponse(
+            version=MAP_VER, serverID=SERVER_ID, status=s.status
+        )
+
+    response_json_str = response.model_dump_json()
+
+    print(f"< UDP sending to {addr}: {response_json_str}")
+
+    response_bytes = response_json_str.encode("utf-8")
+    await loop.sock_sendto(sock, response_bytes, addr)
+
+
+async def udp_server_raw(host: str, port: int):
     """Raw UDP server using sock_* methods."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((host, port))
-    sock.setblocking(False)
 
-    loop = asyncio.get_event_loop()
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.bind((host, port))
+        sock.setblocking(False)
 
-    print(f"UDP server listening on {host}:{port}")
+        loop = asyncio.get_event_loop()
 
-    while True:
-        data, addr = await loop.sock_recvfrom(sock, 1024)
-        print(f"UDP received from {addr}: {data}")
-        await loop.sock_sendto(sock, data, addr)  # Echo
+        print(f"UDP server listening on {host}:{port}")
+
+        while True:
+            data, addr = await loop.sock_recvfrom(sock, 65535)
+            asyncio.create_task(handle_udp_request(sock, data, addr, loop))
 
 
 # Entry point for threading
