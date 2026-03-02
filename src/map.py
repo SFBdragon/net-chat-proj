@@ -4,6 +4,8 @@ MAP: Messaging Application-layer Protocol
 This file provides functions, types, and utilities for working with MAP data.
 """
 
+import asyncio
+import socket
 from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
@@ -17,6 +19,53 @@ STATUS_INCOMPATIBLE_VERSION = "INCOMPATIBLE_VERSION"
 STATUS_UNKNOWN_SERVER = "UNKNOWN_SERVER"
 STATUS_UNKNOWN_USER = "UNKNOWN_USER"
 STATUS_FILE_UNAVAILABLE = "FILE_UNAVAILABLE"
+
+
+class MapStreamBuffer:
+    """
+    A buffer that allows for parsing a TCP stream as MAP header and body segments.
+
+    This assumed the following is guaranteed by MAP:
+    - All headers end in `HEADER_BODY_DELIMITER`
+    - All headers indicate the length of their body.
+
+    This is not request or response-specific.
+    """
+
+    def __init__(self, sock: socket.socket):
+        self.sock = sock
+        self.buffer = bytearray()
+
+    async def _recv_into_buffer(self, size=4096):
+        """Receive data and append to buffer."""
+
+        loop = asyncio.get_event_loop()
+
+        data = await loop.sock_recv(self.sock, size)
+        if not data:
+            raise ConnectionError("Socket closed")
+        self.buffer.extend(data)
+
+    async def read_header(self) -> bytes:
+        """Read and consume bytes until delimiter is found."""
+        while True:
+            try:
+                idx = self.buffer.index(HEADER_BODY_DELIMITER)
+                result = bytes(self.buffer[:idx])
+                del self.buffer[: idx + 1]  # consume including delimiter
+                return result
+            except ValueError:
+                # delimiter not found, need more data
+                await self._recv_into_buffer()
+
+    async def read_body(self, size: int) -> bytes:
+        """Read exactly n bytes."""
+        while len(self.buffer) < size:
+            await self._recv_into_buffer()
+
+        result = bytes(self.buffer[:size])
+        del self.buffer[:size]
+        return result
 
 
 def split_header_and_body(data: bytes) -> tuple[bytes, Optional[bytes]]:
