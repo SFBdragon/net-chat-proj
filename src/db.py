@@ -1,16 +1,30 @@
-import asyncio
 import secrets
+
 import aiosqlite
 
 db_name = "db.sqlite3"
 
-async def init_db():
+
+async def init_db() -> str:
 
     try:
-        with open(db_name, 'r') as f:
+        with open(db_name, "r") as _:
             # file exists
             print("[+] Database exists. Skipping init.")
             pass
+
+        async with aiosqlite.connect(db_name) as db:
+            async with db.execute("SELECT serverID FROM server") as cursor:
+                server_id = ""
+                set_server_id = False
+                async for row in cursor:
+                    if set_server_id:
+                        print("Bad database. There should only be one Server ID.")
+                        exit(1)
+
+                    server_id = row[0]
+                    set_server_id = True
+
     except FileNotFoundError:
         async with aiosqlite.connect(db_name) as db:
             await db.execute("""
@@ -42,23 +56,25 @@ async def init_db():
             await db.commit()
 
             # Generate random 16-character string
-            base64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-            server_id = ''.join(secrets.choice(base64_chars) for _ in range(16))
+            base64_chars = (
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+            )
+            server_id = "".join(secrets.choice(base64_chars) for _ in range(16))
 
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS server (
                     serverID TEXT,
-                    protocolVersion TEXT,
                     PRIMARY KEY (serverID)
                 )
             """)
             await db.commit()
 
-            await db.execute(f'''
+            await db.execute(f"""
                 INSERT INTO server(serverID, protocolVersion) VALUES (?, ?)
-            ''', (server_id, "1.0"))
+            """, (server_id))
             await db.commit()
 
+    return server_id
 
 
 async def create_event(to_group_id, from_user_id, message_content, is_file):
@@ -87,6 +103,7 @@ async def create_group(group_name):
         """, (group_name,))
         await db.commit()
 
+
 async def get_server_id():
     async with aiosqlite.connect(db_name) as db:
         cursor = await db.execute("SELECT serverID FROM server LIMIT 1")
@@ -97,11 +114,11 @@ async def get_server_id():
         else:
             return None
 
+
 async def get_events(user_id, from_event_id=0, to_event_id=0):
     async with aiosqlite.connect(db_name) as db:
-
         event_upper_limit = ""
-        if (to_event_id != 0):
+        if to_event_id != 0:
             event_upper_limit = f"AND eventID < {to_event_id}"
 
         cursor = await db.execute(f"""
@@ -121,6 +138,7 @@ async def get_events(user_id, from_event_id=0, to_event_id=0):
         else:
             return None
 
+
 async def check_membership(user_id, group_id):
     async with aiosqlite.connect(db_name) as db:
         cursor = await db.execute(f"""
@@ -134,4 +152,3 @@ async def check_membership(user_id, group_id):
             return True
         else:
             return False
-
