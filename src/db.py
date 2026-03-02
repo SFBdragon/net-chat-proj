@@ -4,7 +4,6 @@ import aiosqlite
 
 db_name = "db.sqlite3"
 
-
 async def init_db():
 
     try:
@@ -98,15 +97,4 @@ async def get_server_id():
         else:
             return None
 
-async def main():
 
-    await init_db()
-    await create_group("Hello!")
-    await create_membership(1, 16)
-    await create_event(1, 16, "Hello - this is a message.", 1)
-    server_id = await get_server_id()
-    print(server_id)
-
-
-if __name__ == "__main__":
-    asyncio.run((main()))
