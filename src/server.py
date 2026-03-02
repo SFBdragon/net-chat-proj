@@ -23,43 +23,6 @@ LIVENESS_TIMEOUT = 5.0
 user_liveness: dict[str, tuple[float, str]] = {}
 
 
-class MapStreamBuffer:
-    def __init__(self, sock: socket.socket):
-        self.sock = sock
-        self.buffer = bytearray()
-
-    async def _recv_into_buffer(self, size=4096):
-        """Receive data and append to buffer."""
-
-        loop = asyncio.get_event_loop()
-
-        data = await loop.sock_recv(self.sock, size)
-        if not data:
-            raise ConnectionError("Socket closed")
-        self.buffer.extend(data)
-
-    async def read_header(self) -> bytes:
-        """Read and consume bytes until delimiter is found."""
-        while True:
-            try:
-                idx = self.buffer.index(map.HEADER_BODY_DELIMITER)
-                result = bytes(self.buffer[:idx])
-                del self.buffer[: idx + 1]  # consume including delimiter
-                return result
-            except ValueError:
-                # delimiter not found, need more data
-                await self._recv_into_buffer()
-
-    async def read_body(self, size: int) -> bytes:
-        """Read exactly n bytes."""
-        while len(self.buffer) < size:
-            await self._recv_into_buffer()
-
-        result = bytes(self.buffer[:size])
-        del self.buffer[:size]
-        return result
-
-
 async def handle_tcp_client(sock, addr):
     """Handle a TCP client connection."""
 
@@ -68,7 +31,7 @@ async def handle_tcp_client(sock, addr):
     loop = asyncio.get_event_loop()
 
     try:
-        stream = MapStreamBuffer(sock)
+        stream = map.MapStreamBuffer(sock)
 
         while True:
             header_bytes = await stream.read_header()
@@ -83,6 +46,9 @@ async def handle_tcp_client(sock, addr):
                     raise map.Status(map.STATUS_UNKNOWN_SERVER)
 
                 match header:
+                    case map.Register():
+                        # TODO
+                        pass
                     case map.GetPeer():
                         # TODO validate that peerUserID and userID are in groupID
 
