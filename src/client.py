@@ -2,7 +2,7 @@ import json
 import socket
 import threading
 import map
-from typing import Optional 
+from typing import Optional
 
 MAP_VERSION = "1.0"
 TCP_PORT = 3030
@@ -17,8 +17,8 @@ HEADER_BODY_DELIMITER = b"\x03"
 
 class Client:
 
-    
-    
+
+
 
     def __init__(self): #TODO UI Callback function will be a parameter here
 
@@ -30,7 +30,7 @@ class Client:
 
         #Callback function
         #self.on_state_update = ui_refresh
-        
+
 
 #---------------------------------------------------------------------------------------------------------------------
 #Public API for GUI
@@ -44,7 +44,7 @@ class Client:
 
     #TODO:
     #def send_message(content: str) -> bool:
-    
+
     #def create_group(group_name: str, user_ids: list[str]) -> bool:
 
     #def add_to_group(user_ids: list[str]) -> bool:
@@ -56,19 +56,19 @@ class Client:
     #def share_file(content: bytes = b"") -> bool:
 
 
-    #TODO: Implement method to update TUI whenever AppState changes due to new messages etc.    
+    #TODO: Implement method to update TUI whenever AppState changes due to new messages etc.
     def send_update(self):
         self.on_state_update("data1")
 #---------------------------------------------------------------------------------------------------------------------
-#Client-server request functions 
+#Client-server request functions
 #---------------------------------------------------------------------------------------------------------------------
 
     #REGISTER request as defined in specification
     #returns true if succesful, false if not
     def _REGISTER(self, user_id: str, server_id = "") -> bool:
     #Header for REGISTER request
-    
-        request = map.Register(
+
+        request = protocol.Register(
         version= MAP_VERSION,
         type="REGISTER",
         userID=user_id,
@@ -76,9 +76,9 @@ class Client:
         )
 
         response_header, _ = self._tcp_request(request)
-        
 
-        if(response_header.status == map.STATUS_OK):
+
+        if(response_header.status == protocol.STATUS_OK):
 
             #Only do this if registration was succesful, i.e. STATUS_OK
             self.AppState = {
@@ -96,13 +96,13 @@ class Client:
             "error": ""
             }
             return True
-        
+
         return False
 
     #Obtains IP Address of peer for P2P file sharing
     def GET_PEER(self, peer_user_id: str) -> str:
 
-        request = map.GetPeer(
+        request = protocol.GetPeer(
             version = MAP_VERSION,userID = self.AppState["user_id"],
             serverID = self.AppState["server_id"],
             type = "GET_PEER",
@@ -114,15 +114,15 @@ class Client:
 
         response_body_str = response_body_bytes.decode("utf-8") #Peer IP Address
 
-        if response_header.status == map.STATUS_OK:
+        if response_header.status == protocol.STATUS_OK:
             return response_body_str
-        
-        return "0.0.0.0" 
-    
+
+        return "0.0.0.0"
+
         #TODO: Add error handling here
 
 #---------------------------------------------------------------------------------------------------------------------
-#P2P request functions 
+#P2P request functions
 #---------------------------------------------------------------------------------------------------------------------
 
     #TODO:
@@ -131,12 +131,12 @@ class Client:
 
 
 #---------------------------------------------------------------------------------------------------------------------
-#Server communication 
+#Server communication
 #---------------------------------------------------------------------------------------------------------------------
 
     #Creates and sends TCP request to server, and returns Response object (header of response), and response body
     #TODO: Make thread safe, for if _im_alive_loop and TUI function call happen simultaneously
-    def _tcp_request(self, header: map.BaseRequest, body: bytes = b"") -> tuple[map.Response, Optional[bytes]]:
+    def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"") -> tuple[protocol.Response, Optional[bytes]]:
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(10)
@@ -147,17 +147,17 @@ class Client:
             header_bytes = header.model_dump_json().encode("utf-8")
 
             if body:
-            
+
                 payload = header_bytes + HEADER_BODY_DELIMITER + body
             else:
                 payload = header_bytes
-            
+
             sock.sendall(payload)
             sock.shutdown(socket.SHUT_WR)  # Signal we're done sending
 
         finally:
             sock.close()
-            
+
         # Read the full response from the server
         chunks = []
         while True:
@@ -168,13 +168,13 @@ class Client:
 
         response_bytes = b"".join(chunks)
 
-        response_header_bytes, response_body = map.split_header_and_body(response_bytes) #Split response header and body
-        response_header = map.parse_response_header(response_header_bytes) #Create response object to return
+        response_header_bytes, response_body = protocol.split_header_and_body(response_bytes) #Split response header and body
+        response_header = protocol.parse_response_header(response_header_bytes) #Create response object to return
 
-        return response_header, response_body 
-    
+        return response_header, response_body
+
 #---------------------------------------------------------------------------------------------------------------------
-#TODO: Thread loops 
+#TODO: Thread loops
 #---------------------------------------------------------------------------------------------------------------------
 
 #def _listen_P2P():
@@ -200,7 +200,3 @@ def _get_local_ip() -> str:
 #-------------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-   
-
-
-

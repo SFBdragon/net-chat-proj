@@ -24,6 +24,7 @@ STATUS_INCOMPATIBLE_VERSION = "INCOMPATIBLE_VERSION"
 STATUS_UNKNOWN_SERVER = "UNKNOWN_SERVER"
 STATUS_UNKNOWN_USER = "UNKNOWN_USER"
 STATUS_FILE_UNAVAILABLE = "FILE_UNAVAILABLE"
+STATUS_NOT_MEMBER = "NOT_MEMBER"
 
 
 class MapStreamBuffer:
@@ -73,21 +74,36 @@ class MapStreamBuffer:
         return result
 
 
-def split_header_and_body(data: bytes) -> tuple[bytes, Optional[bytes]]:
-    if HEADER_BODY_DELIMITER in data:
-        header, body = data.split(HEADER_BODY_DELIMITER, 1)
-        return (header, body)
-    else:
-        return (data, None)
-
-
 class Status(Exception):
     def __init__(self, status: str):
         self.status = status
         super().__init__(status)
 
 
-def parse_request_header(header_bytes: bytes) -> Request:
+def check_versions_match(supported: str, received: str):
+
+    suppported_split = supported.split(".", 1)
+    if len(suppported_split) != 2:
+        raise Exception("Invalid supposed version. Must be `MAJOR.MINOR`")
+
+    received_split = received.split(".", 1)
+    if len(received_split) != 2:
+        raise Status(STATUS_BAD_REQUEST)
+
+    supported_major = int(suppported_split[0])
+    _supported_minor = int(suppported_split[1])
+
+    try:
+        received_major = int(received_split[0])
+        _received_minor = int(received_split[1])
+    except ValueError:
+        raise Status(STATUS_BAD_REQUEST)
+
+    if supported_major != received_major:
+        raise Status(STATUS_INCOMPATIBLE_VERSION)
+
+
+def parse_request_header(header_bytes: bytes, expected_server_id: str) -> Request:
     try:
         header_json = header_bytes.decode("utf-8")
     except UnicodeDecodeError:
@@ -108,6 +124,16 @@ def parse_request_header(header_bytes: bytes) -> Request:
                 exit(1)
 
         raise Status(STATUS_BAD_REQUEST)
+
+    # Raises a Status exception if the received request's version is
+    # poorly formatted or incompatbile with this MAP implementation (1.0).
+    check_versions_match(MAP_VER, header.version)
+
+    # Raise a Status exception if the server_id field doesn't match the
+    if header.serverID != expected_server_id or (
+        header.type == "REGISTER" and not expected_server_id
+    ):
+        raise Status(STATUS_UNKNOWN_SERVER)
 
     return header
 
@@ -213,3 +239,30 @@ class BodyResponse(GenericResponse):
 
 
 Response = GenericResponse | ImAliveResponse | BodyResponse
+
+
+class BaseEvent(BaseModel):
+    eventID: int
+    senderUserID: str
+
+
+class MessageEvent(BaseEvent):
+    type: Literal["SEND_MESSAGE"]
+    message: str
+
+
+class FileAvailableEvent(BaseEvent):
+    type: Literal["FILE_AVAILABLE"]
+    sha256: str
+    fileName: str
+
+
+class AddMemberEvent(BaseEvent):
+    type: Literal["ADD_MEMBER"]
+    userID: str
+
+
+Event = Annotated[
+    MessageEvent | FileAvailableEvent | AddMemberEvent,
+    Field(discriminator="type"),
+]
