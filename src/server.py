@@ -7,10 +7,7 @@ import db
 import map
 
 SERVER_IP = "0.0.0.0"
-SERVER_TCP_PORT = 3030
-SERVER_UDP_PORT = 3031
 
-MAP_VER = "1.0"
 SERVER_ID = ""
 
 LIVENESS_TIMEOUT = 5.0
@@ -49,6 +46,12 @@ async def handle_tcp_client(sock, addr):
                     case map.Register():
                         # TODO
                         pass
+
+                        response_header = map.GenericResponse(
+                            version=map.MAP_VER,
+                            serverID=SERVER_ID,
+                            status=map.STATUS_OK,
+                        )
                     case map.GetPeer():
                         # TODO validate that peerUserID and userID are in groupID
 
@@ -60,14 +63,14 @@ async def handle_tcp_client(sock, addr):
                         if time.time() - LIVENESS_TIMEOUT < t:
                             response_body = ip.encode("utf-8")
                             response_header = map.BodyResponse(
-                                version=MAP_VER,
+                                version=map.MAP_VER,
                                 serverID=SERVER_ID,
                                 status=map.STATUS_OK,
                                 length=len(response_body),
                             )
                         else:
                             response_header = map.GenericResponse(
-                                version=MAP_VER,
+                                version=map.MAP_VER,
                                 serverID=SERVER_ID,
                                 status=map.STATUS_FILE_UNAVAILABLE,
                             )
@@ -77,7 +80,7 @@ async def handle_tcp_client(sock, addr):
 
             except map.Status as s:
                 response_header = map.GenericResponse(
-                    version=MAP_VER, serverID=SERVER_ID, status=s.status
+                    version=map.MAP_VER, serverID=SERVER_ID, status=s.status
                 )
 
             response_json = response_header.model_dump_json()
@@ -186,10 +189,12 @@ def run_async_in_thread(target_coroutine):
 if __name__ == "__main__":
     import threading
 
-    # TODO set the SERVER_ID
+    SERVER_ID = asyncio.run(db.init_db())
 
-    tcp_thread = run_async_in_thread(tcp_server_raw(SERVER_IP, SERVER_TCP_PORT))
-    udp_thread = run_async_in_thread(udp_server_raw(SERVER_IP, SERVER_UDP_PORT))
+    print(f"Database established. Server ID: {SERVER_ID}")
+
+    tcp_thread = run_async_in_thread(tcp_server_raw(SERVER_IP, map.SERVER_TCP_PORT))
+    udp_thread = run_async_in_thread(udp_server_raw(SERVER_IP, map.SERVER_UDP_PORT))
 
     while True:
         pass

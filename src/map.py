@@ -10,6 +10,11 @@ from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
+SERVER_TCP_PORT = 3030
+SERVER_UDP_PORT = 3031
+
+MAP_VER = "1.0"
+
 HEADER_BODY_DELIMITER = b"\x03"
 
 STATUS_OK = "OK"
