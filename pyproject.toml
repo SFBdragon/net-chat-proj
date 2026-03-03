@@ -8,4 +8,5 @@ dependencies = [
     "aiosqlite>=0.22.1",
     "pydantic>=2.12.5",
     "pysqlite3>=0.6.0",
+    "textual>=8.0.2",
 ]
