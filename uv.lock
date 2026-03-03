@@ -27,12 +27,14 @@ source = { virtual = "." }
 dependencies = [
     { name = "aiosqlite" },
     { name = "pydantic" },
+    { name = "pysqlite3" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "aiosqlite", specifier = ">=0.22.1" },
     { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "pysqlite3", specifier = ">=0.6.0" },
 ]
 
 [[package]]
@@ -87,6 +89,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/5c/96/5fb7d8c3c17bc8c62fdb031c47d77a1af698f1d7a406b0f79aaa1338f9ad/pydantic_core-2.41.5-cp314-cp314t-win32.whl", hash = "sha256:b4ececa40ac28afa90871c2cc2b9ffd2ff0bf749380fbdf57d165fd23da353aa", size = 1988906, upload-time = "2025-11-04T13:41:56.606Z" },
     { url = "https://files.pythonhosted.org/packages/22/ed/182129d83032702912c2e2d8bbe33c036f342cc735737064668585dac28f/pydantic_core-2.41.5-cp314-cp314t-win_amd64.whl", hash = "sha256:80aa89cad80b32a912a65332f64a4450ed00966111b6615ca6816153d3585a8c", size = 1981607, upload-time = "2025-11-04T13:41:58.889Z" },
     { url = "https://files.pythonhosted.org/packages/9f/ed/068e41660b832bb0b1aa5b58011dea2a3fe0ba7861ff38c4d4904c1c1a99/pydantic_core-2.41.5-cp314-cp314t-win_arm64.whl", hash = "sha256:35b44f37a3199f771c3eaa53051bc8a70cd7b54f333531c59e29fd4db5d15008", size = 1974769, upload-time = "2025-11-04T13:42:01.186Z" },
+]
+
+[[package]]
+name = "pysqlite3"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fa/84/6e586bef5f6337dee60066eef752c73fa6fcb93c1e7997b550d3105ed4f9/pysqlite3-0.6.0.tar.gz", hash = "sha256:ecf5112b62a4e6c04438957e343fe9672707bd3191f789ecae6c95b226aa6bb6", size = 40838, upload-time = "2026-01-05T18:29:37.843Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6a/8b/9460af84b3e0a33767615b4148bcb746a6aadf9fe2cc55b399d4e00ca22e/pysqlite3-0.6.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:b6f768d6e00d4574f5cc1bff174a4703382afe221b04b009bcb8b41164af08a0", size = 952994, upload-time = "2026-01-05T18:29:25.701Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/3f/5445614ed6b60f058715923d12e7a10a6464cd1cf29ec3a166cc0be46e8e/pysqlite3-0.6.0-cp314-cp314-manylinux_2_28_x86_64.whl", hash = "sha256:268fa5873143cccd79f32624c9a25714e4595715795ae09c8366c75cae8f5aed", size = 4528324, upload-time = "2026-01-05T18:29:26.885Z" },
+    { url = "https://files.pythonhosted.org/packages/46/c8/f490d4890f1d1541efda54fea9249f9ae264c46fd5d0e12e5e2757f6abcb/pysqlite3-0.6.0-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:65a9af11004d350538b6bd852b0ec22cdd62928be9ab522d85c0840d5bf92a72", size = 4531310, upload-time = "2026-01-05T18:29:28.293Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/c3/ff97773adf35afaadaa969ae9fa20f09d25732b2ceba0b986f7039a89c6b/pysqlite3-0.6.0-cp314-cp314-win32.whl", hash = "sha256:cc9787dc409f800e310c8a457b7c98d1c4d4a76e15821b7fb460c0e63554ddd8", size = 744085, upload-time = "2026-01-05T18:29:29.277Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/76/103fc35bec8934c672b5193eadc66384472fd071c269cd95bc4b16595d17/pysqlite3-0.6.0-cp314-cp314-win_amd64.whl", hash = "sha256:81226436fae52d3bec4ce578104c5bcf4c22d3fcf29d4a590fcbde56b90472ef", size = 903944, upload-time = "2026-01-05T18:29:30.309Z" },
 ]
 
 [[package]]

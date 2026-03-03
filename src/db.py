@@ -16,171 +16,164 @@ class FileAvailabilityEventData(BaseModel):
     sha256: str
 
 
-db_name = "db.sqlite3"
+def init_db(db_path: str) -> str:
+    import sqlite3
 
+    with sqlite3.connect(db_path) as db:
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                eventID INTEGER PRIMARY KEY AUTOINCREMENT,
+                toGroupID INTEGER,
+                fromUserID TEXT,
+                eventData TEXT,
+                eventType INTEGER
+            )
+        """)
 
-async def init_db() -> str:
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS groups (
+                groupID INTEGER PRIMARY KEY AUTOINCREMENT,
+                groupName TEXT
+            )
+        """)
 
-    try:
-        with open(db_name, "r") as _:
-            # file exists
-            print("[+] Database exists. Skipping init.")
-            pass
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS memberships (
+                groupID INTEGER,
+                userID TEXT,
+                PRIMARY KEY (groupID, userID)
+            )
+        """)
 
-        async with aiosqlite.connect(db_name) as db:
-            async with db.execute("SELECT serverID FROM server") as cursor:
-                server_id = ""
-                set_server_id = False
-                async for row in cursor:
-                    if set_server_id:
-                        print("Bad database. There should only be one Server ID.")
-                        exit(1)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS server (
+                serverID TEXT,
+                PRIMARY KEY (serverID)
+            )
+        """)
 
-                    server_id = row[0]
-                    set_server_id = True
+        db.commit()
 
-    except FileNotFoundError:
-        async with aiosqlite.connect(db_name) as db:
-            await db.execute("""
-                CREATE TABLE IF NOT EXISTS events (
-                    eventID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    toGroupID INTEGER,
-                    fromUserID TEXT,
-                    eventData TEXT,
-                    eventType INTEGER
-                )
-            """)
-            await db.commit()
+        cursor = db.execute("SELECT serverID from server")
+        rows = list(cursor.fetchall())
+        cursor.close()
 
-            await db.execute("""
-                CREATE TABLE IF NOT EXISTS groups (
-                    groupID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    groupName TEXT
-                )
-            """)
-            await db.commit()
-
-            await db.execute("""
-                CREATE TABLE IF NOT EXISTS memberships (
-                    groupID INTEGER,
-                    userID TEXT,
-                    PRIMARY KEY (groupID, userID)
-                )
-            """)
-            await db.commit()
-
+        if len(rows) == 0:
+            # No row exists, insert one
+            #
             # Generate random 16-character string
             base64_chars = (
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
             )
             server_id = "".join(secrets.choice(base64_chars) for _ in range(16))
 
-            await db.execute("""
-                CREATE TABLE IF NOT EXISTS server (
-                    serverID TEXT,
-                    protocolVersion TEXT,
-                    PRIMARY KEY (serverID)
-                )
-            """)
-            await db.commit()
+            db.execute("INSERT INTO server (serverID) VALUES (?)", (server_id,))
+            db.commit()
+        elif len(rows) == 1:
+            # Use the existing server ID
+            server_id = str(rows[0][0])
+        else:
+            raise ValueError("Invalid database: Two or more server ID entries found.")
 
-            await db.execute("INSERT INTO server(serverID) VALUES (?)", (server_id,))
-            await db.commit()
-
-    return server_id
+        return server_id
 
 
-async def create_event(
-    to_group_id: int, from_user_id: str, event_data: str, event_type: int
-) -> int:
-    async with aiosqlite.connect(db_name) as db:
-        cursor = await db.execute(
+class Database:
+    def __init__(self, db_path: str):
+        self.db_path = db_path
+        self._connection: aiosqlite.Connection | None = None
+
+    async def __aenter__(self) -> DatabaseConnection:
+        self._connection = await aiosqlite.connect(self.db_path)
+        return DatabaseConnection(self._connection)
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self._connection:
+            await self._connection.close()
+        return False
+
+
+class DatabaseConnection:
+    def __init__(self, db: aiosqlite.Connection):
+        self.db = db
+
+    async def create_event(
+        self, to_group_id: int, from_user_id: str, event_data: str, event_type: int
+    ) -> int:
+        cursor = await self.db.execute(
             "INSERT INTO events(toGroupID, fromUserID, eventData, eventType) VALUES(?, ?, ?, ?)",
             (to_group_id, from_user_id, event_data, event_type),
         )
-        await db.commit()
+        await self.db.commit()
 
         if not cursor.lastrowid:
             raise Exception("Shouldn't happen.")
         return cursor.lastrowid
 
-
-async def create_membership(group_id: int, user_id: str):
-    async with aiosqlite.connect(db_name) as db:
-        await db.execute(
+    async def create_membership(self, group_id: int, user_id: str):
+        await self.db.execute(
             "INSERT OR IGNORE INTO memberships(groupID, userID) VALUES(?, ?)",
             (group_id, user_id),
         )
-        await db.commit()
+        await self.db.commit()
 
-
-async def create_group(group_name: str) -> int:
-    async with aiosqlite.connect(db_name) as db:
-        cursor = await db.execute(
+    async def create_group(self, group_name: str) -> int:
+        cursor = await self.db.execute(
             "INSERT INTO groups(groupName) VALUES(?)", (group_name,)
         )
-        await db.commit()
+        await self.db.commit()
 
         if not cursor.lastrowid:
             raise Exception("Shouldn't happen.")
         return cursor.lastrowid
 
+    async def get_events(
+        self,
+        user_id: str,
+        group_id: int | None,
+        after_event_id: int | None,
+        before_event_id: int | None = None,
+    ) -> Iterable[protocol.Event] | None:
 
-async def get_server_id():
-    async with aiosqlite.connect(db_name) as db:
-        cursor = await db.execute("SELECT serverID FROM server LIMIT 1")
-        row = await cursor.fetchone()
-        await cursor.close()
-        if row:
-            return row[0]
-        else:
-            return None
+        def parse_event_row(row: aiosqlite.Row) -> protocol.Event:
+            """Parse a database row into a typed Event.
 
+            Row format: (eventID, toGroupID, fromUserID, eventData, eventType)
+            """
 
-async def get_events(
-    user_id: str,
-    group_id: int | None,
-    after_event_id: int | None = None,
-    before_event_id: int | None = None,
-) -> Iterable[protocol.Event] | None:
+            event_id, to_group_id, from_user_id, event_data, event_type = row
 
-    def parse_event_row(row: aiosqlite.Row) -> protocol.Event:
-        """Parse a database row into a typed Event.
+            if event_type == EVENT_TYPE_MESSAGE:
+                return protocol.MessageEvent(
+                    eventID=event_id,
+                    groupID=to_group_id,
+                    senderUserID=from_user_id,
+                    type="SEND_MESSAGE",
+                    message=event_data,
+                )
+            elif event_type == EVENT_TYPE_FILE_AVAILABILITY:
+                data = FileAvailabilityEventData.model_validate_json(event_data)
+                return protocol.FileAvailableEvent(
+                    eventID=event_id,
+                    groupID=to_group_id,
+                    senderUserID=from_user_id,
+                    type="FILE_AVAILABLE",
+                    sha256=data.sha256,
+                    fileName=data.name,
+                )
+            elif event_type == EVENT_TYPE_ADD_MEMBER:
+                return protocol.AddMemberEvent(
+                    eventID=event_id,
+                    groupID=to_group_id,
+                    senderUserID=from_user_id,
+                    type="ADD_MEMBER",
+                    userID=event_data,
+                )
+            else:
+                raise ValueError(f"Unknown event type: {event_type}")
 
-        Row format: (eventID, toGroupID, fromUserID, eventData, eventType)
-        """
-
-        event_id, to_group_id, from_user_id, event_data, event_type = row
-
-        if event_type == EVENT_TYPE_MESSAGE:
-            return protocol.MessageEvent(
-                eventID=event_id,
-                senderUserID=from_user_id,
-                type="SEND_MESSAGE",
-                message=event_data,
-            )
-        elif event_type == EVENT_TYPE_FILE_AVAILABILITY:
-            data = FileAvailabilityEventData.model_validate_json(event_data)
-            return protocol.FileAvailableEvent(
-                eventID=event_id,
-                senderUserID=from_user_id,
-                type="FILE_AVAILABLE",
-                sha256=data.sha256,
-                fileName=data.name,
-            )
-        elif event_type == EVENT_TYPE_ADD_MEMBER:
-            return protocol.AddMemberEvent(
-                eventID=event_id,
-                senderUserID=from_user_id,
-                type="ADD_MEMBER",
-                userID=event_data,
-            )
-        else:
-            raise ValueError(f"Unknown event type: {event_type}")
-
-    async with aiosqlite.connect(db_name) as db:
         query_parts = ["SELECT * FROM events WHERE eventID > ?"]
-        params: list = [after_event_id]
+        params: list = [after_event_id or 0]
 
         if before_event_id:
             query_parts.append("AND eventID < ?")
@@ -196,7 +189,8 @@ async def get_events(
             )""")
             params.append(user_id)
 
-        cursor = await db.execute(" ".join(query_parts), params)
+        cursor = await self.db.execute(" ".join(query_parts), params)
+        await self.db.commit()
 
         rows = await cursor.fetchall()
         await cursor.close()
@@ -204,34 +198,25 @@ async def get_events(
         if not rows:
             return None
 
-        [parse_event_row(row) for row in rows]
+        return [parse_event_row(row) for row in rows]
 
-
-async def check_membership(user_id: str, group_id: int) -> bool:
-    async with aiosqlite.connect(db_name) as db:
-        cursor = await db.execute(
-            """
-            SELECT * FROM memberships
-            WHERE groupID == ?
-            AND userID == ?
-            """,
+    async def check_membership(self, user_id: str, group_id: int) -> bool:
+        async with self.db.execute(
+            "SELECT * FROM memberships WHERE groupID == ? AND userID == ?",
             (group_id, user_id),
-        )
-        row = await cursor.fetchone()
-        await cursor.close()
+        ) as cursor:
+            row = await cursor.fetchone()
+
         if row:
             return True
         else:
             return False
 
-
-async def group_members(group_id: int) -> Iterable[str] | None:
-    async with aiosqlite.connect(db_name) as db:
-        cursor = await db.execute(
+    async def group_members(self, group_id: int) -> Iterable[str] | None:
+        async with self.db.execute(
             "SELECT userID FROM memberships WHERE groupID == ?",
-            (group_id,),
-        )
-        rows = await cursor.fetchall()
-        await cursor.close()
+            (group_id),
+        ) as cursor:
+            rows = await cursor.fetchall()
 
         map(lambda row: row[0], rows)
