@@ -1,24 +1,22 @@
 import json
 import socket
 import threading
-import map
+import protocol
+import hashlib
 from typing import Optional
+import asyncio
 
 MAP_VERSION = "1.0"
 TCP_PORT = 3030
 UDP_PORT = 3031
 P2P_PORT = 3032
-SERVER_IP = ""
+SERVER_IP = "127.0.0.1"
 
 ALIVE_INTERVAL = 2  # seconds between IM_ALIVE requests
 ALIVE_TIMEOUT = 5
 HEADER_BODY_DELIMITER = b"\x03"
 
-
 class Client:
-
-
-
 
     def __init__(self): #TODO UI Callback function will be a parameter here
 
@@ -26,21 +24,26 @@ class Client:
 
         #Maintains state of client backend for the UI to reference when refreshing
         #only given values after succesful REGISTER
-        self.AppState = none
+        self.AppState = None
 
         #Callback function
         #self.on_state_update = ui_refresh
-
 
 #---------------------------------------------------------------------------------------------------------------------
 #Public API for GUI
 #---------------------------------------------------------------------------------------------------------------------
 
-
     #REGISTER request to server, called by GUI when login button pressed
-    def login(self, user_id: str, server_id = "") -> bool:
+    async def login(self, user_id: str, server_id = "") -> bool:
 
-        return _REGISTER(user_id, server_id)
+        login_status = await self._REGISTER(user_id, server_id)
+
+        if login_status == True:
+            # Start listening for P2P requests
+            threading.Thread(target=self._listen_p2p, daemon=True).start()
+            #TODO: Start thread for IM_ALIVE
+        
+        return login_status
 
     #TODO:
     #def send_message(content: str) -> bool:
@@ -49,23 +52,27 @@ class Client:
 
     #def add_to_group(user_ids: list[str]) -> bool:
 
-    #def get_file(peer_user_id: str, file_id: str) -> bytes:
+    #Obtains file from peer and writes to disk, returns True if succesful and False if not
+    def get_file(self, peer_user_id: str, sha256_file_id: str, save_path: str) -> bool:
 
-        #peer_ip = GET_PEER(peer_user_id)
+        group_id = self.AppState["current_group"] 
+        peer_ip = self.GET_PEER(peer_user_id)
 
+        return self.FILE_REQUEST(peer_ip, sha256_file_id,group_id, save_path)
     #def share_file(content: bytes = b"") -> bool:
 
 
     #TODO: Implement method to update TUI whenever AppState changes due to new messages etc.
     def send_update(self):
         self.on_state_update("data1")
+
 #---------------------------------------------------------------------------------------------------------------------
 #Client-server request functions
 #---------------------------------------------------------------------------------------------------------------------
 
     #REGISTER request as defined in specification
     #returns true if succesful, false if not
-    def _REGISTER(self, user_id: str, server_id = "") -> bool:
+    async def _REGISTER(self, user_id: str, server_id = "") -> bool:
     #Header for REGISTER request
 
         request = protocol.Register(
@@ -75,7 +82,7 @@ class Client:
         serverID=server_id
         )
 
-        response_header, _ = self._tcp_request(request)
+        response_header, _ = await self._tcp_request(request)
 
 
         if(response_header.status == protocol.STATUS_OK):
@@ -100,7 +107,7 @@ class Client:
         return False
 
     #Obtains IP Address of peer for P2P file sharing
-    def GET_PEER(self, peer_user_id: str) -> str:
+    async def GET_PEER(self, peer_user_id: str) -> str:
 
         request = protocol.GetPeer(
             version = MAP_VERSION,userID = self.AppState["user_id"],
@@ -110,7 +117,7 @@ class Client:
             groupID = self.AppState["current_group"]
         )
 
-        response_header, response_body_bytes = self._tcp_request(request)
+        response_header, response_body_bytes = await self._tcp_request(request)
 
         response_body_str = response_body_bytes.decode("utf-8") #Peer IP Address
 
@@ -119,14 +126,42 @@ class Client:
 
         return "0.0.0.0"
 
-        #TODO: Add error handling here
+        #TODO: Add error handling here?
 
 #---------------------------------------------------------------------------------------------------------------------
-#P2P request functions
+#P2P request and response methods
 #---------------------------------------------------------------------------------------------------------------------
 
+    #Requests file from peer and saves it if file transferred succesfully
+    async def FILE_REQUEST(self, peer_ip: str, sha256_file_id: str, group_id: int, save_path: str) -> bool:
+
+        request = protocol.FileRequest(
+            version = MAP_VERSION,
+            userID = self.AppState["user_id"],
+            serverID = self.AppState["server_id"],
+            type = "FILE_REQUEST",
+            groupID = group_id,
+            sha256 = sha256_file_id
+        )
+
+        response_header, response_body_bytes = await self._tcp_request(request, b"", peer_ip)
+
+        if response_header.status != protocol.STATUS_OK:
+            return False
+        
+        #Verifying file integrity
+        computed_hash = hashlib.sha256(response_body_bytes).hexdigest().upper()
+        if computed_hash != sha256_file_id:
+            return False
+        
+        # Write raw bytes directly to disk — no decoding needed
+        with open(save_path, "wb") as f:
+            f.write(response_body_bytes)
+            
+        return True
+    
     #TODO:
-    #def FILE_REQUEST
+    #def _handle_p2p_request(self, conn: socket.socket, addr):
 
 
 
@@ -134,42 +169,37 @@ class Client:
 #Server communication
 #---------------------------------------------------------------------------------------------------------------------
 
-    #Creates and sends TCP request to server, and returns Response object (header of response), and response body
+    #Creates and sends TCP request, and returns Response object (header of response), and response body
+    #Default is TCP request to server, unless other IP is specified
     #TODO: Make thread safe, for if _im_alive_loop and TUI function call happen simultaneously
-    def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"") -> tuple[protocol.Response, Optional[bytes]]:
+    async def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = SERVER_IP) -> tuple[protocol.Response, Optional[bytes]]:
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(10)
-        try:
-            sock.connect((SERVER_IP, TCP_PORT))
+        sock.connect((ip_address, TCP_PORT))
 
-            # Build payload (serialise using JSON)
-            header_bytes = header.model_dump_json().encode("utf-8")
+        # Build payload (serialise using JSON)
+        header_bytes = header.model_dump_json().encode("utf-8")
+        print(f"Header bytes is {header_bytes}")
+        if body:
+            payload = header_bytes + HEADER_BODY_DELIMITER + body
+        else:
+            payload = header_bytes + HEADER_BODY_DELIMITER 
+        print(len(body))
+        print("Sending payload")
+        sock.sendall(payload)
 
-            if body:
+        #Read server response using protocol.py methods
+        MSB = protocol.MapStreamBuffer(sock)
+        await MSB._recv_into_buffer()
 
-                payload = header_bytes + HEADER_BODY_DELIMITER + body
-            else:
-                payload = header_bytes
+        response_header_bytes = await MSB.read_header()
+        response_header = protocol.parse_response_header(response_header_bytes)
+        
+        response_body = await MSB.read_body(len(body))
 
-            sock.sendall(payload)
-            sock.shutdown(socket.SHUT_WR)  # Signal we're done sending
-
-        finally:
-            sock.close()
-
-        # Read the full response from the server
-        chunks = []
-        while True:
-            chunk = sock.recv(4096)
-            if not chunk:
-                break
-            chunks.append(chunk)
-
-        response_bytes = b"".join(chunks)
-
-        response_header_bytes, response_body = protocol.split_header_and_body(response_bytes) #Split response header and body
-        response_header = protocol.parse_response_header(response_header_bytes) #Create response object to return
+        print(response_header)
+        print(response_body)
 
         return response_header, response_body
 
@@ -177,10 +207,26 @@ class Client:
 #TODO: Thread loops
 #---------------------------------------------------------------------------------------------------------------------
 
-#def _listen_P2P():
+def _listen_P2P():
+
+    server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_sock.bind(("0.0.0.0", P2P_PORT))
+    server_sock.listen(10)
+
+    print(f"Listening for P2P requests")
+
+    while True:
+        peer_sock, addr = server_sock.accept()
+        #Handle each peer connection in another thread
+        #so one slow transfer doesn't block others
+        threading.Thread(
+            target=self._handle_p2p_request,
+            args=(peer_sock, addr),
+            daemon=True
+        ).start()
+
 #def _im_alive_loop():
-
-
 
 
 #---------------------------------------------------------------------------------------------------------------------
@@ -198,5 +244,10 @@ def _get_local_ip() -> str:
         s.close()
 
 #-------------------------------------------------------------------------------------------------------------------------
+async def main():
+    c = Client()
+    print(await c.login("Thomas", ""))
+    _listen_P2P()
 
 if __name__ == "__main__":
+    asyncio.run(main())

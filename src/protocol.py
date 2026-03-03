@@ -3,12 +3,14 @@ MAP: Messaging Application-layer Protocol
 
 This file provides functions, types, and utilities for working with MAP data.
 """
+from __future__ import annotations
 
 import asyncio
 import socket
 from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
+
 
 SERVER_TCP_PORT = 3030
 SERVER_UDP_PORT = 3031
@@ -56,12 +58,16 @@ class MapStreamBuffer:
         """Read and consume bytes until delimiter is found."""
         while True:
             try:
+                print("I AM TRYING")
                 idx = self.buffer.index(HEADER_BODY_DELIMITER)
                 result = bytes(self.buffer[:idx])
+                print("GOT A RESULT")
                 del self.buffer[: idx + 1]  # consume including delimiter
+                print(f"RETURNING {result}")
                 return result
             except ValueError:
                 # delimiter not found, need more data
+                print("ValueError. Now awaiting.")
                 await self._recv_into_buffer()
 
     async def read_body(self, size: int) -> bytes:
