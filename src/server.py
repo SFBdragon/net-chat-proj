@@ -31,9 +31,10 @@ async def handle_tcp_client(sock, addr):
 
     try:
         stream = protocol.MapStreamBuffer(sock)
-
         while True:
+            print("In loop")
             header_bytes = await stream.read_header()
+            print("Got response")
             print(f"> TCP received from {addr}: {header_bytes}")
 
             response_body = None
