@@ -19,8 +19,8 @@ HEADER_BODY_DELIMITER = b"\x03"
 
 class Client:
 
-    
-    
+
+
 
     def __init__(self): #TODO UI Callback function will be a parameter here
 
@@ -32,7 +32,7 @@ class Client:
 
         #Callback function
         #self.on_state_update = ui_refresh
-        
+
 
 #---------------------------------------------------------------------------------------------------------------------
 #Public API for GUI
@@ -46,7 +46,7 @@ class Client:
 
     #TODO:
     #def send_message(content: str) -> bool:
-    
+
     #def create_group(group_name: str, user_ids: list[str]) -> bool:
 
     #def add_to_group(user_ids: list[str]) -> bool:
@@ -61,19 +61,19 @@ class Client:
     #def share_file(content: bytes = b"") -> bool:
 
 
-    #TODO: Implement method to update TUI whenever AppState changes due to new messages etc.    
+    #TODO: Implement method to update TUI whenever AppState changes due to new messages etc.
     def send_update(self):
         self.on_state_update("data1")
 #---------------------------------------------------------------------------------------------------------------------
-#Client-server request functions 
+#Client-server request functions
 #---------------------------------------------------------------------------------------------------------------------
 
     #REGISTER request as defined in specification
     #returns true if succesful, false if not
     def _REGISTER(self, user_id: str, server_id = "") -> bool:
     #Header for REGISTER request
-    
-        request = map.Register(
+
+        request = protocol.Register(
         version= MAP_VERSION,
         type="REGISTER",
         userID=user_id,
@@ -81,9 +81,9 @@ class Client:
         )
 
         response_header, _ = self._tcp_request(request)
-        
 
-        if(response_header.status == map.STATUS_OK):
+
+        if(response_header.status == protocol.STATUS_OK):
 
             #Only do this if registration was succesful, i.e. STATUS_OK
             self.AppState = {
@@ -101,13 +101,13 @@ class Client:
             "error": ""
             }
             return True
-        
+
         return False
 
     #Obtains IP Address of peer for P2P file sharing
     def GET_PEER(self, peer_user_id: str) -> str:
 
-        request = map.GetPeer(
+        request = protocol.GetPeer(
             version = MAP_VERSION,userID = self.AppState["user_id"],
             serverID = self.AppState["server_id"],
             type = "GET_PEER",
@@ -119,7 +119,7 @@ class Client:
 
         response_body_str = response_body_bytes.decode("utf-8") #Peer IP Address
 
-        if response_header.status == map.STATUS_OK:
+        if response_header.status == protocol.STATUS_OK:
             return response_body_str
 
         return "0.0.0.0"
@@ -163,7 +163,7 @@ class Client:
 
 
 #---------------------------------------------------------------------------------------------------------------------
-#Server communication 
+#Server communication
 #---------------------------------------------------------------------------------------------------------------------
 
     #Creates and sends TCP request, and returns Response object (header of response), and response body
@@ -180,11 +180,11 @@ class Client:
             header_bytes = header.model_dump_json().encode("utf-8")
 
             if body:
-            
+
                 payload = header_bytes + HEADER_BODY_DELIMITER + body
             else:
                 payload = header_bytes
-            
+
             sock.sendall(payload)
             sock.shutdown(socket.SHUT_WR)  # Signal we're done sending
 
@@ -205,10 +205,8 @@ class Client:
 
         return response_header, response_body
 
-        return response_header, response_body 
-    
 #---------------------------------------------------------------------------------------------------------------------
-#TODO: Thread loops 
+#TODO: Thread loops
 #---------------------------------------------------------------------------------------------------------------------
 
 #def _listen_P2P():
