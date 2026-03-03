@@ -18,5 +18,5 @@ This project uses [`uv`](https://docs.astral.sh/uv/), an extremely fast Python p
 
 1. Install `uv`: [https://docs.astral.sh/uv/getting-started/installation](https://docs.astral.sh/uv/getting-started/installation)
 2. Create a virtual environment: `uv venv`
-3. Source the environment: `source .venv/bin/activate`
-4. Install packages: `uv pip install <package-name>`
+3. Install packages: `uv add <package-name>`
+4. Run code (e.g. the server): `uv run src/server.py`
