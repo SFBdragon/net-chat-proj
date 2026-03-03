@@ -4,7 +4,7 @@ import threading
 import protocol
 import hashlib
 from typing import Optional
-
+import asyncio
 
 MAP_VERSION = "1.0"
 TCP_PORT = 3030
@@ -16,11 +16,7 @@ ALIVE_INTERVAL = 2  # seconds between IM_ALIVE requests
 ALIVE_TIMEOUT = 5
 HEADER_BODY_DELIMITER = b"\x03"
 
-
 class Client:
-
-
-
 
     def __init__(self): #TODO UI Callback function will be a parameter here
 
@@ -28,21 +24,19 @@ class Client:
 
         #Maintains state of client backend for the UI to reference when refreshing
         #only given values after succesful REGISTER
-        self.AppState = none
+        self.AppState = None
 
         #Callback function
         #self.on_state_update = ui_refresh
-
 
 #---------------------------------------------------------------------------------------------------------------------
 #Public API for GUI
 #---------------------------------------------------------------------------------------------------------------------
 
-
     #REGISTER request to server, called by GUI when login button pressed
-    def login(self, user_id: str, server_id = "") -> bool:
+    async def login(self, user_id: str, server_id = "") -> bool:
 
-        login_status = self._REGISTER(user_id, server_id)
+        login_status = await self._REGISTER(user_id, server_id)
 
         if login_status == True:
             # Start listening for P2P requests
@@ -71,13 +65,14 @@ class Client:
     #TODO: Implement method to update TUI whenever AppState changes due to new messages etc.
     def send_update(self):
         self.on_state_update("data1")
+
 #---------------------------------------------------------------------------------------------------------------------
 #Client-server request functions
 #---------------------------------------------------------------------------------------------------------------------
 
     #REGISTER request as defined in specification
     #returns true if succesful, false if not
-    def _REGISTER(self, user_id: str, server_id = "") -> bool:
+    async def _REGISTER(self, user_id: str, server_id = "") -> bool:
     #Header for REGISTER request
 
         request = protocol.Register(
@@ -87,7 +82,7 @@ class Client:
         serverID=server_id
         )
 
-        response_header, _ = self._tcp_request(request)
+        response_header, _ = await self._tcp_request(request)
 
 
         if(response_header.status == protocol.STATUS_OK):
@@ -112,7 +107,7 @@ class Client:
         return False
 
     #Obtains IP Address of peer for P2P file sharing
-    def GET_PEER(self, peer_user_id: str) -> str:
+    async def GET_PEER(self, peer_user_id: str) -> str:
 
         request = protocol.GetPeer(
             version = MAP_VERSION,userID = self.AppState["user_id"],
@@ -122,7 +117,7 @@ class Client:
             groupID = self.AppState["current_group"]
         )
 
-        response_header, response_body_bytes = self._tcp_request(request)
+        response_header, response_body_bytes = await self._tcp_request(request)
 
         response_body_str = response_body_bytes.decode("utf-8") #Peer IP Address
 
@@ -138,7 +133,7 @@ class Client:
 #---------------------------------------------------------------------------------------------------------------------
 
     #Requests file from peer and saves it if file transferred succesfully
-    def FILE_REQUEST(self, peer_ip: str, sha256_file_id: str, group_id: int, save_path: str) -> bool:
+    async def FILE_REQUEST(self, peer_ip: str, sha256_file_id: str, group_id: int, save_path: str) -> bool:
 
         request = protocol.FileRequest(
             version = MAP_VERSION,
@@ -149,7 +144,7 @@ class Client:
             sha256 = sha256_file_id
         )
 
-        response_header, response_body_bytes = self._tcp_request(request, b"", peer_ip)
+        response_header, response_body_bytes = await self._tcp_request(request, b"", peer_ip)
 
         if response_header.status != protocol.STATUS_OK:
             return False
@@ -177,36 +172,31 @@ class Client:
     #Creates and sends TCP request, and returns Response object (header of response), and response body
     #Default is TCP request to server, unless other IP is specified
     #TODO: Make thread safe, for if _im_alive_loop and TUI function call happen simultaneously
-    def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = SERVER_IP) -> tuple[protocol.Response, Optional[bytes]]:
+    async def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = SERVER_IP) -> tuple[protocol.Response, Optional[bytes]]:
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(10)
-        try:
-            sock.connect((ip_address, TCP_PORT))
+        sock.connect((ip_address, TCP_PORT))
 
-            # Build payload (serialise using JSON)
-            header_bytes = header.model_dump_json().encode("utf-8")
-
-            if body:
-
-                payload = header_bytes + HEADER_BODY_DELIMITER + body
-            else:
-                payload = header_bytes
-
-            sock.sendall(payload)
-            sock.shutdown(socket.SHUT_WR)  # Signal we're done sending
-
-        finally:
-            sock.close()
+        # Build payload (serialise using JSON)
+        header_bytes = header.model_dump_json().encode("utf-8")
+        print(f"Header bytes is {header_bytes}")
+        if body:
+            payload = header_bytes + HEADER_BODY_DELIMITER + body
+        else:
+            payload = header_bytes + HEADER_BODY_DELIMITER 
+        print(len(body))
+        print("Sending payload")
+        sock.sendall(payload)
 
         #Read server response using protocol.py methods
         MSB = protocol.MapStreamBuffer(sock)
-        MSB._recv_into_buffer()
+        await MSB._recv_into_buffer()
 
-        response_header_bytes = MSB.read_header()
+        response_header_bytes = await MSB.read_header()
         response_header = protocol.parse_response_header(response_header_bytes)
-
-        response_body = MSB.read_body()
+        
+        response_body = await MSB.read_body(len(body))
 
         print(response_header)
         print(response_body)
@@ -254,7 +244,10 @@ def _get_local_ip() -> str:
         s.close()
 
 #-------------------------------------------------------------------------------------------------------------------------
+async def main():
+    c = Client()
+    print(await c.login("Thomas", ""))
+    _listen_P2P()
 
 if __name__ == "__main__":
-    c = Client()
-    print(c.login("Thomas", ""))
+    asyncio.run(main())
