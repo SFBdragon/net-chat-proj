@@ -136,8 +136,8 @@ def parse_request_header(header_bytes: bytes, expected_server_id: str) -> Reques
     check_versions_match(MAP_VER, header.version)
 
     # Raise a Status exception if the server_id field doesn't match the
-    if header.serverID != expected_server_id or (
-        header.type == "REGISTER" and not expected_server_id
+    if header.serverID != expected_server_id and not (
+        header.type == "REGISTER" and not header.serverID
     ):
         raise Status(STATUS_UNKNOWN_SERVER)
 
@@ -249,6 +249,7 @@ Response = GenericResponse | ImAliveResponse | BodyResponse
 
 class BaseEvent(BaseModel):
     eventID: int
+    groupID: int
     senderUserID: str
 
 
