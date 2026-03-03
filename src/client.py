@@ -42,7 +42,14 @@ class Client:
     #REGISTER request to server, called by GUI when login button pressed
     def login(self, user_id: str, server_id = "") -> bool:
 
-        return self._REGISTER(user_id, server_id)
+        login_status = self._REGISTER(user_id, server_id)
+
+        if login_status == True:
+            # Start listening for P2P requests
+            threading.Thread(target=self._listen_p2p, daemon=True).start()
+            #TODO: Start thread for IM_ALIVE
+        
+        return login_status
 
     #TODO:
     #def send_message(content: str) -> bool:
@@ -157,8 +164,9 @@ class Client:
             f.write(response_body_bytes)
             
         return True
-       
-       
+    
+    #TODO:
+    #def _handle_p2p_request(self, conn: socket.socket, addr):
 
 
 
@@ -209,10 +217,26 @@ class Client:
 #TODO: Thread loops
 #---------------------------------------------------------------------------------------------------------------------
 
-#def _listen_P2P():
+def _listen_P2P():
+
+    server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_sock.bind(("0.0.0.0", P2P_PORT))
+    server_sock.listen(10)
+
+    print(f"Listening for P2P requests")
+
+    while True:
+        peer_sock, addr = server_sock.accept()
+        #Handle each peer connection in another thread
+        #so one slow transfer doesn't block others
+        threading.Thread(
+            target=self._handle_p2p_request,
+            args=(peer_sock, addr),
+            daemon=True
+        ).start()
+
 #def _im_alive_loop():
-
-
 
 
 #---------------------------------------------------------------------------------------------------------------------
