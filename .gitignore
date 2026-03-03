@@ -11,3 +11,4 @@ wheels/
 
 # Databse
 db.sqlite3
+database.sqlite3
