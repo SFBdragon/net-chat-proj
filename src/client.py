@@ -70,7 +70,7 @@ class Client:
             length=len(message_body),
         )
 
-        response_header, _ = await self._tcp_request(request)
+        response_header, _ = await self._tcp_request(request, message_body)
 
         if(response_header.status == protocol.STATUS_OK):
             print(f"[+] Send message to group_id {group_id} successfully.")
@@ -349,7 +349,7 @@ async def main():
     c = Client()
     print(await c.login("Thomas", ""))
     await c.create_group("MyGroup", ["Thomas",])
-    #await c.send_message(5, "Messaging works!")
+    await c.send_message(5, "Messaging works!")
     for thread in threads:
         thread.join()
     print("[-] All threads finished.")
