@@ -152,8 +152,6 @@ class Server:
                         case protocol.CreateGroup():
                             group_id = await db.create_group(header.name)
 
-                            print(f"CREATED GROUP: {group_id}")
-
                             await db.create_membership(group_id, header.userID)
 
                             for member in header.members:
@@ -164,10 +162,6 @@ class Server:
                                     member,
                                     database.EVENT_TYPE_ADD_MEMBER,
                                 )
-
-                            print(
-                                f"GET_EVENTS: {await db.get_events(header.members[0], group_id, 0, None)}"
-                            )
 
                             response_header = protocol.GenericResponse(
                                 version=protocol.MAP_VER,
