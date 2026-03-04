@@ -90,6 +90,7 @@ class Client:
         if(response_header.status == protocol.STATUS_OK):
             print(f"[+] Created group {group_name} successfully.")
 
+    #TODO
     #def add_to_group(user_ids: list[str]) -> bool:
 
     #Obtains file from peer and writes to disk, returns True if succesful and False if not
@@ -146,11 +147,30 @@ class Client:
 
         return False
 
+
+    #Returns all events after the latest eventID as a list of protocol.Event objects
+    #Can change return type if easier to handle in TUI?
+    async def GET_EVENTS(self) -> list[protocol.Event]:
+        request = protocol.GetEvents(
+            version = MAP_VERSION,
+            userID = self.AppState["user_id"],
+            serverID = self.AppState["server_id"],
+            type = "GET_EVENTS",
+            afterEventID = self.AppState["last_event_id"]
+        )
+
+        _, response_body_bytes = await self._tcp_request(request)
+        
+        response_body_json = response_body_bytes.decode("utf-8")
+
+        return protocol.parse_events_response_body(response_body_json)
+
     #Obtains IP Address of peer for P2P file sharing
     async def GET_PEER(self, peer_user_id: str) -> str:
 
         request = protocol.GetPeer(
-            version = MAP_VERSION,userID = self.AppState["user_id"],
+            version = MAP_VERSION,
+            userID = self.AppState["user_id"],
             serverID = self.AppState["server_id"],
             type = "GET_PEER",
             peerUserID = peer_user_id,
@@ -211,7 +231,7 @@ class Client:
 
     #Creates and sends TCP request, and returns Response object (header of response), and response body
     #Default is TCP request to server, unless other IP is specified
-    #TODO: Make thread safe, for if _im_alive_loop and TUI function call happen simultaneously
+
     async def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = SERVER_IP) -> tuple[protocol.Response, Optional[bytes]]:
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -224,28 +244,21 @@ class Client:
             payload = header_bytes + HEADER_BODY_DELIMITER + body
         else:
             payload = header_bytes + HEADER_BODY_DELIMITER 
-        print(len(body))
+        
         sock.sendall(payload)
         print(f"[+] Payload sent ({len(payload)}) characters.")
 
-        #Read server response using protocol.py methods
-        #MSB = protocol.MapStreamBuffer(sock)
-        #await MSB._recv_into_buffer()
-
-        #response_header_bytes = await MSB.read_header()
-        #response_header = protocol.parse_response_header(response_header_bytes)
-        
-        #response_body = await MSB.read_body(len(body))
-
-        # Read server response
         stream = protocol.MapStreamBuffer(sock)
         response_header_bytes = await stream.read_header()
         response_header_json = response_header_bytes.decode("utf-8")
         response_header = protocol.parse_response_header(response_header_json)
-        response_body = await stream.read_body(len(body))
 
+        response_body_bytes = await stream.read_body(response_header.length)
+        
         sock.close()
-        return response_header, response_body
+        return response_header, response_body_bytes
+
+    #async def _udp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = SERVER_IP) -> tuple[protocol.Response, Optional[bytes]]:
 
     #---------------------------------------------------------------------------------------------------------------------
     #TODO: Thread loops
