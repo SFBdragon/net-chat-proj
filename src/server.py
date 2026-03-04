@@ -169,7 +169,7 @@ class Server:
                                 status=protocol.STATUS_OK,
                             )
                         case protocol.PutMessage():
-                            if not db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(header.userID, header.groupID):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -196,7 +196,7 @@ class Server:
                                     status=protocol.STATUS_OK,
                                 )
                         case protocol.PutFile():
-                            if not db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(header.userID, header.groupID):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -221,7 +221,7 @@ class Server:
                                     status=protocol.STATUS_OK,
                                 )
                         case protocol.PutMember():
-                            if not db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(header.userID, header.groupID):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -272,7 +272,7 @@ class Server:
                                 )
                         case protocol.GetEvents():
                             if header.groupID:
-                                if not db.check_membership(
+                                if not await db.check_membership(
                                     header.userID, header.groupID
                                 ):
                                     response_header = protocol.GenericResponse(
@@ -302,7 +302,7 @@ class Server:
                                 length=len(response_body),
                             )
                         case protocol.GetAlive():
-                            if not db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(header.userID, header.groupID):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,

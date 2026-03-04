@@ -5,6 +5,7 @@ import protocol
 import hashlib
 from typing import Optional
 import asyncio
+import time
 
 MAP_VERSION = "1.0"
 TCP_PORT = 3030
@@ -16,11 +17,16 @@ ALIVE_INTERVAL = 2  # seconds between IM_ALIVE requests
 ALIVE_TIMEOUT = 5
 HEADER_BODY_DELIMITER = b"\x03"
 
+# Lock to protect AppState modifications
+appStateLock = threading.Lock()
+threads = []
+
 class Client:
 
     def __init__(self): #TODO UI Callback function will be a parameter here
 
-        self.local_ip = _get_local_ip()
+        self.local_ip = self._get_local_ip()
+        print(f"[*] Local IP address is {self.local_ip}")
 
         #Maintains state of client backend for the UI to reference when refreshing
         #only given values after succesful REGISTER
@@ -40,15 +46,49 @@ class Client:
 
         if login_status == True:
             # Start listening for P2P requests
-            threading.Thread(target=self._listen_p2p, daemon=True).start()
-            #TODO: Start thread for IM_ALIVE
+            p2p_thread = threading.Thread(target=self._listen_P2P, daemon=True)
+            threads.append(p2p_thread)
+            p2p_thread.start()
+
+            # Start thread for IM_ALIVE
+            im_alive_thread = threading.Thread(target=self._im_alive_loop, daemon=True)
+            threads.append(im_alive_thread)
+            im_alive_thread.start()
         
         return login_status
 
-    #TODO:
-    #def send_message(content: str) -> bool:
+    async def send_message(self, group_id: int, message: str) -> bool:
 
-    #def create_group(group_name: str, user_ids: list[str]) -> bool:
+        message_body = message.encode("utf-8")
+
+        request = protocol.PutMessage(
+            version=protocol.MAP_VER,
+            userID=self.AppState["user_id"],
+            serverID=self.AppState["server_id"],
+            type="PUT_MESSAGE",
+            groupID=group_id,
+            length=len(message_body),
+        )
+
+        response_header, _ = await self._tcp_request(request)
+
+        if(response_header.status == protocol.STATUS_OK):
+            print(f"[+] Send message to group_id {group_id} successfully.")
+
+    async def create_group(self, group_name: str, user_ids: list[str]) -> bool:
+        request = protocol.CreateGroup(
+            version=protocol.MAP_VER,
+            userID=self.AppState["user_id"],
+            serverID=self.AppState["server_id"],
+            type="CREATE_GROUP",
+            name=group_name,
+            members=user_ids,
+        )
+        
+        response_header, _ = await self._tcp_request(request)
+
+        if(response_header.status == protocol.STATUS_OK):
+            print(f"[+] Created group {group_name} successfully.")
 
     #def add_to_group(user_ids: list[str]) -> bool:
 
@@ -180,74 +220,86 @@ class Client:
 
         # Build payload (serialise using JSON)
         header_bytes = header.model_dump_json().encode("utf-8")
-        print(f"Header bytes is {header_bytes}")
         if body:
             payload = header_bytes + HEADER_BODY_DELIMITER + body
         else:
             payload = header_bytes + HEADER_BODY_DELIMITER 
         print(len(body))
-        print("Sending payload")
         sock.sendall(payload)
+        print(f"[+] Payload sent ({len(payload)}) characters.")
 
         #Read server response using protocol.py methods
-        MSB = protocol.MapStreamBuffer(sock)
-        await MSB._recv_into_buffer()
+        #MSB = protocol.MapStreamBuffer(sock)
+        #await MSB._recv_into_buffer()
 
-        response_header_bytes = await MSB.read_header()
-        response_header = protocol.parse_response_header(response_header_bytes)
+        #response_header_bytes = await MSB.read_header()
+        #response_header = protocol.parse_response_header(response_header_bytes)
         
-        response_body = await MSB.read_body(len(body))
+        #response_body = await MSB.read_body(len(body))
 
-        print(response_header)
-        print(response_body)
+        # Read server response
+        stream = protocol.MapStreamBuffer(sock)
+        response_header_bytes = await stream.read_header()
+        response_header_json = response_header_bytes.decode("utf-8")
+        response_header = protocol.parse_response_header(response_header_json)
+        response_body = await stream.read_body(len(body))
 
+        sock.close()
         return response_header, response_body
 
-#---------------------------------------------------------------------------------------------------------------------
-#TODO: Thread loops
-#---------------------------------------------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------------------------------------------------
+    #TODO: Thread loops
+    #---------------------------------------------------------------------------------------------------------------------
 
-def _listen_P2P():
+    def _listen_P2P(self):
 
-    server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server_sock.bind(("0.0.0.0", P2P_PORT))
-    server_sock.listen(10)
+        server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_sock.bind(("0.0.0.0", P2P_PORT))
+        server_sock.listen(10)
 
-    print(f"Listening for P2P requests")
+        print(f"Listening for P2P requests")
 
-    while True:
-        peer_sock, addr = server_sock.accept()
-        #Handle each peer connection in another thread
-        #so one slow transfer doesn't block others
-        threading.Thread(
-            target=self._handle_p2p_request,
-            args=(peer_sock, addr),
-            daemon=True
-        ).start()
+        while True:
+            peer_sock, addr = server_sock.accept()
+            #Handle each peer connection in another thread
+            #so one slow transfer doesn't block others
+            threading.Thread(
+                target=self._handle_p2p_request,
+                args=(peer_sock, addr),
+                daemon=True
+            ).start()
 
-#def _im_alive_loop():
+    def _im_alive_loop(self):
+        # TODO _udp_request
+        while True:
+            print("I am alive.")
+            time.sleep(3)
 
 
-#---------------------------------------------------------------------------------------------------------------------
-#Internal Helpers
-#---------------------------------------------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------------------------------------------------
+    #Internal Helpers
+    #---------------------------------------------------------------------------------------------------------------------
 
-#Obtain local IP so that user doesn't have to enter it
-@staticmethod
-def _get_local_ip() -> str:
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(("8.8.8.8", 80))  # Doesn't actually send anything
-        return s.getsockname()[0]
-    finally:
-        s.close()
+    #Obtain local IP so that user doesn't have to enter it
+    @staticmethod
+    def _get_local_ip() -> str:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(("8.8.8.8", 80))  # Doesn't actually send anything
+            return s.getsockname()[0]
+        finally:
+            s.close()
 
-#-------------------------------------------------------------------------------------------------------------------------
+    #-------------------------------------------------------------------------------------------------------------------------
 async def main():
     c = Client()
     print(await c.login("Thomas", ""))
-    _listen_P2P()
+    await c.create_group("MyGroup", ["Thomas",])
+    #await c.send_message(5, "Messaging works!")
+    for thread in threads:
+        thread.join()
+    print("[-] All threads finished.")
 
 if __name__ == "__main__":
     asyncio.run(main())
