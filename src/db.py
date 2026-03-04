@@ -201,16 +201,19 @@ class DatabaseConnection:
         return [parse_event_row(row) for row in rows]
 
     async def check_membership(self, user_id: str, group_id: int) -> bool:
+        print(f"Checking for membership in {group_id} for {user_id}")
         async with self.db.execute(
             "SELECT * FROM memberships WHERE groupID == ? AND userID == ?",
             (group_id, user_id),
         ) as cursor:
             row = await cursor.fetchone()
-
-        if row:
-            return True
-        else:
-            return False
+            print(f"Got row {row}")
+            if row:
+                print("Returns True")
+                return True
+            else:
+                print("Returns False")
+                return False
 
     async def group_members(self, group_id: int) -> Iterable[str] | None:
         async with self.db.execute(

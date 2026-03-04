@@ -58,16 +58,12 @@ class MapStreamBuffer:
         """Read and consume bytes until delimiter is found."""
         while True:
             try:
-                print("I AM TRYING")
                 idx = self.buffer.index(HEADER_BODY_DELIMITER)
                 result = bytes(self.buffer[:idx])
-                print("GOT A RESULT")
                 del self.buffer[: idx + 1]  # consume including delimiter
-                print(f"RETURNING {result}")
                 return result
             except ValueError:
                 # delimiter not found, need more data
-                print("ValueError. Now awaiting.")
                 await self._recv_into_buffer()
 
     async def read_body(self, size: int) -> bytes:
