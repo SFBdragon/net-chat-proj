@@ -143,7 +143,9 @@ def parse_request_header(header_bytes: bytes, expected_server_id: str) -> Reques
 def parse_response_header(json_str: str) -> Response:
     return TypeAdapter(Response).validate_json(json_str)
 
-
+def parse_events_response_body(json_str: str) -> list[Event]:
+    return TypeAdapter(list[Event]).validate_json(json_str)
+        
 class BaseRequest(BaseModel):
     model_config = ConfigDict(strict=True)
 
