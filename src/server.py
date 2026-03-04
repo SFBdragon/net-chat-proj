@@ -90,7 +90,7 @@ class Server:
 
     async def _udp_server(self):
         async with database.Database(self._db_path) as db:
-            addr, port = self._tcp_socket.getsockname()
+            addr, port = self._udp_socket.getsockname()
             print(f"UDP receiving on {addr}:{port}")
 
             loop = asyncio.get_event_loop()
@@ -430,7 +430,7 @@ def run_async_in_thread(target_coroutine):
 
 
 if __name__ == "__main__":
-    server = Server("database.sqlite", "0.0.0.0", 3030, 3031)
+    server = Server("database.sqlite3", "0.0.0.0", 3030, 3031)
     server.run()
 
     while True:
