@@ -150,6 +150,7 @@ class Client:
 
     #Returns all events after the latest eventID as a list of protocol.Event objects
     #Can change return type if easier to handle in TUI?
+    #TODO: Testing
     async def GET_EVENTS(self) -> list[protocol.Event]:
         request = protocol.GetEvents(
             version = MAP_VERSION,
@@ -253,13 +254,35 @@ class Client:
         response_header_json = response_header_bytes.decode("utf-8")
         response_header = protocol.parse_response_header(response_header_json)
 
-        response_body_bytes = await stream.read_body(response_header.length)
-        
+        if isinstance(response_header, protocol.BodyResponse): #Generic response header doesn't have length field
+            response_body_bytes = await stream.read_body(response_header.length)
+        else:
+            response_body_bytes = b""
+
+
         sock.close()
         return response_header, response_body_bytes
 
-    #async def _udp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = SERVER_IP) -> tuple[protocol.Response, Optional[bytes]]:
+    #Sends UDP request, returns Response object. No request body or response body is accomodated for here
+    #  as it is not needed
+    def _udp_request(self, header: protocol.BaseRequest, ip_address = SERVER_IP) -> protocol.Response:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        
 
+        #Build payload
+        header_bytes = header.model_dump_json().encode("utf-8")
+
+        #Send
+        sock.sendto(header_bytes, (ip_address, UDP_PORT))
+
+        #Receive response and parse
+        response_header_bytes, _ = sock.recvfrom(65535)
+        response_header_json = response_header_bytes.decode("utf-8")
+        response_header = protocol.parse_response_header(response_header_json)
+
+        sock.close()
+
+        return response_header
     #---------------------------------------------------------------------------------------------------------------------
     #TODO: Thread loops
     #---------------------------------------------------------------------------------------------------------------------
@@ -284,10 +307,27 @@ class Client:
             ).start()
 
     def _im_alive_loop(self):
-        # TODO _udp_request
+        
         while True:
-            print("I am alive.")
-            time.sleep(3)
+            request = protocol.ImAlive(
+                version=MAP_VERSION,
+                userID=self.AppState["user_id"],
+                serverID=self.AppState["server_id"],
+                type="IM_ALIVE",
+                localIP=self.local_ip,
+                afterEventID=self.AppState["last_event_id"]
+            )
+            response = self._udp_request(request)
+            
+            #if isinstance(response, protocol.ImAliveResponse) and response.isOutdated:
+                #tell TUI to fetch new events
+                # callback function which calls GET_EVENTS? or maybe a get_updates
+                # API function which uses GET_EVENTS request for cleanliness
+            #Testing
+            print("IM ALIVE: ")
+            print(response.isOutdated)
+            time.sleep(ALIVE_INTERVAL)
+
 
 
     #---------------------------------------------------------------------------------------------------------------------
