@@ -149,22 +149,28 @@ class Client:
 
 
     #Returns all events after the latest eventID as a list of protocol.Event objects
-    #Can change return type if easier to handle in TUI?
     #TODO: Testing
     async def GET_EVENTS(self) -> list[protocol.Event]:
         request = protocol.GetEvents(
-            version = MAP_VERSION,
-            userID = self.AppState["user_id"],
-            serverID = self.AppState["server_id"],
-            type = "GET_EVENTS",
-            afterEventID = self.AppState["last_event_id"]
-        )
+        version=MAP_VERSION,
+        userID=self.AppState["user_id"],
+        serverID=self.AppState["server_id"],
+        type="GET_EVENTS",
+        groupID=None,
+        beforeEventID=None,
+        afterEventID=self.AppState["last_event_id"]
+    )
 
         _, response_body_bytes = await self._tcp_request(request)
         
         response_body_json = response_body_bytes.decode("utf-8")
+        response_body_list = protocol.parse_events_response_body(response_body_json)
 
-        return protocol.parse_events_response_body(response_body_json)
+        #Set last event ID to the last event in the returned list
+
+        self.AppState["last_event_id"] = response_body_list[-1].eventID
+
+        return response_body_list
 
     #Obtains IP Address of peer for P2P file sharing
     async def GET_PEER(self, peer_user_id: str) -> str:
@@ -319,13 +325,28 @@ class Client:
             )
             response = self._udp_request(request)
             
-            #if isinstance(response, protocol.ImAliveResponse) and response.isOutdated:
+            if isinstance(response, protocol.ImAliveResponse) and response.isOutdated:
+
+                print("IM ALIVE: ")
+
+                #Quick, flimsy test
+
+                """ 
+                events = asyncio.run(self.GET_EVENTS())
+                for event in events:
+                    if isinstance(event, protocol.MessageEvent):
+                        print(f"[MSG] {event.senderUserID}: {event.message}")
+                    elif isinstance(event, protocol.FileAvailableEvent):
+                        print(f"[FILE] {event.senderUserID} shared {event.fileName}")
+                    elif isinstance(event, protocol.AddMemberEvent):
+                        print(f"[MEMBER] {event.userID} was added by {event.senderUserID}")
+                """    
+                
+                #call GET_EVENTS
                 #tell TUI to fetch new events
-                # callback function which calls GET_EVENTS? or maybe a get_updates
-                # API function which uses GET_EVENTS request for cleanliness
-            #Testing
-            print("IM ALIVE: ")
-            print(response.isOutdated)
+               
+            
+            
             time.sleep(ALIVE_INTERVAL)
 
 
