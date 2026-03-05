@@ -17,8 +17,7 @@ ALIVE_INTERVAL = 2  # seconds between IM_ALIVE requests
 ALIVE_TIMEOUT = 5
 HEADER_BODY_DELIMITER = b"\x03"
 
-# Lock to protect AppState modifications
-appStateLock = threading.Lock()
+
 threads = []
 
 class Client:
@@ -100,6 +99,8 @@ class Client:
         peer_ip = self.GET_PEER(peer_user_id)
 
         return self.FILE_REQUEST(peer_ip, sha256_file_id,group_id, save_path)
+    
+    #TODO
     #def share_file(content: bytes = b"") -> bool:
 
 
@@ -149,7 +150,6 @@ class Client:
 
 
     #Returns all events after the latest eventID as a list of protocol.Event objects
-    #TODO: Testing
     async def GET_EVENTS(self) -> list[protocol.Event]:
         request = protocol.GetEvents(
         version=MAP_VERSION,
@@ -166,10 +166,10 @@ class Client:
         response_body_json = response_body_bytes.decode("utf-8")
         response_body_list = protocol.parse_events_response_body(response_body_json)
 
-        #Set last event ID to the last event in the returned list
-
+        #Set last event ID to the last event in the returned list   
         self.AppState["last_event_id"] = response_body_list[-1].eventID
-
+        
+        
         return response_body_list
 
     #Obtains IP Address of peer for P2P file sharing
@@ -273,7 +273,9 @@ class Client:
     #  as it is not needed
     def _udp_request(self, header: protocol.BaseRequest, ip_address = SERVER_IP) -> protocol.Response:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        
+
+        #Very important, otherwise hangs forever on sock.recvfrom(65535)
+        sock.settimeout(ALIVE_TIMEOUT)
 
         #Build payload
         header_bytes = header.model_dump_json().encode("utf-8")
@@ -282,13 +284,21 @@ class Client:
         sock.sendto(header_bytes, (ip_address, UDP_PORT))
 
         #Receive response and parse
-        response_header_bytes, _ = sock.recvfrom(65535)
-        response_header_json = response_header_bytes.decode("utf-8")
-        response_header = protocol.parse_response_header(response_header_json)
+        try:
+            print("Trying UDP")
+            response_header_bytes, _ = sock.recvfrom(65535)
+            print("Completed UDP")
+            response_header_json = response_header_bytes.decode("utf-8")
+            sock.close()
+            return protocol.parse_response_header(response_header_json)
+        except socket.timeout:
+            print("[!] UDP request timed out")
+            sock.close()
+            return None
+        
+        
 
-        sock.close()
-
-        return response_header
+       
     #---------------------------------------------------------------------------------------------------------------------
     #TODO: Thread loops
     #---------------------------------------------------------------------------------------------------------------------
@@ -324,14 +334,10 @@ class Client:
                 afterEventID=self.AppState["last_event_id"]
             )
             response = self._udp_request(request)
-            
+            print("IM ALIVE: ")
+
             if isinstance(response, protocol.ImAliveResponse) and response.isOutdated:
-
-                print("IM ALIVE: ")
-
-                #Quick, flimsy test
-
-                """ 
+                
                 events = asyncio.run(self.GET_EVENTS())
                 for event in events:
                     if isinstance(event, protocol.MessageEvent):
@@ -340,9 +346,7 @@ class Client:
                         print(f"[FILE] {event.senderUserID} shared {event.fileName}")
                     elif isinstance(event, protocol.AddMemberEvent):
                         print(f"[MEMBER] {event.userID} was added by {event.senderUserID}")
-                """    
-                
-                #call GET_EVENTS
+                  
                 #tell TUI to fetch new events
                
             
@@ -369,9 +373,12 @@ class Client:
 async def main():
     c = Client()
     print(await c.login("Thomas", ""))
-    await c.create_group("MyGroup", ["Thomas",])
-    await c.send_message(5, "Messaging works!")
+    time.sleep(7)
+    await c.send_message(5, "Message Test 5")
+    time.sleep(7)
+    await c.send_message(5, "Message Test 6")
     for thread in threads:
+
         thread.join()
     print("[-] All threads finished.")
 
