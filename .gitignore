@@ -12,3 +12,6 @@ wheels/
 # Databse
 db.sqlite3
 database.sqlite3
+
+# Debug files
+debug.log
