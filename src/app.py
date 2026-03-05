@@ -7,32 +7,86 @@ from textual.screen import ModalScreen
 from textual.widgets import Static, Button, Input, Label
 from textual.events import Key
 
+# Print to console
+import logging
+logging.basicConfig(level=logging.DEBUG, filename="debug.log", format="%(asctime)s %(message)s [TUI] ", datefmt="%H:%M:%S %d/%m/%Y",)
+
+import asyncio
+from client import Client
+
 # ---------------------------------------------------------------------------------------
 
 # Sample data
-groups = [
-    (1, "Group 1"),
-    (2, "Group 2"),
-    (3, "Group 3"),
-    (4, "Group 4"),
-]
+groups = []
+messages = []
 
-messages = [
-    (1, 101, "Hello from user 101 in Group 1"),
-    (1, 102, "Hello from user 102 in Group 1"),
-    (2, 101, "Message from user 101 in Group 2"),
-    (3, 103, "User 103 says hi in Group 3"),
-    (3, 104, "User 104 has a message in Group 3"),
-]
+client = Client()
 
 # ---------------------------------------------------------------------------------------
 
 def get_messages_for_group(group_id):
-    return [
-        f"[{from_user}] {content}\n" * 100
-        for g_id, from_user, content in messages
-        if g_id == group_id
-    ]
+    #return [
+    #    f"[{from_user}] {content}\n" * 100
+    #    for g_id, from_user, content in messages
+    #    if g_id == group_id
+    #]
+    return 
+
+
+# ---------------------------------------------------------------------------------------
+
+# Login Modal
+
+class LoginModal(ModalScreen):
+
+    CSS = """
+    LoginModal {
+        align: center middle;
+    }
+
+    #login-box {
+        width: 50;
+        height: auto;
+        border: round #A9B665;
+        background: #1d2021;
+        padding: 1 2;
+    }
+
+    #login-title {
+        text-style: bold;
+        color: #A9B665;
+        margin-bottom: 1;
+    }
+
+    .login-input {
+        margin-bottom: 1;
+    }
+
+    #login-submit {
+        width: 100%;
+        margin-top: 1;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="login-box"):
+            yield Label("Login", id="login-title")
+            yield Input(placeholder="Username", id="login-username", classes="login-input")
+            # TODO Password for security
+            #yield Input(placeholder="Password", password=True, id="login-password", classes="login-input")
+            yield Button("Submit", id="login-submit")
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        username = self.query_one("#login-username", Input).value
+        logging.debug(f"[+] Logging in as user {username}")
+        #password = self.query_one("#login-password", Input).value
+        login_status = await client.login(username)
+        logging.debug(f"[*] Login status: {login_status}")
+        self.dismiss()
+
+    def on_key(self, event: Key) -> None:
+        pass  # Disable escape — user must submit to proceed
 
 
 # ---------------------------------------------------------------------------------------
@@ -91,6 +145,7 @@ class ActionModal(ModalScreen):
             yield Button("Submit", id="modal-submit")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
         self.dismiss()
 
     def on_key(self, event: Key) -> None:
@@ -169,8 +224,12 @@ class ChatInterface(App):
     def compose(self) -> ComposeResult:
         with Horizontal():
             with VerticalScroll(id="left-pane"):
-                for group_id, group_name in groups:
-                    yield Button(group_name, id=f"group-{group_id}")
+                if (len(groups) == 0):
+                    self.message_display = Static("Join/create a group.")
+                    yield self.message_display
+                else:
+                    for group_id, group_name in groups:
+                        yield Button(group_name, id=f"group-{group_id}")
 
             with Vertical(id="right-pane"):
                 yield Static("", id="group-banner")
@@ -276,7 +335,7 @@ class ChatInterface(App):
                     button.focus()
 
     def on_mount(self) -> None:
-        self.update_pane_selection()
+        self.push_screen(LoginModal())
 
 
 if __name__ == "__main__":
