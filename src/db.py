@@ -157,7 +157,7 @@ class DatabaseConnection:
         before_event_id: int | None = None,
     ) -> Iterable[protocol.Event] | None:
 
-        def parse_event_row(row: aiosqlite.Row) -> protocol.Event:
+        async def parse_event_row(row: aiosqlite.Row) -> protocol.Event:
             """
             Parse a database row into a typed Event.
             Row format: (eventID, toGroupID, fromUserID, eventData, eventType)
@@ -184,12 +184,22 @@ class DatabaseConnection:
                     fileName=data.name,
                 )
             elif event_type == EVENT_TYPE_ADD_MEMBER:
+                cursor = await self.db.execute(
+                    "SELECT groupName FROM groups WHERE groupID = ?", (to_group_id,)
+                )
+                await self.db.commit()
+
+                group_name_row = await cursor.fetchone()
+                if not group_name_row:
+                    raise
+
                 return protocol.AddMemberEvent(
                     eventID=event_id,
                     groupID=to_group_id,
                     senderUserID=from_user_id,
                     type="ADD_MEMBER",
                     userID=event_data,
+                    groupName=group_name_row[0],
                 )
             else:
                 raise ValueError(f"Unknown event type: {event_type}")
@@ -220,7 +230,7 @@ class DatabaseConnection:
         if not rows:
             return None
 
-        return [parse_event_row(row) for row in rows]
+        return [await parse_event_row(row) for row in rows]
 
     async def check_membership(self, user_id: str, group_id: int) -> bool:
         """

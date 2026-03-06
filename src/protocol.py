@@ -3,6 +3,7 @@ MAP: Messaging Application-layer Protocol
 
 This file provides functions, types, and utilities for working with MAP data.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -10,7 +11,6 @@ import socket
 from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
-
 
 SERVER_TCP_PORT = 3030
 SERVER_UDP_PORT = 3031
@@ -143,9 +143,11 @@ def parse_request_header(header_bytes: bytes, expected_server_id: str) -> Reques
 def parse_response_header(json_str: str) -> Response:
     return TypeAdapter(Response).validate_json(json_str)
 
+
 def parse_events_response_body(json_str: str) -> list[Event]:
     return TypeAdapter(list[Event]).validate_json(json_str)
-        
+
+
 class BaseRequest(BaseModel):
     model_config = ConfigDict(strict=True)
 
@@ -265,6 +267,7 @@ class FileAvailableEvent(BaseEvent):
 class AddMemberEvent(BaseEvent):
     type: Literal["ADD_MEMBER"]
     userID: str
+    groupName: str
 
 
 Event = Annotated[

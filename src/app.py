@@ -1,11 +1,15 @@
 # ---------------------------------------------------------------------------------------
 
 # Textual for TUI
+# Print to console
+import logging
+
+from textual import events, keys
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, VerticalScroll, Vertical, Center
+from textual.containers import Center, Horizontal, Vertical, VerticalScroll
+from textual.events import Focus, Key
 from textual.screen import ModalScreen
-from textual.widgets import Static, Button, Input, Label
-from textual.events import Key
+from textual.widgets import Button, Input, Label, Static
 
 import asyncio
 from pathlib import Path
@@ -22,14 +26,14 @@ from datasync import DataUpdated
 
 # ---------------------------------------------------------------------------------------
 
-client = ''
+client = None
 
 # ---------------------------------------------------------------------------------------
 
 # Login Modal
 
-class LoginModal(ModalScreen):
 
+class LoginModal(ModalScreen):
     CSS_PATH = str(Path(__file__).parent / "../styles/login_modal.tcss")
 
     def __init__(self, user_interface) -> None:
@@ -47,10 +51,14 @@ class LoginModal(ModalScreen):
         """
         with Vertical(id="login-box"):
             yield Label("Login", id="login-title")
-            yield Input(placeholder="Server IP", id="login-server-ip", classes="login-input")
-            yield Input(placeholder="Username", id="login-username", classes="login-input")
+            yield Input(
+                placeholder="Server IP", id="login-server-ip", classes="login-input"
+            )
+            yield Input(
+                placeholder="Username", id="login-username", classes="login-input"
+            )
             # TODO Password for security
-            #yield Input(placeholder="Password", password=True, id="login-password", classes="login-input")
+            # yield Input(placeholder="Password", password=True, id="login-password", classes="login-input")
             yield Button("Submit", id="login-submit")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -69,9 +77,9 @@ class LoginModal(ModalScreen):
 
         # Initialize client and login
         global client
-        client = Client(ui = self.user_interface, server_ip=server_ip)
+        client = Client(ui=self.user_interface, server_ip=server_ip)
         login_status = await client.login(username)
-        if login_status == True:
+        if login_status:
             self.app.post_message(DataUpdated())
             logging.debug(MOD_CODE + f"[*] Login status: {login_status}")
             logging.debug(MOD_CODE + f"[*] Calling data update")
@@ -98,7 +106,6 @@ ACTION_CONFIG = {
 
 
 class ActionModal(ModalScreen):
-
     CSS_PATH = str(Path(__file__).parent / "../styles/action_modal.tcss")
 
     def __init__(self, title: str, field1: str, field2: str) -> None:
@@ -116,7 +123,7 @@ class ActionModal(ModalScreen):
         """
         with Vertical(id="modal-box"):
             yield Label(self._title, id="modal-title")
-            yield Input(placeholder=self._field1,  id="input-1", classes="modal-input")
+            yield Input(placeholder=self._field1, id="input-1", classes="modal-input")
             yield Input(placeholder=self._field2, id="input-2", classes="modal-input")
             yield Button("Submit", id="modal-submit")
 
@@ -127,7 +134,7 @@ class ActionModal(ModalScreen):
 
         # Prevent propagation
         event.stop()
-        
+
         logging.debug(MOD_CODE + f"[+] Modal submitted for {self._title}.")
         
         # Infer action from modal title
@@ -141,7 +148,7 @@ class ActionModal(ModalScreen):
                 await client.create_group(group_name, group_members)
             case "Edit Group":
                 logging.debug(MOD_CODE + "[*] Editting group.")
-        
+
         self.dismiss()
 
     def on_key(self, event: Key) -> None:
@@ -155,6 +162,7 @@ class ActionModal(ModalScreen):
             event.stop()
             event.prevent_default()
 
+
 # ---------------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------------
@@ -162,15 +170,15 @@ class ActionModal(ModalScreen):
 # Main View
 
 class ChatInterface(App):
-
     CSS_PATH = str(Path(__file__).parent / "../styles/chat_interface.tcss")
 
     def compose(self) -> ComposeResult:
         """
         Create chat interface with 3 panes.
         """
+        self.message_input = MessageInput(self)
+        
         with Horizontal():
-
             with VerticalScroll(id="left-pane"):
                 self.message_display = Static("Join/create a group.")
                 yield self.message_display
@@ -180,17 +188,23 @@ class ChatInterface(App):
                 with VerticalScroll(id="message-scroll"):
                     self.message_display = Static("Select a group to see messages.")
                     yield self.message_display
-                yield Input(placeholder="Type a message...", id="message-input")
+                yield self.message_input
 
             with Vertical(id="action-pane"):
                 yield Button("Share File", id="action-send-file", classes="action-btn")
-                yield Button("Create Group", id="action-create-group", classes="action-btn")
+                yield Button(
+                    "Create Group", id="action-create-group", classes="action-btn"
+                )
                 yield Button("Edit Group", id="action-edit-group", classes="action-btn")
 
         self.current_pane = "left"
         self.selected_button = 0
         self.selected_action = 0
-        self.action_ids = ["action-send-file", "action-create-group", "action-edit-group"]
+        self.action_ids = [
+            "action-send-file",
+            "action-create-group",
+            "action-edit-group",
+        ]
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
@@ -204,11 +218,22 @@ class ChatInterface(App):
             self.app.push_screen(ActionModal(title, field1, field2))
 
         else:
-
             group_id = int(btn_id.split("-")[1])
+            self.current_group = group_id
+
             group_name = group_id
 
             self.query_one("#group-banner", Static).update(f" {group_name}")
+
+            group_buttons = [
+                b for b in self.query(Button) if b.id and b.id.startswith("group-")
+            ]
+            for idx, button in enumerate(group_buttons):
+                button.remove_class("selected")
+                if button.id == btn_id:
+                    button.add_class("selected")
+                    button.focus()
+                    self.current_pane = "left"
 
             group_messages = self.get_messages_for_group(group_id)
             self.message_display.update(group_messages)
@@ -245,13 +270,6 @@ class ChatInterface(App):
                     self.query_one("#message-scroll", VerticalScroll).scroll_up()
                     event.prevent_default()
 
-                elif event.key == "enter":
-                    message = self.query_one("#message-input", Input).value
-                    logging.debug(MOD_CODE + f"[*] Send message ({message}) requested.")
-                    await client.send_message(self.current_group, message)
-                    self.query_one("#message-input", Input).clear()
-                    event.prevent_default()
-
                 elif event.key == "left":
                     self.current_pane = "left"
                     self.update_pane_selection()
@@ -281,7 +299,9 @@ class ChatInterface(App):
         Update the selection based on the current pane
         """
         if self.current_pane == "left":
-            group_buttons = [b for b in self.query(Button) if b.id and b.id.startswith("group-")]
+            group_buttons = [
+                b for b in self.query(Button) if b.id and b.id.startswith("group-")
+            ]
             for idx, button in enumerate(group_buttons):
                 button.remove_class("selected")
                 if idx == self.selected_button:
@@ -292,7 +312,9 @@ class ChatInterface(App):
         elif self.current_pane == "right":
             self.query_one("#message-input", Input).focus()
         elif self.current_pane == "action":
-            action_buttons = [b for b in self.query(Button) if b.id and b.id.startswith("action-")]
+            action_buttons = [
+                b for b in self.query(Button) if b.id and b.id.startswith("action-")
+            ]
             for idx, button in enumerate(action_buttons):
                 button.remove_class("selected")
                 if idx == self.selected_action:
@@ -326,9 +348,10 @@ class ChatInterface(App):
         logging.debug(MOD_CODE + f"[~] New groups are {self.groups}")
         left_pane = self.query_one("#left-pane", VerticalScroll)
         await left_pane.remove_children()
-        if(len(self.groups) > 0):    
-            for group_name, group_data in self.groups.items():
+        if len(self.groups) > 0:
+            for group_id, group_data in self.groups.items():
                 group_id = group_data["group_id"]
+                group_name = group_data["group_name"]
                 members = group_data["members"]
                 left_pane.mount(Button(group_name, id=f"group-{group_id}"))
         else:
@@ -352,6 +375,20 @@ class ChatInterface(App):
         if (len(groupchat) == 0):
             return "No messages for this group."
         return "\n".join(groupchat)
+
+class MessageInput(Input):
+    def __init__(self, app: ChatInterface) -> None:
+        self.chat_interface = app
+        super().__init__(placeholder="Type a message...", id="message-input")
+
+    async def on_key(self, event: Key) -> None:
+        if event.key == "enter":
+            message = self.value
+            if len(message) > 0:
+                logging.debug(MOD_CODE + f"[*] Send message ({message}) requested.")
+                await client.send_message(self.chat_interface.current_group, message)
+                self.clear()
+            event.prevent_default()
 
 if __name__ == "__main__":
     ChatInterface().run()
