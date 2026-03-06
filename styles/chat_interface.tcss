@@ -1,0 +1,58 @@
+Screen {
+	layout: horizontal;
+}
+
+#left-pane {
+	width: 1fr;
+	border: round #D3869B;
+}
+
+#right-pane {
+	width: 2fr;
+	border: round #7DAEA3;
+	layout: vertical;
+}
+
+#group-banner {
+	height: 1;
+	padding: 0 1;
+	background: #2d3b3b;
+	color: #7DAEA3;
+	text-style: bold;
+	width: 100%;
+}
+
+#message-scroll {
+	height: 1fr;
+}
+
+#message-input {
+	height: auto;
+	dock: bottom;
+	border: round #89B482;
+}
+
+#action-pane {
+	width: 0.25fr;
+	border: round #A9B665;
+	layout: vertical;
+	align: center bottom;
+	padding: 0 0 1 0;
+}
+
+.action-btn {
+	/*width: 3;
+	height: 2;*/
+	min-width: 3;
+	text-align: center;
+	margin: 0 0 1 0;
+}
+
+Button {
+	width: 100%;
+	text-align: left;
+}
+
+.selected {
+	background: #443840;
+}

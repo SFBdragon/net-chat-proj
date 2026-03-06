@@ -1,0 +1,26 @@
+LoginModal {
+	align: center middle;
+}
+
+#login-box {
+	width: 50;
+	height: auto;
+	border: round #A9B665;
+	background: #1d2021;
+	padding: 1 2;
+}
+
+#login-title {
+	text-style: bold;
+	color: #A9B665;
+	margin-bottom: 1;
+}
+
+.login-input {
+	margin-bottom: 1;
+}
+
+#login-submit {
+	width: 100%;
+	margin-top: 1;
+}
