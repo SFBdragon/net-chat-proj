@@ -7,6 +7,7 @@ from pydantic import TypeAdapter
 
 import db as database
 import protocol
+from utils import run_async_in_thread
 
 LIVENESS_TIMEOUT = 5.0
 
@@ -169,7 +170,9 @@ class Server:
                                 status=protocol.STATUS_OK,
                             )
                         case protocol.PutMessage():
-                            if not await db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(
+                                header.userID, header.groupID
+                            ):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -196,7 +199,9 @@ class Server:
                                     status=protocol.STATUS_OK,
                                 )
                         case protocol.PutFile():
-                            if not await db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(
+                                header.userID, header.groupID
+                            ):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -221,7 +226,9 @@ class Server:
                                     status=protocol.STATUS_OK,
                                 )
                         case protocol.PutMember():
-                            if not await db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(
+                                header.userID, header.groupID
+                            ):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -302,7 +309,9 @@ class Server:
                                 length=len(response_body),
                             )
                         case protocol.GetAlive():
-                            if not await db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(
+                                header.userID, header.groupID
+                            ):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -404,23 +413,6 @@ class Server:
 
         response_bytes = response_json_str.encode("utf-8")
         await loop.sock_sendto(self._udp_socket, response_bytes, addr)
-
-
-# Entry point for threading
-def run_async_in_thread(target_coroutine):
-    def thread_target():
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(target_coroutine)
-        finally:
-            loop.close()
-
-    thread = threading.Thread(target=thread_target)
-    thread.daemon = True
-    thread.start()
-
-    return thread
 
 
 if __name__ == "__main__":
