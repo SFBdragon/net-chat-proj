@@ -86,7 +86,7 @@ class Client:
         if(response_header.status == protocol.STATUS_OK):
             print(f"[+] Send message to group_id {group_id} successfully.")
             logging.debug(MOD_CODE + f"[+] Send message to group_id {group_id} successfully.")
-            self.GET_EVENTS()
+            await self.GET_EVENTS()
 
     async def create_group(self, group_name: str, user_ids: list[str]) -> bool:
         request = protocol.CreateGroup(
@@ -102,7 +102,8 @@ class Client:
 
         if(response_header.status == protocol.STATUS_OK):
             print(f"[+] Created group {group_name} successfully.")
-            self.GET_EVENTS()
+            logging.debug(MOD_CODE + f"[+] Created group {group_name} successfully.")
+            await self.GET_EVENTS()
 
     #TODO
     #def add_to_group(user_ids: list[str]) -> bool:
