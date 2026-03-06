@@ -1,29 +1,37 @@
 # ---------------------------------------------------------------------------------------
 
 # Textual for TUI
-from textual.app import App, ComposeResult
-from textual.containers import Horizontal, VerticalScroll, Vertical, Center
-from textual.screen import ModalScreen
-from textual.widgets import Static, Button, Input, Label
-from textual.events import Key
-
 # Print to console
 import logging
-logging.basicConfig(level=logging.DEBUG, filename="debug.log", format="%(asctime)s %(message)s ", datefmt="%H:%M:%S %d/%m/%Y",)
+
+from textual import events, keys
+from textual.app import App, ComposeResult
+from textual.containers import Center, Horizontal, Vertical, VerticalScroll
+from textual.events import Focus, Key
+from textual.screen import ModalScreen
+from textual.widgets import Button, Input, Label, Static
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename="debug.log",
+    format="%(asctime)s %(message)s ",
+    datefmt="%H:%M:%S %d/%m/%Y",
+)
 
 import asyncio
+
+import protocol
 from client import Client
 from datasync import DataUpdated
 
-import protocol
- 
 MOD_CODE = "[TUI] "
 
 # ---------------------------------------------------------------------------------------
 
-client = ''
+client = None
 
 # ---------------------------------------------------------------------------------------
+
 
 def get_messages_for_group(group_id):
     events = client.AppState["events"]
@@ -33,12 +41,12 @@ def get_messages_for_group(group_id):
         if event.groupID == group_id:
             if isinstance(event, protocol.MessageEvent):
                 groupchat.append(f"{event.senderUserID}: {event.message}")
-        #return [
+        # return [
     #    f"[{from_user}] {content}\n" * 100
     #    for g_id, from_user, content in messages
     #    if g_id == group_id
-    #]
-    if (len(groupchat) == 0):
+    # ]
+    if len(groupchat) == 0:
         return "No messages for this group."
     return "\n".join(groupchat)
 
@@ -47,8 +55,8 @@ def get_messages_for_group(group_id):
 
 # Login Modal
 
-class LoginModal(ModalScreen):
 
+class LoginModal(ModalScreen):
     CSS = """
     LoginModal {
         align: center middle;
@@ -85,10 +93,14 @@ class LoginModal(ModalScreen):
     def compose(self) -> ComposeResult:
         with Vertical(id="login-box"):
             yield Label("Login", id="login-title")
-            yield Input(placeholder="Server IP", id="login-server-ip", classes="login-input")
-            yield Input(placeholder="Username", id="login-username", classes="login-input")
+            yield Input(
+                placeholder="Server IP", id="login-server-ip", classes="login-input"
+            )
+            yield Input(
+                placeholder="Username", id="login-username", classes="login-input"
+            )
             # TODO Password for security
-            #yield Input(placeholder="Password", password=True, id="login-password", classes="login-input")
+            # yield Input(placeholder="Password", password=True, id="login-password", classes="login-input")
             yield Button("Submit", id="login-submit")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -96,12 +108,12 @@ class LoginModal(ModalScreen):
         username = self.query_one("#login-username", Input).value
         server_ip = self.query_one("#login-server-ip", Input).value
         logging.debug(MOD_CODE + f"[+] Logging in as user {username} to ")
-        #password = self.query_one("#login-password", Input).value
+        # password = self.query_one("#login-password", Input).value
 
         global client
-        client = Client(ui = self.user_interface, server_ip=server_ip)
+        client = Client(ui=self.user_interface, server_ip=server_ip)
         login_status = await client.login(username)
-        if login_status == True:
+        if login_status:
             self.app.post_message(DataUpdated())
             logging.debug(MOD_CODE + f"[*] Login status: {login_status}")
             logging.debug(MOD_CODE + f"[*] Calling data update")
@@ -123,7 +135,6 @@ ACTION_CONFIG = {
 
 
 class ActionModal(ModalScreen):
-
     CSS = """
     ActionModal {
         align: center middle;
@@ -162,15 +173,15 @@ class ActionModal(ModalScreen):
     def compose(self) -> ComposeResult:
         with Vertical(id="modal-box"):
             yield Label(self._title, id="modal-title")
-            yield Input(placeholder=self._field1,  id="input-1", classes="modal-input")
+            yield Input(placeholder=self._field1, id="input-1", classes="modal-input")
             yield Input(placeholder=self._field2, id="input-2", classes="modal-input")
             yield Button("Submit", id="modal-submit")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        
+
         logging.debug(MOD_CODE + f"[+] Modal submitted for {self._title}.")
-        
+
         match self._title:
             case "Send File":
                 logging.debug(MOD_CODE + "[*] Sharing file.")
@@ -181,12 +192,13 @@ class ActionModal(ModalScreen):
                 await client.create_group(group_name, group_members)
             case "Edit Group":
                 logging.debug(MOD_CODE + "[*] Editting group.")
-        
+
         self.dismiss()
 
     def on_key(self, event: Key) -> None:
         if event.key == "escape":
             self.dismiss()
+
 
 # ---------------------------------------------------------------------------------------
 
@@ -194,8 +206,8 @@ class ActionModal(ModalScreen):
 
 # Main View
 
-class ChatInterface(App):
 
+class ChatInterface(App):
     CSS = """
     Screen {
         layout: horizontal;
@@ -258,6 +270,8 @@ class ChatInterface(App):
     """
 
     def compose(self) -> ComposeResult:
+        self.message_input = MessageInput(self)
+
         with Horizontal():
             with VerticalScroll(id="left-pane"):
                 self.message_display = Static("Join/create a group.")
@@ -267,32 +281,57 @@ class ChatInterface(App):
                 with VerticalScroll(id="message-scroll"):
                     self.message_display = Static("Select a group to see messages.")
                     yield self.message_display
-                yield Input(placeholder="Type a message...", id="message-input")
+                yield self.message_input
 
             with Vertical(id="action-pane"):
                 yield Button("Share File", id="action-send-file", classes="action-btn")
-                yield Button("Create Group", id="action-create-group", classes="action-btn")
+                yield Button(
+                    "Create Group", id="action-create-group", classes="action-btn"
+                )
                 yield Button("Edit Group", id="action-edit-group", classes="action-btn")
 
         self.current_pane = "left"
         self.selected_button = 0
         self.selected_action = 0
-        self.action_ids = ["action-send-file", "action-create-group", "action-edit-group"]
+        self.action_ids = [
+            "action-send-file",
+            "action-create-group",
+            "action-edit-group",
+        ]
+
+    async def on_focus(self, event: events.Focus) -> None:
+        logging.debug(MOD_CODE + "Focused event.")
+        if event.control == self.query_one("#message-input", Input)._get_dom_base:
+            logging.debug(MOD_CODE + "On mesage input.")
+            self.current_pane = "right"
+
+        return await super().on_event(event)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         btn_id = event.button.id
-        
+
         # TODO fix modal inputs
         if btn_id in ACTION_CONFIG:
             title, field1, field2 = ACTION_CONFIG[btn_id]
             self.app.push_screen(ActionModal(title, field1, field2))
 
         else:
-
             group_id = int(btn_id.split("-")[1])
+            self.current_group = group_id
+
             group_name = group_id
 
             self.query_one("#group-banner", Static).update(f" {group_name}")
+
+            group_buttons = [
+                b for b in self.query(Button) if b.id and b.id.startswith("group-")
+            ]
+            for idx, button in enumerate(group_buttons):
+                button.remove_class("selected")
+                if button.id == btn_id:
+                    button.add_class("selected")
+                    button.focus()
+                    self.current_pane = "left"
 
             group_messages = get_messages_for_group(group_id)
             self.message_display.update(group_messages)
@@ -319,7 +358,9 @@ class ChatInterface(App):
             self.update_pane_selection()
 
         elif event.key == "down" and self.current_pane == "action":
-            self.selected_action = min(self.selected_action + 1, len(self.action_ids) - 1)
+            self.selected_action = min(
+                self.selected_action + 1, len(self.action_ids) - 1
+            )
             self.update_pane_selection()
             event.prevent_default()
 
@@ -344,17 +385,12 @@ class ChatInterface(App):
             self.query_one("#message-scroll", VerticalScroll).scroll_up()
             event.prevent_default()
 
-        elif event.key == "enter" and self.current_pane == "right":
-            message = self.query_one("#message-input", Input).value
-            logging.debug(MOD_CODE + f"[*] Send message ({message}) requested.")
-            await client.send_message(self.current_group, message)
-            self.query_one("#message-input", Input).clear()
-            event.prevent_default()
-
     # Update the selection based on the current pane
     def update_pane_selection(self):
         if self.current_pane == "left":
-            group_buttons = [b for b in self.query(Button) if b.id and b.id.startswith("group-")]
+            group_buttons = [
+                b for b in self.query(Button) if b.id and b.id.startswith("group-")
+            ]
             for idx, button in enumerate(group_buttons):
                 button.remove_class("selected")
                 if idx == self.selected_button:
@@ -365,7 +401,9 @@ class ChatInterface(App):
         elif self.current_pane == "right":
             self.query_one("#message-input", Input).focus()
         elif self.current_pane == "action":
-            action_buttons = [b for b in self.query(Button) if b.id and b.id.startswith("action-")]
+            action_buttons = [
+                b for b in self.query(Button) if b.id and b.id.startswith("action-")
+            ]
             for idx, button in enumerate(action_buttons):
                 button.remove_class("selected")
                 if idx == self.selected_action:
@@ -380,9 +418,10 @@ class ChatInterface(App):
         logging.debug(MOD_CODE + f"[~] New groups are {self.groups}")
         left_pane = self.query_one("#left-pane", VerticalScroll)
         await left_pane.remove_children()
-        if(len(self.groups) > 0):    
-            for group_name, group_data in self.groups.items():
+        if len(self.groups) > 0:
+            for group_id, group_data in self.groups.items():
                 group_id = group_data["group_id"]
+                group_name = group_data["group_name"]
                 members = group_data["members"]
                 left_pane.mount(Button(group_name, id=f"group-{group_id}"))
         else:
@@ -396,7 +435,22 @@ class ChatInterface(App):
             self.message_display.update(group_messages)
             scroll = self.query_one("#message-scroll", VerticalScroll)
             self.call_after_refresh(scroll.scroll_end, animate=False)
-        
+
+
+class MessageInput(Input):
+    def __init__(self, app: ChatInterface) -> None:
+        self.chat_interface = app
+        super().__init__(placeholder="Type a message...", id="message-input")
+
+    async def on_key(self, event: Key) -> None:
+        if event.key == "enter":
+            message = self.value
+            if len(message) > 0:
+                logging.debug(MOD_CODE + f"[*] Send message ({message}) requested.")
+                await client.send_message(self.chat_interface.current_group, message)
+                self.clear()
+            event.prevent_default()
+
 
 if __name__ == "__main__":
     ChatInterface().run()

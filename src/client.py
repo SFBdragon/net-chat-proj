@@ -213,13 +213,15 @@ class Client:
                 if group_id not in self.AppState["groups"]:
                     self.AppState["groups"][group_id] = {
                         "group_id": event.groupID,
+                        "group_name": event.groupName,
                         "members": [],
                     }
 
                 self.AppState["groups"][group_id]["members"].append(event.userID)
 
                 print(self.AppState["groups"])
-                # tell TUI to fetch new events
+
+        # tell TUI to redraw
         logging.debug(MOD_CODE + "[!] Attempting to broadcast data update.")
         self.ui.post_message(DataUpdated())
 
