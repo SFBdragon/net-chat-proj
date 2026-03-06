@@ -38,12 +38,12 @@ Use `uv add <package-name>` to install new packages.
 
 ## Running
 
-**Start the server:**
+Start the server:
 ```shell
 uv run src/server.py
 ```
 
-**Start the client:**
+Start the client:
 ```shell
 uv run src/client.py
 ```
@@ -58,7 +58,7 @@ Not that the application is still being tested - some features may not work as e
 
 ## Usage
 
-1. On launch, a login modal will appear — enter the **server IP** and a **username** to connect.
+1. On launch, a login modal will appear; enter the **server IP** and a **username** to connect.
 2. Use the arrow keys to navigate between panes (groups on the left, messages in the centre, actions on the right).
 3. Press **Enter** in the message pane to send a message.
 4. Use the action pane to **create groups**
