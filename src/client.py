@@ -312,7 +312,7 @@ class Client:
         if isinstance(response_header, protocol.BodyResponse): #Generic response header doesn't have length field
             response_body_bytes = await stream.read_body(response_header.length)
         else:
-            response_body_bytes = b""
+            response_body_bytes = None
 
 
         sock.close()
@@ -373,26 +373,31 @@ class Client:
 
     def _im_alive_loop(self):
         
-        while True:
-            request = protocol.ImAlive(
-                version=MAP_VERSION,
-                userID=self.AppState["user_id"],
-                serverID=self.AppState["server_id"],
-                type="IM_ALIVE",
-                localIP=self.local_ip,
-                afterEventID=self.AppState["last_event_id"]
-            )
-            response = self._udp_request(request)
-            print("IM ALIVE: ")
-            logging.debug(MOD_CODE + "[@] I AM ALIVE")
+        try:
+            
+            while True:
+                request = protocol.ImAlive(
+                    version=MAP_VERSION,
+                    userID=self.AppState["user_id"],
+                    serverID=self.AppState["server_id"],
+                    type="IM_ALIVE",
+                    localIP=self.local_ip,
+                    afterEventID=self.AppState["last_event_id"]
+                )
+                response = self._udp_request(request)
+                print("IM ALIVE: ")
+                logging.debug(MOD_CODE + "[@] I AM ALIVE")
 
-            if isinstance(response, protocol.ImAliveResponse) and response.isOutdated:
+                if isinstance(response, protocol.ImAliveResponse) and response.isOutdated:
 
-                logging.debug(MOD_CODE + "[@] Events are outdated")
-                future = asyncio.run_coroutine_threadsafe(self.GET_EVENTS(), self.loop)
-                future.result()                 
-                    
-            time.sleep(ALIVE_INTERVAL)
+                    logging.debug(MOD_CODE + "[@] Events are outdated")
+                    future = asyncio.run_coroutine_threadsafe(self.GET_EVENTS(), self.loop)
+                    future.result()                 
+                        
+                time.sleep(ALIVE_INTERVAL)
+        except Exception as e:
+            
+            logging.debug(MOD_CODE + str(e))
 
 
 
