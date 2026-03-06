@@ -1,9 +1,7 @@
 # ---------------------------------------------------------------------------------------
 
-# Standard modules
-import asyncio
+# Imports
 import hashlib
-import json
 import logging
 import socket
 import threading
@@ -11,12 +9,16 @@ import time
 from typing import Optional
 
 # Custom modules
+import protocol
 from datasync import DataUpdated
-from utils import run_async_in_thread 
+from utils import run_async_in_thread
 
-# Logging
-import logging
-logging.basicConfig(level=logging.DEBUG, filename="debug.log", format="%(asctime)s %(message)s ", datefmt="%H:%M:%S %d/%m/%Y",)
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename="debug.log",
+    format="%(asctime)s %(message)s ",
+    datefmt="%H:%M:%S %d/%m/%Y",
+)
 
 
 # Client configuration
@@ -56,8 +58,8 @@ class Client:
         self.AppState = None
         self.ui = ui
 
-    #REGISTER request to server, called by GUI when login button pressed
-    async def login(self, user_id: str, server_id = "") -> bool:
+    # REGISTER request to server, called by GUI when login button pressed
+    async def login(self, user_id: str, server_id="") -> bool:
         """
         Registers client on server.
 
@@ -73,7 +75,7 @@ class Client:
             threads.append(p2p_thread)
             p2p_thread.start()
             logging.debug(MOD_CODE + "[+] P2P thread started.")
-   
+
             # Start periodic poll for updates
             logging.debug(MOD_CODE + "[+] IM ALIVE thread started.")
             alive_thread = threading.Thread(target=self._im_alive_loop, daemon=True)
@@ -85,7 +87,7 @@ class Client:
     async def send_message(self, group_id: int, message: str) -> bool:
         """
         Sends message to specified group.
-        
+
         :param group_id: Group to send message to.
         :param message: Message to send.
         """
@@ -152,20 +154,17 @@ class Client:
 
         return self.FILE_REQUEST(peer_ip, sha256_file_id, group_id, save_path)
 
-    #---------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------------------------------
     # Client-Server Request Functions
-    #---------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------------------------------
 
-    async def _REGISTER(self, user_id: str, server_id = "") -> bool:
+    async def _REGISTER(self, user_id: str, server_id="") -> bool:
         """
         Verify server reachability, protocol compatibility, and register the user ID with the server.
         """
-        #Header for REGISTER request
+        # Header for REGISTER request
         request = protocol.Register(
-            version= MAP_VERSION,
-            type="REGISTER",
-            userID=user_id,
-            serverID=server_id
+            version=MAP_VERSION, type="REGISTER", userID=user_id, serverID=server_id
         )
 
         response_header, _ = await self._tcp_request(request)
@@ -192,11 +191,10 @@ class Client:
         logging.debug(MOD_CODE + "[-] Failed to register on the server.")
         return False
 
-
     # Returns all events after the latest eventID as a list of protocol.Event objects
     async def GET_EVENTS(self) -> list[protocol.Event]:
         """
-        Fetch a list of events. The events listed by the response are only those which the requesting user is a member of. 
+        Fetch a list of events. The events listed by the response are only those which the requesting user is a member of.
         """
         request = protocol.GetEvents(
             version=MAP_VERSION,
@@ -207,11 +205,11 @@ class Client:
             beforeEventID=None,
             afterEventID=self.AppState["last_event_id"],
         )
-        
+
         logging.debug(MOD_CODE + "[*] Awaiting TCP response.")
         _, response_body_bytes = await self._tcp_request(request)
         logging.debug(MOD_CODE + "[*] TCP response received.")
-        
+
         response_body_json = response_body_bytes.decode("utf-8")
         response_body_list = protocol.parse_events_response_body(response_body_json)
 
@@ -256,7 +254,7 @@ class Client:
 
     async def GET_PEER(self, peer_user_id: str) -> str:
         """
-        Request the most recently advertised localIP for a member of the group which the requesting user is also on. 
+        Request the most recently advertised localIP for a member of the group which the requesting user is also on.
         This facilitates the ability of a client to initiate a P2P exchange with another client.
         """
         request = protocol.GetPeer(
@@ -279,12 +277,14 @@ class Client:
 
         # TODO: Add error handling here?
 
-    #---------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------------------------------
     # P2P request and response methods
-    #---------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------------------------------
 
-    #Requests file from peer and saves it if file transferred succesfully
-    async def FILE_REQUEST(self, peer_ip: str, sha256_file_id: str, group_id: int, save_path: str) -> bool:
+    # Requests file from peer and saves it if file transferred succesfully
+    async def FILE_REQUEST(
+        self, peer_ip: str, sha256_file_id: str, group_id: int, save_path: str
+    ) -> bool:
         """
         Request to download a file from a peer, with success subject to peer client and file availability conditions.
         """
@@ -318,12 +318,16 @@ class Client:
     # TODO:
     # def _handle_p2p_request(self, conn: socket.socket, addr):
 
-    #---------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------------------------------
     # Server communication
-    #---------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------------------------------
 
-
-    async def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = default_server_ip) -> tuple[protocol.Response, Optional[bytes]]:
+    async def _tcp_request(
+        self,
+        header: protocol.BaseRequest,
+        body: bytes = b"",
+        ip_address=default_server_ip,
+    ) -> tuple[protocol.Response, Optional[bytes]]:
         """
         Creates and sends TCP request, and returns Response object with response header and body.
 
@@ -362,13 +366,15 @@ class Client:
         sock.close()
         return response_header, response_body_bytes
 
-    def _udp_request(self, header: protocol.BaseRequest, ip_address = default_server_ip) -> protocol.Response:
+    def _udp_request(
+        self, header: protocol.BaseRequest, ip_address=default_server_ip
+    ) -> protocol.Response:
         """
-        Sends UDP request, returns Response object. 
+        Sends UDP request, returns Response object.
 
         :param ip_address: IP address of server; defaults to localhost.
         """
-        
+
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Very important, otherwise hangs forever on sock.recvfrom(65535)
@@ -443,7 +449,7 @@ class Client:
                 ):
                     logging.debug(MOD_CODE + "[@] Events are outdated")
                     run_async_in_thread(self.GET_EVENTS())
-                        
+
                 time.sleep(ALIVE_INTERVAL)
 
         except Exception as e:
@@ -459,14 +465,14 @@ class Client:
         Obtain local IP so that user doesn't have to enter it manually.
         """
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try: 
+        try:
             # Doesn't actually send anything
-            s.connect(("8.8.8.8", 80)) 
+            s.connect(("8.8.8.8", 80))
             return s.getsockname()[0]
         finally:
             s.close()
 
-    #-------------------------------------------------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
