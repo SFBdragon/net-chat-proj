@@ -78,6 +78,10 @@ class LoginModal(ModalScreen):
     }
     """
 
+    def __init__(self, user_interface) -> None:
+        super().__init__()
+        self.user_interface = user_interface
+
     def compose(self) -> ComposeResult:
         with Vertical(id="login-box"):
             yield Label("Login", id="login-title")
@@ -95,7 +99,7 @@ class LoginModal(ModalScreen):
         #password = self.query_one("#login-password", Input).value
 
         global client
-        client = Client(ui = self, server_ip=server_ip)
+        client = Client(ui = self.user_interface, server_ip=server_ip)
         login_status = await client.login(username)
         if login_status == True:
             self.app.post_message(DataUpdated())
@@ -369,7 +373,7 @@ class ChatInterface(App):
                     button.focus()
 
     def on_mount(self) -> None:
-        self.push_screen(LoginModal())
+        self.push_screen(LoginModal(self))
 
     async def update_groups(self, new_groups):
         self.groups = new_groups
