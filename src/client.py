@@ -7,6 +7,11 @@ from typing import Optional
 import asyncio
 import time
 
+from datasync import DataUpdated
+
+import logging
+logging.basicConfig(level=logging.DEBUG, filename="debug.log", format="%(asctime)s %(message)s ", datefmt="%H:%M:%S %d/%m/%Y",)
+
 MAP_VERSION = "1.0"
 TCP_PORT = 3030
 UDP_PORT = 3031
@@ -17,20 +22,23 @@ ALIVE_INTERVAL = 2  # seconds between IM_ALIVE requests
 ALIVE_TIMEOUT = 5
 HEADER_BODY_DELIMITER = b"\x03"
 
+MOD_CODE = "[CLT] "
 
 threads = []
+tasks = []
 
 class Client:
 
-    def __init__(self): #TODO UI Callback function will be a parameter here
+    def __init__(self, ui): #TODO UI Callback function will be a parameter here
 
         self.local_ip = self._get_local_ip()
         print(f"[*] Local IP address is {self.local_ip}")
 
-        #Maintains state of client backend for the UI to reference when refreshing
+        self.loop = asyncio.get_event_loop()
+        #Maintains stpate of client backend for the UI to reference when refreshing
         #only given values after succesful REGISTER
         self.AppState = None
-
+        self.ui = ui
         #Callback function
         #self.on_state_update = ui_refresh
 
@@ -42,18 +50,19 @@ class Client:
     async def login(self, user_id: str, server_id = "") -> bool:
 
         login_status = await self._REGISTER(user_id, server_id)
-
         if login_status == True:
             # Start listening for P2P requests
             p2p_thread = threading.Thread(target=self._listen_P2P, daemon=True)
             threads.append(p2p_thread)
             p2p_thread.start()
 
+            #loop = asyncio.get_event_loop()
+            #tasks.append(loop.create_task(self._im_alive_loop()))
             # Start thread for IM_ALIVE
-            im_alive_thread = threading.Thread(target=self._im_alive_loop, daemon=True)
-            threads.append(im_alive_thread)
-            im_alive_thread.start()
-        
+            alive_thread = threading.Thread(target=self._im_alive_loop, daemon=True)
+            threads.append(alive_thread)
+            alive_thread.start()
+
         return login_status
 
     async def send_message(self, group_id: int, message: str) -> bool:
@@ -69,10 +78,14 @@ class Client:
             length=len(message_body),
         )
 
+        logging.debug(MOD_CODE + "[*] Message send. Awaiting response.")
         response_header, _ = await self._tcp_request(request, message_body)
+        logging.debug(MOD_CODE + "[*] Message response received.")
 
         if(response_header.status == protocol.STATUS_OK):
             print(f"[+] Send message to group_id {group_id} successfully.")
+            logging.debug(MOD_CODE + f"[+] Send message to group_id {group_id} successfully.")
+            self.GET_EVENTS()
 
     async def create_group(self, group_name: str, user_ids: list[str]) -> bool:
         request = protocol.CreateGroup(
@@ -88,6 +101,7 @@ class Client:
 
         if(response_header.status == protocol.STATUS_OK):
             print(f"[+] Created group {group_name} successfully.")
+            self.GET_EVENTS()
 
     #TODO
     #def add_to_group(user_ids: list[str]) -> bool:
@@ -152,24 +166,57 @@ class Client:
     #Returns all events after the latest eventID as a list of protocol.Event objects
     async def GET_EVENTS(self) -> list[protocol.Event]:
         request = protocol.GetEvents(
-        version=MAP_VERSION,
-        userID=self.AppState["user_id"],
-        serverID=self.AppState["server_id"],
-        type="GET_EVENTS",
-        groupID=None,
-        beforeEventID=None,
-        afterEventID=self.AppState["last_event_id"]
-    )
-
+            version=MAP_VERSION,
+            userID=self.AppState["user_id"],
+            serverID=self.AppState["server_id"],
+            type="GET_EVENTS",
+            groupID=None,
+            beforeEventID=None,
+            afterEventID=self.AppState["last_event_id"]
+        )
+        
+        logging.debug(MOD_CODE + "[*] Awaiting tcp response.")
         _, response_body_bytes = await self._tcp_request(request)
+        logging.debug(MOD_CODE + "[*] tcp response received.")
         
         response_body_json = response_body_bytes.decode("utf-8")
         response_body_list = protocol.parse_events_response_body(response_body_json)
 
+        initialLoad = False
+        if self.AppState["last_event_id"] == 0:
+            initialLoad = True
+            self.AppState["events"] = response_body_list
+
         #Set last event ID to the last event in the returned list   
         self.AppState["last_event_id"] = response_body_list[-1].eventID
         
-        
+        for event in response_body_list:
+            if not initialLoad:
+                self.AppState["events"].append(event)
+
+            print(event)
+            if isinstance(event, protocol.MessageEvent):
+                print(f"[MSG] {event.senderUserID}: {event.message}")
+            elif isinstance(event, protocol.FileAvailableEvent):
+                print(f"[FILE] {event.senderUserID} shared {event.fileName}")
+            elif isinstance(event, protocol.AddMemberEvent):
+                print(f"[MEMBER] {event.userID} was added by {event.senderUserID}")
+
+                group_id = str(event.groupID)
+
+                if group_id not in self.AppState["groups"]:
+                    self.AppState["groups"][group_id] = {
+                        "group_id": event.groupID,
+                        "members": []
+                    }
+
+                self.AppState["groups"][group_id]["members"].append(event.userID)
+                  
+                print(self.AppState["groups"])
+                #tell TUI to fetch new events
+        logging.debug(MOD_CODE + "[!] Attempting to broadcast data update.")
+        self.ui.post_message(DataUpdated()) 
+
         return response_body_list
 
     #Obtains IP Address of peer for P2P file sharing
@@ -335,22 +382,14 @@ class Client:
             )
             response = self._udp_request(request)
             print("IM ALIVE: ")
+            logging.debug(MOD_CODE + "[@] I AM ALIVE")
 
             if isinstance(response, protocol.ImAliveResponse) and response.isOutdated:
-                
-                events = asyncio.run(self.GET_EVENTS())
-                for event in events:
-                    if isinstance(event, protocol.MessageEvent):
-                        print(f"[MSG] {event.senderUserID}: {event.message}")
-                    elif isinstance(event, protocol.FileAvailableEvent):
-                        print(f"[FILE] {event.senderUserID} shared {event.fileName}")
-                    elif isinstance(event, protocol.AddMemberEvent):
-                        print(f"[MEMBER] {event.userID} was added by {event.senderUserID}")
-                  
-                #tell TUI to fetch new events
-               
-            
-            
+
+                logging.debug(MOD_CODE + "[@] Events are outdated")
+                future = asyncio.run_coroutine_threadsafe(self.GET_EVENTS(), self.loop)
+                future.result()                 
+                    
             time.sleep(ALIVE_INTERVAL)
 
 
@@ -370,7 +409,8 @@ class Client:
             s.close()
 
     #-------------------------------------------------------------------------------------------------------------------------
-async def main():
+async def test():
+    logging.debug(MOD_CODE + "[+] Main function called.")
     c = Client()
     print(await c.login("Thomas", ""))
     time.sleep(7)
@@ -378,9 +418,9 @@ async def main():
     time.sleep(7)
     await c.send_message(5, "Message Test 6")
     for thread in threads:
-
         thread.join()
     print("[-] All threads finished.")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    #asyncio.run(test())
+    print("Run test instead.")
