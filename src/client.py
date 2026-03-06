@@ -9,6 +9,8 @@ import time
 
 from datasync import DataUpdated
 
+from utils import run_async_in_thread 
+
 import logging
 logging.basicConfig(level=logging.DEBUG, filename="debug.log", format="%(asctime)s %(message)s ", datefmt="%H:%M:%S %d/%m/%Y",)
 
@@ -60,6 +62,7 @@ class Client:
             #loop = asyncio.get_event_loop()
             #tasks.append(loop.create_task(self._im_alive_loop()))
             # Start thread for IM_ALIVE
+            #alive_thread = run_async_in_thread(self._im_alive_loop())
             alive_thread = threading.Thread(target=self._im_alive_loop, daemon=True)
             threads.append(alive_thread)
             alive_thread.start()
@@ -304,11 +307,15 @@ class Client:
         sock.sendall(payload)
         print(f"[+] Payload sent ({len(payload)}) characters.")
 
+
         stream = protocol.MapStreamBuffer(sock)
         response_header_bytes = await stream.read_header()
+        logging.debug(MOD_CODE + f"[=] TCP request payload {payload}") 
+        logging.debug(MOD_CODE + f"[=] TCP response header bytes {response_header_bytes}")
         response_header_json = response_header_bytes.decode("utf-8")
         response_header = protocol.parse_response_header(response_header_json)
 
+        
         if isinstance(response_header, protocol.BodyResponse): #Generic response header doesn't have length field
             response_body_bytes = await stream.read_body(response_header.length)
         else:
@@ -391,8 +398,9 @@ class Client:
                 if isinstance(response, protocol.ImAliveResponse) and response.isOutdated:
 
                     logging.debug(MOD_CODE + "[@] Events are outdated")
-                    future = asyncio.run_coroutine_threadsafe(self.GET_EVENTS(), self.loop)
-                    future.result()                 
+                    run_async_in_thread(self.GET_EVENTS())
+                    #future = asyncio.run_coroutine_threadsafe(self.GET_EVENTS(), self.loop)
+                    #future.result()                 
                         
                 time.sleep(ALIVE_INTERVAL)
         except Exception as e:
