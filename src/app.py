@@ -81,6 +81,7 @@ class LoginModal(ModalScreen):
     def compose(self) -> ComposeResult:
         with Vertical(id="login-box"):
             yield Label("Login", id="login-title")
+            yield Input(placeholder="Server IP", id="login-server-ip", classes="login-input")
             yield Input(placeholder="Username", id="login-username", classes="login-input")
             # TODO Password for security
             #yield Input(placeholder="Password", password=True, id="login-password", classes="login-input")
@@ -89,8 +90,12 @@ class LoginModal(ModalScreen):
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         username = self.query_one("#login-username", Input).value
-        logging.debug(MOD_CODE + f"[+] Logging in as user {username}")
+        server_ip = self.query_one("#login-server-ip", Input).value
+        logging.debug(MOD_CODE + f"[+] Logging in as user {username} to ")
         #password = self.query_one("#login-password", Input).value
+
+        global client
+        client = Client(ui = self, server_ip=server_ip)
         login_status = await client.login(username)
         if login_status == True:
             self.app.post_message(DataUpdated())
@@ -364,8 +369,6 @@ class ChatInterface(App):
                     button.focus()
 
     def on_mount(self) -> None:
-        global client
-        client = Client(ui = self)
         self.push_screen(LoginModal())
 
     async def update_groups(self, new_groups):

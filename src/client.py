@@ -16,7 +16,8 @@ MAP_VERSION = "1.0"
 TCP_PORT = 3030
 UDP_PORT = 3031
 P2P_PORT = 3032
-SERVER_IP = "127.0.0.1"
+
+default_server_ip = "127.0.0.1"
 
 ALIVE_INTERVAL = 2  # seconds between IM_ALIVE requests
 ALIVE_TIMEOUT = 5
@@ -29,8 +30,8 @@ tasks = []
 
 class Client:
 
-    def __init__(self, ui): #TODO UI Callback function will be a parameter here
-
+    def __init__(self, ui, server_ip): #TODO UI Callback function will be a parameter here
+        self.server_ip = server_ip
         self.local_ip = self._get_local_ip()
         print(f"[*] Local IP address is {self.local_ip}")
 
@@ -286,11 +287,11 @@ class Client:
     #Creates and sends TCP request, and returns Response object (header of response), and response body
     #Default is TCP request to server, unless other IP is specified
 
-    async def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = SERVER_IP) -> tuple[protocol.Response, Optional[bytes]]:
+    async def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = default_server_ip) -> tuple[protocol.Response, Optional[bytes]]:
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(10)
-        sock.connect((ip_address, TCP_PORT))
+        sock.connect((self.server_ip, TCP_PORT))
 
         # Build payload (serialise using JSON)
         header_bytes = header.model_dump_json().encode("utf-8")
@@ -318,7 +319,7 @@ class Client:
 
     #Sends UDP request, returns Response object. No request body or response body is accomodated for here
     #  as it is not needed
-    def _udp_request(self, header: protocol.BaseRequest, ip_address = SERVER_IP) -> protocol.Response:
+    def _udp_request(self, header: protocol.BaseRequest, ip_address = default_server_ip) -> protocol.Response:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         #Very important, otherwise hangs forever on sock.recvfrom(65535)
@@ -328,7 +329,7 @@ class Client:
         header_bytes = header.model_dump_json().encode("utf-8")
 
         #Send
-        sock.sendto(header_bytes, (ip_address, UDP_PORT))
+        sock.sendto(header_bytes, (self.server_ip, UDP_PORT))
 
         #Receive response and parse
         try:
