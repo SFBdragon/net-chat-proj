@@ -1,14 +1,11 @@
 import json
 import socket
 import threading
-<<<<<<< Updated upstream
-=======
 import time
 import os
 from typing import Optional
 
 # Custom modules
->>>>>>> Stashed changes
 import protocol
 import hashlib
 from typing import Optional
@@ -48,18 +45,13 @@ class Client:
 
     #REGISTER request to server, called by GUI when login button pressed
     async def login(self, user_id: str, server_id = "") -> bool:
-
-<<<<<<< Updated upstream
-        login_status = await self._REGISTER(user_id, server_id)
-
-=======
+        """
         :param user_id: Username of user.
         :param server_id: Unique server identifier.
         :return: Login status; whether login was successful or not.
         :rtype: bool
         """
         login_status, serverID = await self._REGISTER(user_id, server_id)
->>>>>>> Stashed changes
         if login_status == True:
 
             #Create appState
@@ -107,13 +99,9 @@ class Client:
             length=len(message_body),
         )
 
-<<<<<<< Updated upstream
-        response_header, _ = await self._tcp_request(request, message_body)
-=======
         logging.debug(MOD_CODE + "[*] Message send. Awaiting response.")
         response_header, _ = await self._tcp_request(request, self.server_ip, message_body)
         logging.debug(MOD_CODE + "[*] Message response received.")
->>>>>>> Stashed changes
 
         if(response_header.status == protocol.STATUS_OK):
             print(f"[+] Send message to group_id {group_id} successfully.")
@@ -127,13 +115,8 @@ class Client:
             name=group_name,
             members=user_ids,
         )
-<<<<<<< Updated upstream
-        
-        response_header, _ = await self._tcp_request(request)
-=======
 
         response_header, _ = await self._tcp_request(request, self.server_ip)
->>>>>>> Stashed changes
 
         if(response_header.status == protocol.STATUS_OK):
             print(f"[+] Created group {group_name} successfully.")
@@ -143,11 +126,7 @@ class Client:
 
     #Obtains file from peer and writes to disk, returns True if succesful and False if not
     def get_file(self, peer_user_id: str, sha256_file_id: str, save_path: str) -> bool:
-
-<<<<<<< Updated upstream
-        group_id = self.AppState["current_group"] 
-        peer_ip = self.GET_PEER(peer_user_id)
-=======
+        """
         :param peer_user_id: Username of peer hosting the file.
         :param sha256_file_id: Hash of file.
         :param save_path: Path file is saved at.
@@ -156,29 +135,12 @@ class Client:
 
         group_id = self.AppState["current_group"]
         peer_ip = self._GET_PEER(peer_user_id)
->>>>>>> Stashed changes
 
         return self.FILE_REQUEST(peer_ip, sha256_file_id,group_id, save_path)
     
     #TODO
     #def share_file(content: bytes = b"") -> bool:
 
-<<<<<<< Updated upstream
-
-    #TODO: Implement method to update TUI whenever AppState changes due to new messages etc.
-    def send_update(self):
-        self.on_state_update("data1")
-
-#---------------------------------------------------------------------------------------------------------------------
-#Client-server request functions
-#---------------------------------------------------------------------------------------------------------------------
-
-    #REGISTER request as defined in specification
-    #returns true if succesful, false if not
-    async def _REGISTER(self, user_id: str, server_id = "") -> bool:
-    #Header for REGISTER request
-
-=======
 
     async def share_file(self, file_path: str) -> bool:
         """
@@ -245,7 +207,6 @@ class Client:
         Verify server reachability, protocol compatibility, and register the user ID with the server.
         """
         # Header for REGISTER request
->>>>>>> Stashed changes
         request = protocol.Register(
         version= MAP_VERSION,
         type="REGISTER",
@@ -255,36 +216,12 @@ class Client:
 
         response_header, _ = await self._tcp_request(request, self.server_ip)
 
-<<<<<<< Updated upstream
-
-        if(response_header.status == protocol.STATUS_OK):
-
-            #Only do this if registration was succesful, i.e. STATUS_OK
-            self.AppState = {
-            "user_id": user_id,
-            "server_id": response_header.serverID,
-            "groups": {
-                # "group_name": {
-                #     "group_id": int,
-                #     "members": []   # list of user_id strings
-                # }
-            },
-            "events": [],        # ordered list of event dicts from GET_EVENTS
-            "current_group": None,  # group_name of whichever group the user has open
-            "last_event_id": 0,
-            "error": ""
-            }
-            return True
-
-        return False
-=======
         if response_header.status == protocol.STATUS_OK:
             logging.debug(MOD_CODE + "[+] Successfully registered on the server.")
             return True, response_header.serverID
 
         logging.debug(MOD_CODE + "[-] Failed to register on the server.")
         return False, ""
->>>>>>> Stashed changes
 
 
     #Returns all events after the latest eventID as a list of protocol.Event objects
@@ -299,29 +236,15 @@ class Client:
         afterEventID=self.AppState["last_event_id"]
     )
 
-<<<<<<< Updated upstream
-        _, response_body_bytes = await self._tcp_request(request)
-        
-=======
         logging.debug(MOD_CODE + "[*] Awaiting TCP response.")
         _, response_body_bytes = await self._tcp_request(request, self.server_ip)
         logging.debug(MOD_CODE + "[*] TCP response received.")
 
->>>>>>> Stashed changes
         response_body_json = response_body_bytes.decode("utf-8")
         response_body_list = protocol.parse_events_response_body(response_body_json)
 
         #Set last event ID to the last event in the returned list   
         self.AppState["last_event_id"] = response_body_list[-1].eventID
-<<<<<<< Updated upstream
-        
-        
-        return response_body_list
-
-    #Obtains IP Address of peer for P2P file sharing
-    async def GET_PEER(self, peer_user_id: str) -> str:
-
-=======
 
         for event in response_body_list:
             if not initialLoad:
@@ -359,7 +282,6 @@ class Client:
         Request the most recently advertised localIP for a member of the group which the requesting user is also on.
         This facilitates the ability of a client to initiate a P2P exchange with another client.
         """
->>>>>>> Stashed changes
         request = protocol.GetPeer(
             version = MAP_VERSION,
             userID = self.AppState["user_id"],
@@ -378,11 +300,7 @@ class Client:
 
         return "0.0.0.0"
 
-<<<<<<< Updated upstream
-        #TODO: Add error handling here?
-=======
         
->>>>>>> Stashed changes
 
 #---------------------------------------------------------------------------------------------------------------------
 #P2P request and response methods
@@ -400,30 +318,19 @@ class Client:
             sha256 = sha256_file_id
         )
 
-<<<<<<< Updated upstream
-        response_header, response_body_bytes = await self._tcp_request(request, b"", peer_ip)
-=======
         response_header, response_body_bytes = await self._tcp_request(
             request, peer_ip, b"", P2P_PORT
         )
->>>>>>> Stashed changes
 
         if response_header.status != protocol.STATUS_OK:
             return False
         
         #Verifying file integrity
         computed_hash = hashlib.sha256(response_body_bytes).hexdigest().upper()
-<<<<<<< Updated upstream
-        if computed_hash != sha256_file_id:
-            return False
-        
-        # Write raw bytes directly to disk — no decoding needed
-=======
         if computed_hash != sha256_file_id or response_header.length != len(response_body_bytes):
             return False 
 
         # Write raw bytes directly to disk
->>>>>>> Stashed changes
         with open(save_path, "wb") as f:
             f.write(response_body_bytes)
             
@@ -432,8 +339,6 @@ class Client:
     #TODO:
     #def _handle_p2p_request(self, conn: socket.socket, addr):
 
-<<<<<<< Updated upstream
-=======
     
     async def _handle_p2p_request(self, sock: socket.socket, peer_ip):
         
@@ -501,23 +406,8 @@ class Client:
         finally:
             sock.close()
             print(f"TCP closed: {peer_ip}")
->>>>>>> Stashed changes
 
 
-<<<<<<< Updated upstream
-#---------------------------------------------------------------------------------------------------------------------
-#Server communication
-#---------------------------------------------------------------------------------------------------------------------
-
-    #Creates and sends TCP request, and returns Response object (header of response), and response body
-    #Default is TCP request to server, unless other IP is specified
-
-    async def _tcp_request(self, header: protocol.BaseRequest, body: bytes = b"", ip_address = SERVER_IP) -> tuple[protocol.Response, Optional[bytes]]:
-
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(10)
-        sock.connect((ip_address, TCP_PORT))
-=======
     async def _tcp_request(
         self,
         header: protocol.BaseRequest,
@@ -532,7 +422,6 @@ class Client:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(10)
         sock.connect((ip_address, port))
->>>>>>> Stashed changes
 
         # Build payload (serialise using JSON)
         header_bytes = header.model_dump_json().encode("utf-8")
@@ -558,11 +447,6 @@ class Client:
         sock.close()
         return response_header, response_body_bytes
 
-<<<<<<< Updated upstream
-    #Sends UDP request, returns Response object. No request body or response body is accomodated for here
-    #  as it is not needed
-    def _udp_request(self, header: protocol.BaseRequest, ip_address = SERVER_IP) -> protocol.Response:
-=======
     def _udp_request(
         self, header: protocol.BaseRequest,
     ) -> protocol.Response:
@@ -571,7 +455,6 @@ class Client:
 
         """
 
->>>>>>> Stashed changes
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         #Very important, otherwise hangs forever on sock.recvfrom(65535)
@@ -613,20 +496,9 @@ class Client:
         print(f"Listening for P2P requests")
 
         while True:
-<<<<<<< Updated upstream
-            peer_sock, addr = server_sock.accept()
-            #Handle each peer connection in another thread
-            #so one slow transfer doesn't block others
-            threading.Thread(
-                target=self._handle_p2p_request,
-                args=(peer_sock, addr),
-                daemon=True
-            ).start()
-=======
             peer_sock, (peer_ip, peer_port) = server_sock.accept()
             run_async_in_thread(self._handle_p2p_request(peer_sock, peer_ip))
 
->>>>>>> Stashed changes
 
     def _im_alive_loop(self):
         
