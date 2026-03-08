@@ -5037,3 +5037,978 @@
 23:00:53 08/03/2026 Using proactor: IocpProactor 
 23:00:53 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"FILE_REQUEST","groupID":11,"sha256":"C600D0359B013BC7A288A520CBD0A31E6FFF8E0FECE75CBE0B3784F7A5D1435F"}\x03' 
 23:00:53 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":44}' 
+23:56:18 08/03/2026 Using proactor: IocpProactor 
+23:56:39 08/03/2026 Using proactor: IocpProactor 
+23:56:39 08/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+23:59:16 08/03/2026 Using proactor: IocpProactor 
+23:59:16 08/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+23:59:16 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"","type":"REGISTER"}\x03' 
+23:59:16 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+23:59:16 08/03/2026 [CLT] [+] Successfully registered on the server. 
+23:59:16 08/03/2026 [CLT] [+] P2P thread started. 
+23:59:16 08/03/2026 [CLT] [+] IM ALIVE thread started. 
+23:59:16 08/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+23:59:16 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"","type":"REGISTER"}\x03' 
+23:59:16 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+23:59:16 08/03/2026 [CLT] [+] Successfully registered on the server. 
+23:59:16 08/03/2026 [CLT] [+] P2P thread started. 
+23:59:16 08/03/2026 [CLT] [+] IM ALIVE thread started. 
+23:59:18 08/03/2026 [CLT] [@] I AM ALIVE 
+23:59:18 08/03/2026 [CLT] [@] Events are outdated 
+23:59:18 08/03/2026 Using proactor: IocpProactor 
+23:59:18 08/03/2026 [CLT] [*] Awaiting TCP response. 
+23:59:19 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+23:59:19 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":1513}' 
+23:59:19 08/03/2026 [CLT] [*] TCP response received. 
+23:59:19 08/03/2026 [CLT] [!] Attempting to broadcast data update. 
+23:59:20 08/03/2026 [CLT] [@] I AM ALIVE 
+23:59:21 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"TestGroup","members":["Bob"]}\x03' 
+23:59:21 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+23:59:21 08/03/2026 [CLT] [+] Created group TestGroup successfully. 
+23:59:21 08/03/2026 [CLT] [*] Awaiting TCP response. 
+23:59:21 08/03/2026 [CLT] [!] UDP request timed out. 
+23:59:21 08/03/2026 [CLT] [@] I AM ALIVE 
+23:59:25 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+23:59:25 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":3331}' 
+23:59:25 08/03/2026 [CLT] [*] TCP response received. 
+23:59:25 08/03/2026 [CLT] [!] Attempting to broadcast data update. 
+23:59:42 08/03/2026 Using proactor: IocpProactor 
+23:59:42 08/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+23:59:42 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"","type":"REGISTER"}\x03' 
+23:59:42 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+23:59:42 08/03/2026 [CLT] [+] Successfully registered on the server. 
+23:59:42 08/03/2026 [CLT] [+] P2P thread started. 
+23:59:42 08/03/2026 [CLT] [+] IM ALIVE thread started. 
+23:59:42 08/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+23:59:43 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"","type":"REGISTER"}\x03' 
+23:59:43 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+23:59:43 08/03/2026 [CLT] [+] Successfully registered on the server. 
+23:59:43 08/03/2026 [CLT] [+] P2P thread started. 
+23:59:43 08/03/2026 [CLT] [+] IM ALIVE thread started. 
+23:59:47 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"TestGroup","members":["Bob"]}\x03' 
+23:59:47 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+23:59:47 08/03/2026 [CLT] [+] Created group TestGroup successfully. 
+23:59:47 08/03/2026 [CLT] [*] Awaiting TCP response. 
+23:59:47 08/03/2026 [CLT] [!] UDP request timed out. 
+23:59:47 08/03/2026 [CLT] [@] I AM ALIVE 
+23:59:48 08/03/2026 [CLT] [!] UDP request timed out. 
+23:59:48 08/03/2026 [CLT] [@] I AM ALIVE 
+23:59:52 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+23:59:52 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":3553}' 
+23:59:52 08/03/2026 [CLT] [*] TCP response received. 
+23:59:52 08/03/2026 [CLT] [!] Attempting to broadcast data update. 
+23:59:52 08/03/2026 [CLT] [*] Awaiting TCP response. 
+23:59:54 08/03/2026 [CLT] [!] UDP request timed out. 
+23:59:54 08/03/2026 [CLT] [@] I AM ALIVE 
+23:59:55 08/03/2026 [CLT] [!] UDP request timed out. 
+23:59:55 08/03/2026 [CLT] [@] I AM ALIVE 
+23:59:55 08/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+23:59:55 08/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":1957}' 
+23:59:55 08/03/2026 [CLT] [*] TCP response received. 
+23:59:55 08/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:01:44 09/03/2026 Using proactor: IocpProactor 
+00:01:44 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:01:45 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"","type":"REGISTER"}\x03' 
+00:01:45 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:01:45 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:01:45 09/03/2026 [CLT] [+] P2P thread started. 
+00:01:45 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:01:45 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:01:45 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"","type":"REGISTER"}\x03' 
+00:01:45 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:01:45 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:01:45 09/03/2026 [CLT] [+] P2P thread started. 
+00:01:45 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:01:49 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"TestGroup","members":["Bob"]}\x03' 
+00:01:49 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:01:49 09/03/2026 [CLT] [+] Created group TestGroup successfully. 
+00:01:49 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:01:50 09/03/2026 [CLT] [!] UDP request timed out. 
+00:01:50 09/03/2026 [CLT] [@] I AM ALIVE 
+00:01:50 09/03/2026 [CLT] [!] UDP request timed out. 
+00:01:50 09/03/2026 [CLT] [@] I AM ALIVE 
+00:01:55 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:01:55 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":3775}' 
+00:01:55 09/03/2026 [CLT] [*] TCP response received. 
+00:01:55 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:01:55 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:01:57 09/03/2026 [CLT] [!] UDP request timed out. 
+00:01:57 09/03/2026 [CLT] [@] I AM ALIVE 
+00:01:57 09/03/2026 [CLT] [!] UDP request timed out. 
+00:01:57 09/03/2026 [CLT] [@] I AM ALIVE 
+00:02:37 09/03/2026 Using proactor: IocpProactor 
+00:02:37 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:02:37 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"","type":"REGISTER"}\x03' 
+00:02:37 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:02:37 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:02:37 09/03/2026 [CLT] [+] P2P thread started. 
+00:02:37 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:02:37 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:02:37 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"","type":"REGISTER"}\x03' 
+00:02:37 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:02:37 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:02:37 09/03/2026 [CLT] [+] P2P thread started. 
+00:02:37 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:02:41 09/03/2026 [CLT] [@] I AM ALIVE 
+00:02:41 09/03/2026 [CLT] [@] Events are outdated 
+00:02:41 09/03/2026 Using proactor: IocpProactor 
+00:02:41 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:02:42 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"TestGroup","members":["Bob"]}\x03' 
+00:02:42 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:02:42 09/03/2026 [CLT] [+] Created group TestGroup successfully. 
+00:02:42 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:02:42 09/03/2026 [CLT] [!] UDP request timed out. 
+00:02:42 09/03/2026 [CLT] [@] I AM ALIVE 
+00:02:45 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:02:45 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":2179}' 
+00:02:46 09/03/2026 [CLT] [*] TCP response received. 
+00:02:46 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:02:48 09/03/2026 [CLT] [!] UDP request timed out. 
+00:02:48 09/03/2026 [CLT] [@] I AM ALIVE 
+00:02:49 09/03/2026 [CLT] [!] UDP request timed out. 
+00:02:49 09/03/2026 [CLT] [@] I AM ALIVE 
+00:02:50 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:02:50 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":3997}' 
+00:02:50 09/03/2026 [CLT] [*] TCP response received. 
+00:02:50 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:02:50 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:02:51 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":66,"beforeEventID":null}\x03' 
+00:02:51 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":223}' 
+00:02:51 09/03/2026 [CLT] [*] TCP response received. 
+00:02:51 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:02:51 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"PUT_FILE","groupID":11,"fileName":"test_file.txt","sha256":"C600D0359B013BC7A288A520CBD0A31E6FFF8E0FECE75CBE0B3784F7A5D1435F"}\x03' 
+00:02:51 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:02:51 09/03/2026 [CLT] [+] File test_file.txt advertised to group 11. 
+00:02:51 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:02:52 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":68,"beforeEventID":null}\x03' 
+00:02:52 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":179}' 
+00:02:52 09/03/2026 [CLT] [*] TCP response received. 
+00:02:52 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:02:52 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:02:52 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":68,"beforeEventID":null}\x03' 
+00:02:52 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":179}' 
+00:02:53 09/03/2026 [CLT] [*] TCP response received. 
+00:02:53 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:03:12 09/03/2026 Using proactor: IocpProactor 
+00:03:12 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:03:12 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"","type":"REGISTER"}\x03' 
+00:03:12 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:03:12 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:03:12 09/03/2026 [CLT] [+] P2P thread started. 
+00:03:12 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:03:12 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:03:13 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"","type":"REGISTER"}\x03' 
+00:03:13 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:03:13 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:03:13 09/03/2026 [CLT] [+] P2P thread started. 
+00:03:13 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:03:16 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"TestGroup","members":["Bob"]}\x03' 
+00:03:16 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:03:16 09/03/2026 [CLT] [+] Created group TestGroup successfully. 
+00:03:16 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:03:17 09/03/2026 [CLT] [!] UDP request timed out. 
+00:03:17 09/03/2026 [CLT] [@] I AM ALIVE 
+00:03:18 09/03/2026 [CLT] [!] UDP request timed out. 
+00:03:18 09/03/2026 [CLT] [@] I AM ALIVE 
+00:03:23 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:03:23 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":4397}' 
+00:03:23 09/03/2026 [CLT] [*] TCP response received. 
+00:03:23 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:03:23 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:03:24 09/03/2026 [CLT] [!] UDP request timed out. 
+00:03:24 09/03/2026 [CLT] [@] I AM ALIVE 
+00:03:25 09/03/2026 [CLT] [!] UDP request timed out. 
+00:03:25 09/03/2026 [CLT] [@] I AM ALIVE 
+00:03:27 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:03:27 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":2801}' 
+00:03:27 09/03/2026 [CLT] [*] TCP response received. 
+00:03:27 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:03:27 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"PUT_FILE","groupID":11,"fileName":"test_file.txt","sha256":"C600D0359B013BC7A288A520CBD0A31E6FFF8E0FECE75CBE0B3784F7A5D1435F"}\x03' 
+00:03:27 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:03:27 09/03/2026 [CLT] [+] File test_file.txt advertised to group 11. 
+00:03:27 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:03:28 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":71,"beforeEventID":null}\x03' 
+00:03:28 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":179}' 
+00:03:28 09/03/2026 [CLT] [*] TCP response received. 
+00:03:28 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:03:28 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:03:28 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":71,"beforeEventID":null}\x03' 
+00:03:28 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":179}' 
+00:03:28 09/03/2026 [CLT] [*] TCP response received. 
+00:03:28 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:03:29 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_PEER","groupID":11,"peerUserID":"Alice"}\x03' 
+00:03:29 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"FILE_UNAVAILABLE"}' 
+00:04:34 09/03/2026 Using proactor: IocpProactor 
+00:04:41 09/03/2026 [TUI] [+] Logging in as user Thomas to  
+00:04:41 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:04:41 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"","type":"REGISTER"}\x03' 
+00:04:41 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:04:41 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:04:41 09/03/2026 [CLT] [+] P2P thread started. 
+00:04:41 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:04:41 09/03/2026 [DTS] [!] Data sync called. 
+00:04:41 09/03/2026 [TUI] [*] Login status: True 
+00:04:41 09/03/2026 [TUI] [*] Calling data update 
+00:04:41 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:04:41 09/03/2026 [TUI] [~] New groups are {} 
+00:04:46 09/03/2026 [CLT] [!] UDP request timed out. 
+00:04:46 09/03/2026 [CLT] [@] I AM ALIVE 
+00:04:53 09/03/2026 [CLT] [!] UDP request timed out. 
+00:04:53 09/03/2026 [CLT] [@] I AM ALIVE 
+00:05:00 09/03/2026 [CLT] [!] UDP request timed out. 
+00:05:00 09/03/2026 [CLT] [@] I AM ALIVE 
+00:05:01 09/03/2026 [TUI] [+] Modal submitted for Create Group. 
+00:05:01 09/03/2026 [TUI] [*] Creating group. 
+00:05:02 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"TestSunday","members":["Thomas1","Thomas2"]}\x03' 
+00:05:02 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:05:02 09/03/2026 [CLT] [+] Created group TestSunday successfully. 
+00:05:02 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:05:06 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:05:06 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":4075}' 
+00:05:06 09/03/2026 [CLT] [*] TCP response received. 
+00:05:06 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:05:07 09/03/2026 [CLT] [!] UDP request timed out. 
+00:05:07 09/03/2026 [CLT] [@] I AM ALIVE 
+00:05:14 09/03/2026 [CLT] [!] UDP request timed out. 
+00:05:14 09/03/2026 [CLT] [@] I AM ALIVE 
+00:05:21 09/03/2026 [CLT] [!] UDP request timed out. 
+00:05:21 09/03/2026 [CLT] [@] I AM ALIVE 
+00:05:28 09/03/2026 [CLT] [!] UDP request timed out. 
+00:05:28 09/03/2026 [CLT] [@] I AM ALIVE 
+00:05:35 09/03/2026 [CLT] [!] UDP request timed out. 
+00:05:35 09/03/2026 [CLT] [@] I AM ALIVE 
+00:05:42 09/03/2026 [CLT] [!] UDP request timed out. 
+00:05:42 09/03/2026 [CLT] [@] I AM ALIVE 
+00:05:49 09/03/2026 [CLT] [!] UDP request timed out. 
+00:05:49 09/03/2026 [CLT] [@] I AM ALIVE 
+00:05:56 09/03/2026 [CLT] [!] UDP request timed out. 
+00:05:56 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:03 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:03 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:11 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:11 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:18 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:18 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:20 09/03/2026 Using proactor: IocpProactor 
+00:06:25 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:25 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:29 09/03/2026 [TUI] [+] Logging in as user Thomas1 to  
+00:06:29 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:06:29 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"","type":"REGISTER"}\x03' 
+00:06:29 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:06:29 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:06:29 09/03/2026 [CLT] [+] P2P thread started. 
+00:06:29 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:06:29 09/03/2026 [DTS] [!] Data sync called. 
+00:06:29 09/03/2026 [TUI] [*] Login status: True 
+00:06:29 09/03/2026 [TUI] [*] Calling data update 
+00:06:29 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:06:29 09/03/2026 [TUI] [~] New groups are {} 
+00:06:32 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:32 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:34 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:34 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:39 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:39 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:41 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:41 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:46 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:46 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:48 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:48 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:53 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:53 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:55 09/03/2026 [CLT] [!] UDP request timed out. 
+00:06:55 09/03/2026 [CLT] [@] I AM ALIVE 
+00:06:56 09/03/2026 [TUI] [+] Modal submitted for Create Group. 
+00:06:56 09/03/2026 [TUI] [*] Creating group. 
+00:06:57 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"Test2","members":["Thomas","Thomas1"]}\x03' 
+00:06:57 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:06:57 09/03/2026 [CLT] [+] Created group Test2 successfully. 
+00:06:57 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:06:59 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:06:59 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":683}' 
+00:06:59 09/03/2026 [CLT] [*] TCP response received. 
+00:06:59 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:07:00 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:00 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:02 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:02 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:07 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:07 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:09 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:09 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:14 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:14 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:16 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:16 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:21 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:21 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:23 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:23 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:28 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:28 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:30 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:30 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:35 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:35 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:37 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:37 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:42 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:42 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:44 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:44 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:49 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:49 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:51 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:51 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:56 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:56 09/03/2026 [CLT] [@] I AM ALIVE 
+00:07:58 09/03/2026 [CLT] [!] UDP request timed out. 
+00:07:58 09/03/2026 [CLT] [@] I AM ALIVE 
+00:08:03 09/03/2026 [CLT] [!] UDP request timed out. 
+00:08:03 09/03/2026 [CLT] [@] I AM ALIVE 
+00:08:05 09/03/2026 [CLT] [!] UDP request timed out. 
+00:08:05 09/03/2026 [CLT] [@] I AM ALIVE 
+00:08:10 09/03/2026 [CLT] [!] UDP request timed out. 
+00:08:10 09/03/2026 [CLT] [@] I AM ALIVE 
+00:08:12 09/03/2026 [CLT] [!] UDP request timed out. 
+00:08:12 09/03/2026 [CLT] [@] I AM ALIVE 
+00:12:01 09/03/2026 Using proactor: IocpProactor 
+00:12:08 09/03/2026 [TUI] [+] Logging in as user Thomas1 to  
+00:12:08 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:12:08 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"","type":"REGISTER"}\x03' 
+00:12:08 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:12:08 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:12:08 09/03/2026 [CLT] [+] P2P thread started. 
+00:12:08 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:12:08 09/03/2026 [DTS] [!] Data sync called. 
+00:12:08 09/03/2026 [TUI] [*] Login status: True 
+00:12:08 09/03/2026 [TUI] [*] Calling data update 
+00:12:08 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:12:08 09/03/2026 [TUI] [~] New groups are {} 
+00:12:13 09/03/2026 [CLT] [!] UDP request timed out. 
+00:12:13 09/03/2026 [CLT] [@] I AM ALIVE 
+00:12:20 09/03/2026 [CLT] [!] UDP request timed out. 
+00:12:20 09/03/2026 [CLT] [@] I AM ALIVE 
+00:12:27 09/03/2026 [CLT] [!] UDP request timed out. 
+00:12:27 09/03/2026 [CLT] [@] I AM ALIVE 
+00:12:34 09/03/2026 [CLT] [!] UDP request timed out. 
+00:12:34 09/03/2026 [CLT] [@] I AM ALIVE 
+00:12:41 09/03/2026 [CLT] [!] UDP request timed out. 
+00:12:41 09/03/2026 [CLT] [@] I AM ALIVE 
+00:12:48 09/03/2026 [CLT] [!] UDP request timed out. 
+00:12:48 09/03/2026 [CLT] [@] I AM ALIVE 
+00:12:55 09/03/2026 [CLT] [!] UDP request timed out. 
+00:12:55 09/03/2026 [CLT] [@] I AM ALIVE 
+00:13:02 09/03/2026 [CLT] [!] UDP request timed out. 
+00:13:02 09/03/2026 [CLT] [@] I AM ALIVE 
+00:13:09 09/03/2026 [CLT] [!] UDP request timed out. 
+00:13:09 09/03/2026 [CLT] [@] I AM ALIVE 
+00:13:16 09/03/2026 [CLT] [!] UDP request timed out. 
+00:13:16 09/03/2026 [CLT] [@] I AM ALIVE 
+00:13:23 09/03/2026 [CLT] [!] UDP request timed out. 
+00:13:23 09/03/2026 [CLT] [@] I AM ALIVE 
+00:13:30 09/03/2026 [CLT] [!] UDP request timed out. 
+00:13:30 09/03/2026 [CLT] [@] I AM ALIVE 
+00:13:37 09/03/2026 [CLT] [!] UDP request timed out. 
+00:13:37 09/03/2026 [CLT] [@] I AM ALIVE 
+00:13:44 09/03/2026 [CLT] [!] UDP request timed out. 
+00:13:44 09/03/2026 [CLT] [@] I AM ALIVE 
+00:13:51 09/03/2026 [CLT] [!] UDP request timed out. 
+00:13:51 09/03/2026 [CLT] [@] I AM ALIVE 
+00:13:58 09/03/2026 [CLT] [!] UDP request timed out. 
+00:13:58 09/03/2026 [CLT] [@] I AM ALIVE 
+00:14:05 09/03/2026 [CLT] [!] UDP request timed out. 
+00:14:05 09/03/2026 [CLT] [@] I AM ALIVE 
+00:14:12 09/03/2026 [CLT] [!] UDP request timed out. 
+00:14:12 09/03/2026 [CLT] [@] I AM ALIVE 
+00:14:19 09/03/2026 [CLT] [!] UDP request timed out. 
+00:14:19 09/03/2026 [CLT] [@] I AM ALIVE 
+00:14:26 09/03/2026 [CLT] [!] UDP request timed out. 
+00:14:26 09/03/2026 [CLT] [@] I AM ALIVE 
+00:14:33 09/03/2026 [CLT] [!] UDP request timed out. 
+00:14:33 09/03/2026 [CLT] [@] I AM ALIVE 
+00:14:40 09/03/2026 [CLT] [!] UDP request timed out. 
+00:14:40 09/03/2026 [CLT] [@] I AM ALIVE 
+00:14:47 09/03/2026 [CLT] [!] UDP request timed out. 
+00:14:47 09/03/2026 [CLT] [@] I AM ALIVE 
+00:14:54 09/03/2026 [CLT] [!] UDP request timed out. 
+00:14:54 09/03/2026 [CLT] [@] I AM ALIVE 
+00:15:01 09/03/2026 [CLT] [!] UDP request timed out. 
+00:15:01 09/03/2026 [CLT] [@] I AM ALIVE 
+00:15:08 09/03/2026 [CLT] [!] UDP request timed out. 
+00:15:08 09/03/2026 [CLT] [@] I AM ALIVE 
+00:15:15 09/03/2026 [CLT] [!] UDP request timed out. 
+00:15:15 09/03/2026 [CLT] [@] I AM ALIVE 
+00:15:22 09/03/2026 [CLT] [!] UDP request timed out. 
+00:15:22 09/03/2026 [CLT] [@] I AM ALIVE 
+00:15:29 09/03/2026 [CLT] [!] UDP request timed out. 
+00:15:29 09/03/2026 [CLT] [@] I AM ALIVE 
+00:15:36 09/03/2026 [CLT] [!] UDP request timed out. 
+00:15:36 09/03/2026 [CLT] [@] I AM ALIVE 
+00:15:43 09/03/2026 [CLT] [!] UDP request timed out. 
+00:15:43 09/03/2026 [CLT] [@] I AM ALIVE 
+00:15:50 09/03/2026 [CLT] [!] UDP request timed out. 
+00:15:50 09/03/2026 [CLT] [@] I AM ALIVE 
+00:15:57 09/03/2026 [CLT] [!] UDP request timed out. 
+00:15:57 09/03/2026 [CLT] [@] I AM ALIVE 
+00:16:04 09/03/2026 [CLT] [!] UDP request timed out. 
+00:16:04 09/03/2026 [CLT] [@] I AM ALIVE 
+00:16:11 09/03/2026 [CLT] [!] UDP request timed out. 
+00:16:11 09/03/2026 [CLT] [@] I AM ALIVE 
+00:16:18 09/03/2026 [CLT] [!] UDP request timed out. 
+00:16:18 09/03/2026 [CLT] [@] I AM ALIVE 
+00:16:25 09/03/2026 [CLT] [!] UDP request timed out. 
+00:16:25 09/03/2026 [CLT] [@] I AM ALIVE 
+00:16:32 09/03/2026 [CLT] [!] UDP request timed out. 
+00:16:32 09/03/2026 [CLT] [@] I AM ALIVE 
+00:16:39 09/03/2026 [CLT] [!] UDP request timed out. 
+00:16:39 09/03/2026 [CLT] [@] I AM ALIVE 
+00:16:46 09/03/2026 [CLT] [!] UDP request timed out. 
+00:16:46 09/03/2026 [CLT] [@] I AM ALIVE 
+00:16:53 09/03/2026 [CLT] [!] UDP request timed out. 
+00:16:53 09/03/2026 [CLT] [@] I AM ALIVE 
+00:17:00 09/03/2026 [CLT] [!] UDP request timed out. 
+00:17:00 09/03/2026 [CLT] [@] I AM ALIVE 
+00:17:07 09/03/2026 [CLT] [!] UDP request timed out. 
+00:17:07 09/03/2026 [CLT] [@] I AM ALIVE 
+00:17:14 09/03/2026 [CLT] [!] UDP request timed out. 
+00:17:14 09/03/2026 [CLT] [@] I AM ALIVE 
+00:17:21 09/03/2026 [CLT] [!] UDP request timed out. 
+00:17:21 09/03/2026 [CLT] [@] I AM ALIVE 
+00:17:28 09/03/2026 [CLT] [!] UDP request timed out. 
+00:17:28 09/03/2026 [CLT] [@] I AM ALIVE 
+00:17:35 09/03/2026 [CLT] [!] UDP request timed out. 
+00:17:35 09/03/2026 [CLT] [@] I AM ALIVE 
+00:17:42 09/03/2026 [CLT] [!] UDP request timed out. 
+00:17:42 09/03/2026 [CLT] [@] I AM ALIVE 
+00:17:49 09/03/2026 [CLT] [!] UDP request timed out. 
+00:17:49 09/03/2026 [CLT] [@] I AM ALIVE 
+00:17:56 09/03/2026 [CLT] [!] UDP request timed out. 
+00:17:56 09/03/2026 [CLT] [@] I AM ALIVE 
+00:18:03 09/03/2026 [CLT] [!] UDP request timed out. 
+00:18:03 09/03/2026 [CLT] [@] I AM ALIVE 
+00:18:10 09/03/2026 [CLT] [!] UDP request timed out. 
+00:18:10 09/03/2026 [CLT] [@] I AM ALIVE 
+00:18:17 09/03/2026 [CLT] [!] UDP request timed out. 
+00:18:17 09/03/2026 [CLT] [@] I AM ALIVE 
+00:18:24 09/03/2026 [CLT] [!] UDP request timed out. 
+00:18:24 09/03/2026 [CLT] [@] I AM ALIVE 
+00:18:31 09/03/2026 [CLT] [!] UDP request timed out. 
+00:18:31 09/03/2026 [CLT] [@] I AM ALIVE 
+00:18:38 09/03/2026 [CLT] [!] UDP request timed out. 
+00:18:38 09/03/2026 [CLT] [@] I AM ALIVE 
+00:18:45 09/03/2026 [CLT] [!] UDP request timed out. 
+00:18:45 09/03/2026 [CLT] [@] I AM ALIVE 
+00:18:52 09/03/2026 [CLT] [!] UDP request timed out. 
+00:18:52 09/03/2026 [CLT] [@] I AM ALIVE 
+00:18:59 09/03/2026 [CLT] [!] UDP request timed out. 
+00:18:59 09/03/2026 [CLT] [@] I AM ALIVE 
+00:19:06 09/03/2026 [CLT] [!] UDP request timed out. 
+00:19:06 09/03/2026 [CLT] [@] I AM ALIVE 
+00:19:13 09/03/2026 [CLT] [!] UDP request timed out. 
+00:19:13 09/03/2026 [CLT] [@] I AM ALIVE 
+00:19:20 09/03/2026 [CLT] [!] UDP request timed out. 
+00:19:20 09/03/2026 [CLT] [@] I AM ALIVE 
+00:19:22 09/03/2026 [CLT] [WinError 10054] An existing connection was forcibly closed by the remote host 
+00:19:56 09/03/2026 Using proactor: IocpProactor 
+00:20:10 09/03/2026 [TUI] [+] Logging in as user ThomasTest to  
+00:20:10 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:20:10 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"ThomasTest","serverID":"","type":"REGISTER"}\x03' 
+00:20:10 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:20:10 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:20:10 09/03/2026 [CLT] [+] P2P thread started. 
+00:20:10 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:20:10 09/03/2026 [DTS] [!] Data sync called. 
+00:20:10 09/03/2026 [TUI] [*] Login status: True 
+00:20:10 09/03/2026 [TUI] [*] Calling data update 
+00:20:10 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:20:10 09/03/2026 [TUI] [~] New groups are {} 
+00:20:10 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:10 09/03/2026 [CLT] [@] Events are outdated 
+00:20:10 09/03/2026 Using proactor: IocpProactor 
+00:20:10 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:20:11 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"ThomasTest","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:20:11 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":427}' 
+00:20:12 09/03/2026 [CLT] [*] TCP response received. 
+00:20:12 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:20:12 09/03/2026 [DTS] [!] Data sync called. 
+00:20:12 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:20:12 09/03/2026 [TUI] [~] New groups are {'10': {'group_id': 10, 'group_name': 'Test1234', 'members': ['Thomas', 'ThomasTest']}} 
+00:20:15 09/03/2026 [TUI] [~] UI retrieved 4 events from client. 
+00:20:17 09/03/2026 [CLT] [!] UDP request timed out. 
+00:20:17 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:20 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:22 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:29 09/03/2026 [CLT] [!] UDP request timed out. 
+00:20:29 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:31 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:34 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:35 09/03/2026 [TUI] [+] Modal submitted for Create Group. 
+00:20:35 09/03/2026 [TUI] [*] Creating group. 
+00:20:36 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"ThomasTest","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"Test12345","members":["Thomas","Thomas1"]}\x03' 
+00:20:36 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:20:36 09/03/2026 [CLT] [+] Created group Test12345 successfully. 
+00:20:36 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:20:36 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:36 09/03/2026 [CLT] [@] Events are outdated 
+00:20:36 09/03/2026 Using proactor: IocpProactor 
+00:20:36 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:20:37 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"ThomasTest","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":36,"beforeEventID":null}\x03' 
+00:20:37 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":360}' 
+00:20:37 09/03/2026 [CLT] [*] TCP response received. 
+00:20:37 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:20:37 09/03/2026 [DTS] [!] Data sync called. 
+00:20:37 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:20:37 09/03/2026 [TUI] [~] New groups are {'10': {'group_id': 10, 'group_name': 'Test1234', 'members': ['Thomas', 'ThomasTest']}, '27': {'group_id': 27, 'group_name': 'Test12345', 'members': ['ThomasTest', 'Thomas', 'Thomas1']}} 
+00:20:37 09/03/2026 [TUI] [~] UI retrieved 7 events from client. 
+00:20:38 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"ThomasTest","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":36,"beforeEventID":null}\x03' 
+00:20:38 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":360}' 
+00:20:38 09/03/2026 [CLT] [*] TCP response received. 
+00:20:38 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:20:38 09/03/2026 [DTS] [!] Data sync called. 
+00:20:38 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:20:38 09/03/2026 [TUI] [~] New groups are {'10': {'group_id': 10, 'group_name': 'Test1234', 'members': ['Thomas', 'ThomasTest']}, '27': {'group_id': 27, 'group_name': 'Test12345', 'members': ['ThomasTest', 'Thomas', 'Thomas1', 'ThomasTest', 'Thomas', 'Thomas1']}} 
+00:20:38 09/03/2026 [TUI] [~] UI retrieved 10 events from client. 
+00:20:39 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:41 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:43 09/03/2026 Using proactor: IocpProactor 
+00:20:43 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:45 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:48 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:50 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:50 09/03/2026 [TUI] [+] Logging in as user Thomas1 to  
+00:20:50 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:20:50 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"","type":"REGISTER"}\x03' 
+00:20:50 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:20:50 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:20:50 09/03/2026 [CLT] [+] P2P thread started. 
+00:20:50 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:20:50 09/03/2026 [DTS] [!] Data sync called. 
+00:20:50 09/03/2026 [TUI] [*] Login status: True 
+00:20:50 09/03/2026 [TUI] [*] Calling data update 
+00:20:50 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:20:50 09/03/2026 [TUI] [~] New groups are {} 
+00:20:52 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:53 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:53 09/03/2026 [CLT] [@] Events are outdated 
+00:20:53 09/03/2026 Using proactor: IocpProactor 
+00:20:53 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:20:55 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:55 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:20:55 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":1042}' 
+00:20:55 09/03/2026 [CLT] [*] TCP response received. 
+00:20:55 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:20:55 09/03/2026 [DTS] [!] Data sync called. 
+00:20:55 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:20:55 09/03/2026 [TUI] [~] New groups are {'25': {'group_id': 25, 'group_name': 'TestSunday', 'members': ['Thomas', 'Thomas1', 'Thomas2']}, '26': {'group_id': 26, 'group_name': 'Test2', 'members': ['Thomas1', 'Thomas', 'Thomas1']}, '27': {'group_id': 27, 'group_name': 'Test12345', 'members': ['ThomasTest', 'Thomas', 'Thomas1']}} 
+00:20:57 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:57 09/03/2026 [CLT] [@] I AM ALIVE 
+00:20:57 09/03/2026 [CLT] [@] Events are outdated 
+00:20:57 09/03/2026 Using proactor: IocpProactor 
+00:20:57 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:20:58 09/03/2026 [TUI] [~] UI retrieved 9 events from client. 
+00:20:58 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":81,"beforeEventID":null}\x03' 
+00:20:58 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":0}' 
+00:20:58 09/03/2026 [CLT] [*] TCP response received. 
+00:21:00 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:00 09/03/2026 [TUI] [*] Send message (hi) requested. 
+00:21:00 09/03/2026 [CLT] [*] Message send. Awaiting response. 
+00:21:02 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:09 09/03/2026 [CLT] [!] UDP request timed out. 
+00:21:09 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:11 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:13 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:16 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:18 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:20 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:21 09/03/2026 Using proactor: IocpProactor 
+00:21:23 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:25 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:27 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:28 09/03/2026 [TUI] [+] Logging in as user Thomas1 to  
+00:21:28 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:21:29 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"","type":"REGISTER"}\x03' 
+00:21:29 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:21:29 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:21:29 09/03/2026 [CLT] [+] P2P thread started. 
+00:21:29 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:21:29 09/03/2026 [DTS] [!] Data sync called. 
+00:21:29 09/03/2026 [TUI] [*] Login status: True 
+00:21:29 09/03/2026 [TUI] [*] Calling data update 
+00:21:29 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:21:29 09/03/2026 [TUI] [~] New groups are {} 
+00:21:30 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:31 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:31 09/03/2026 [CLT] [@] Events are outdated 
+00:21:31 09/03/2026 Using proactor: IocpProactor 
+00:21:31 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:21:32 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:33 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:21:33 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":1042}' 
+00:21:33 09/03/2026 [CLT] [*] TCP response received. 
+00:21:33 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:21:33 09/03/2026 [DTS] [!] Data sync called. 
+00:21:33 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:21:33 09/03/2026 [TUI] [~] New groups are {'25': {'group_id': 25, 'group_name': 'TestSunday', 'members': ['Thomas', 'Thomas1', 'Thomas2']}, '26': {'group_id': 26, 'group_name': 'Test2', 'members': ['Thomas1', 'Thomas', 'Thomas1']}, '27': {'group_id': 27, 'group_name': 'Test12345', 'members': ['ThomasTest', 'Thomas', 'Thomas1']}} 
+00:21:35 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:35 09/03/2026 [TUI] [~] UI retrieved 9 events from client. 
+00:21:36 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:36 09/03/2026 [CLT] [@] Events are outdated 
+00:21:36 09/03/2026 Using proactor: IocpProactor 
+00:21:36 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:21:36 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":81,"beforeEventID":null}\x03' 
+00:21:36 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":0}' 
+00:21:36 09/03/2026 [CLT] [*] TCP response received. 
+00:21:37 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:39 09/03/2026 [TUI] [*] Send message (hi) requested. 
+00:21:39 09/03/2026 [CLT] [*] Message send. Awaiting response. 
+00:21:39 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:41 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:44 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:46 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:48 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:51 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:53 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:55 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:56 09/03/2026 [TUI] [~] UI retrieved 10 events from client. 
+00:21:57 09/03/2026 [CLT] [@] I AM ALIVE 
+00:21:59 09/03/2026 [TUI] [~] UI retrieved 10 events from client. 
+00:22:00 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:02 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:04 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:11 09/03/2026 [CLT] [!] UDP request timed out. 
+00:22:11 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:14 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:16 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:18 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:20 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:23 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:25 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:27 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:30 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:32 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:34 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:37 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:39 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:41 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:48 09/03/2026 [CLT] [!] UDP request timed out. 
+00:22:48 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:50 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:53 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:55 09/03/2026 [CLT] [@] I AM ALIVE 
+00:22:57 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:00 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:02 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:04 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:06 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:09 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:11 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:13 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:16 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:18 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:20 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:27 09/03/2026 [CLT] [!] UDP request timed out. 
+00:23:27 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:29 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:32 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:34 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:36 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:38 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:41 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:43 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:45 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:47 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:50 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:52 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:54 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:56 09/03/2026 [CLT] [@] I AM ALIVE 
+00:23:59 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:01 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:08 09/03/2026 [CLT] [!] UDP request timed out. 
+00:24:08 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:10 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:13 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:15 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:17 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:19 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:22 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:24 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:26 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:29 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:36 09/03/2026 [CLT] [!] UDP request timed out. 
+00:24:36 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:38 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:40 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:42 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:44 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:47 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:49 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:51 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:54 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:56 09/03/2026 [CLT] [@] I AM ALIVE 
+00:24:58 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:05 09/03/2026 [CLT] [!] UDP request timed out. 
+00:25:05 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:08 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:10 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:12 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:14 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:21 09/03/2026 [CLT] [!] UDP request timed out. 
+00:25:21 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:24 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:26 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:26 09/03/2026 Using proactor: IocpProactor 
+00:25:28 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:30 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:33 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:33 09/03/2026 [TUI] [+] Logging in as user Thomas1 to  
+00:25:33 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:25:33 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"","type":"REGISTER"}\x03' 
+00:25:33 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:25:33 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:25:33 09/03/2026 [CLT] [+] P2P thread started. 
+00:25:33 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:25:33 09/03/2026 [DTS] [!] Data sync called. 
+00:25:33 09/03/2026 [TUI] [*] Login status: True 
+00:25:33 09/03/2026 [TUI] [*] Calling data update 
+00:25:33 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:25:33 09/03/2026 [TUI] [~] New groups are {} 
+00:25:35 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:36 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:36 09/03/2026 [CLT] [@] Events are outdated 
+00:25:36 09/03/2026 Using proactor: IocpProactor 
+00:25:36 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:25:38 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:38 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:25:38 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":1042}' 
+00:25:38 09/03/2026 [CLT] [*] TCP response received. 
+00:25:38 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:25:38 09/03/2026 [DTS] [!] Data sync called. 
+00:25:38 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:25:38 09/03/2026 [TUI] [~] New groups are {'25': {'group_id': 25, 'group_name': 'TestSunday', 'members': ['Thomas', 'Thomas1', 'Thomas2']}, '26': {'group_id': 26, 'group_name': 'Test2', 'members': ['Thomas1', 'Thomas', 'Thomas1']}, '27': {'group_id': 27, 'group_name': 'Test12345', 'members': ['ThomasTest', 'Thomas', 'Thomas1']}} 
+00:25:39 09/03/2026 [TUI] [~] UI retrieved 9 events from client. 
+00:25:40 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:40 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:40 09/03/2026 [CLT] [@] Events are outdated 
+00:25:40 09/03/2026 Using proactor: IocpProactor 
+00:25:40 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:25:41 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":81,"beforeEventID":null}\x03' 
+00:25:41 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":0}' 
+00:25:41 09/03/2026 [CLT] [*] TCP response received. 
+00:25:41 09/03/2026 [TUI] [*] Send message (hi) requested. 
+00:25:41 09/03/2026 [CLT] [*] Message send. Awaiting response. 
+00:25:42 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"PUT_MESSAGE","groupID":27,"length":2}\x03hi' 
+00:25:42 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:25:42 09/03/2026 [CLT] [*] Message response received. 
+00:25:42 09/03/2026 [CLT] [+] Send message to group_id 27 successfully. 
+00:25:42 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:25:42 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":81,"beforeEventID":null}\x03' 
+00:25:42 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":91}' 
+00:25:42 09/03/2026 [CLT] [*] TCP response received. 
+00:25:42 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:25:42 09/03/2026 [DTS] [!] Data sync called. 
+00:25:42 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:25:42 09/03/2026 [TUI] [~] New groups are {'25': {'group_id': 25, 'group_name': 'TestSunday', 'members': ['Thomas', 'Thomas1', 'Thomas2']}, '26': {'group_id': 26, 'group_name': 'Test2', 'members': ['Thomas1', 'Thomas', 'Thomas1']}, '27': {'group_id': 27, 'group_name': 'Test12345', 'members': ['ThomasTest', 'Thomas', 'Thomas1']}} 
+00:25:42 09/03/2026 [TUI] [~] UI retrieved 10 events from client. 
+00:25:42 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:42 09/03/2026 [CLT] [@] Events are outdated 
+00:25:42 09/03/2026 Using proactor: IocpProactor 
+00:25:42 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:25:43 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:43 09/03/2026 [CLT] [@] Events are outdated 
+00:25:43 09/03/2026 Using proactor: IocpProactor 
+00:25:43 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:25:43 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"ThomasTest","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":81,"beforeEventID":null}\x03' 
+00:25:43 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":91}' 
+00:25:43 09/03/2026 [CLT] [*] TCP response received. 
+00:25:43 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:25:43 09/03/2026 [DTS] [!] Data sync called. 
+00:25:43 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:25:43 09/03/2026 [TUI] [~] New groups are {'10': {'group_id': 10, 'group_name': 'Test1234', 'members': ['Thomas', 'ThomasTest']}, '27': {'group_id': 27, 'group_name': 'Test12345', 'members': ['ThomasTest', 'Thomas', 'Thomas1', 'ThomasTest', 'Thomas', 'Thomas1']}} 
+00:25:43 09/03/2026 [TUI] [~] UI retrieved 11 events from client. 
+00:25:43 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":82,"beforeEventID":null}\x03' 
+00:25:43 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":0}' 
+00:25:43 09/03/2026 [CLT] [*] TCP response received. 
+00:25:45 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:45 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:47 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:47 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:49 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:50 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:52 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:52 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:54 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:56 09/03/2026 [TUI] [*] Send message (tes) requested. 
+00:25:56 09/03/2026 [CLT] [*] Message send. Awaiting response. 
+00:25:56 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:57 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"PUT_MESSAGE","groupID":27,"length":3}\x03tes' 
+00:25:57 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:25:57 09/03/2026 [CLT] [*] Message response received. 
+00:25:57 09/03/2026 [CLT] [+] Send message to group_id 27 successfully. 
+00:25:57 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:25:58 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":82,"beforeEventID":null}\x03' 
+00:25:58 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":92}' 
+00:25:58 09/03/2026 [CLT] [*] TCP response received. 
+00:25:58 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:25:58 09/03/2026 [DTS] [!] Data sync called. 
+00:25:58 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:25:58 09/03/2026 [TUI] [~] New groups are {'25': {'group_id': 25, 'group_name': 'TestSunday', 'members': ['Thomas', 'Thomas1', 'Thomas2']}, '26': {'group_id': 26, 'group_name': 'Test2', 'members': ['Thomas1', 'Thomas', 'Thomas1']}, '27': {'group_id': 27, 'group_name': 'Test12345', 'members': ['ThomasTest', 'Thomas', 'Thomas1']}} 
+00:25:58 09/03/2026 [TUI] [~] UI retrieved 11 events from client. 
+00:25:59 09/03/2026 [CLT] [@] I AM ALIVE 
+00:25:59 09/03/2026 [TUI] [~] UI retrieved 11 events from client. 
+00:26:01 09/03/2026 [TUI] [*] Send message (ddd) requested. 
+00:26:01 09/03/2026 [CLT] [*] Message send. Awaiting response. 
+00:26:01 09/03/2026 [CLT] [@] I AM ALIVE 
+00:26:01 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"PUT_MESSAGE","groupID":26,"length":3}\x03ddd' 
+00:26:01 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:26:01 09/03/2026 [CLT] [*] Message response received. 
+00:26:01 09/03/2026 [CLT] [+] Send message to group_id 26 successfully. 
+00:26:01 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:26:02 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas1","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":83,"beforeEventID":null}\x03' 
+00:26:02 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":92}' 
+00:26:02 09/03/2026 [CLT] [*] TCP response received. 
+00:26:02 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:26:02 09/03/2026 [DTS] [!] Data sync called. 
+00:26:02 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+00:26:02 09/03/2026 [TUI] [~] New groups are {'25': {'group_id': 25, 'group_name': 'TestSunday', 'members': ['Thomas', 'Thomas1', 'Thomas2']}, '26': {'group_id': 26, 'group_name': 'Test2', 'members': ['Thomas1', 'Thomas', 'Thomas1']}, '27': {'group_id': 27, 'group_name': 'Test12345', 'members': ['ThomasTest', 'Thomas', 'Thomas1']}} 
+00:26:02 09/03/2026 [TUI] [~] UI retrieved 12 events from client. 
+00:26:11 09/03/2026 Using proactor: IocpProactor 
+00:26:11 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:26:11 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"","type":"REGISTER"}\x03' 
+00:26:11 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:26:11 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:26:11 09/03/2026 [CLT] [+] P2P thread started. 
+00:26:11 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:26:11 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:26:11 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"","type":"REGISTER"}\x03' 
+00:26:11 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:26:11 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:26:11 09/03/2026 [CLT] [+] P2P thread started. 
+00:26:11 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:26:15 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"TestGroup","members":["Bob"]}\x03' 
+00:26:15 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:26:15 09/03/2026 [CLT] [+] Created group TestGroup successfully. 
+00:26:15 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:26:16 09/03/2026 [CLT] [!] UDP request timed out. 
+00:26:16 09/03/2026 [CLT] [@] I AM ALIVE 
+00:26:16 09/03/2026 [CLT] [!] UDP request timed out. 
+00:26:16 09/03/2026 [CLT] [@] I AM ALIVE 
+00:26:22 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:26:22 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":4797}' 
+00:26:22 09/03/2026 [CLT] [*] TCP response received. 
+00:26:22 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:27:47 09/03/2026 Using proactor: IocpProactor 
+00:27:47 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:27:47 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"","type":"REGISTER"}\x03' 
+00:27:47 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:27:47 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:27:47 09/03/2026 [CLT] [+] P2P thread started. 
+00:27:47 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:27:47 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:27:47 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"","type":"REGISTER"}\x03' 
+00:27:47 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:27:47 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:27:47 09/03/2026 [CLT] [+] P2P thread started. 
+00:27:47 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:27:52 09/03/2026 [CLT] [!] UDP request timed out. 
+00:27:52 09/03/2026 [CLT] [@] I AM ALIVE 
+00:27:52 09/03/2026 [CLT] [!] UDP request timed out. 
+00:27:52 09/03/2026 [CLT] [@] I AM ALIVE 
+00:27:53 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"TestGroup","members":["Bob"]}\x03' 
+00:27:53 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:27:53 09/03/2026 [CLT] [+] Created group TestGroup successfully. 
+00:27:53 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:27:59 09/03/2026 [CLT] [!] UDP request timed out. 
+00:27:59 09/03/2026 [CLT] [@] I AM ALIVE 
+00:27:59 09/03/2026 [CLT] [!] UDP request timed out. 
+00:27:59 09/03/2026 [CLT] [@] I AM ALIVE 
+00:28:00 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:28:00 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":5019}' 
+00:28:00 09/03/2026 [CLT] [*] TCP response received. 
+00:28:00 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:28:00 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:28:05 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:28:05 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":3423}' 
+00:28:05 09/03/2026 [CLT] [*] TCP response received. 
+00:28:05 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:28:05 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"PUT_FILE","groupID":11,"fileName":"test_file.txt","sha256":"C600D0359B013BC7A288A520CBD0A31E6FFF8E0FECE75CBE0B3784F7A5D1435F"}\x03' 
+00:28:05 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:28:05 09/03/2026 [CLT] [+] File test_file.txt advertised to group 11. 
+00:28:05 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:28:06 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":88,"beforeEventID":null}\x03' 
+00:28:06 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":179}' 
+00:28:06 09/03/2026 [CLT] [*] TCP response received. 
+00:28:06 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:28:06 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:28:06 09/03/2026 [CLT] [!] UDP request timed out. 
+00:28:06 09/03/2026 [CLT] [@] I AM ALIVE 
+00:28:06 09/03/2026 [CLT] [!] UDP request timed out. 
+00:28:06 09/03/2026 [CLT] [@] I AM ALIVE 
+00:28:06 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":88,"beforeEventID":null}\x03' 
+00:28:06 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":179}' 
+00:28:06 09/03/2026 [CLT] [*] TCP response received. 
+00:28:06 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:28:07 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_PEER","groupID":11,"peerUserID":"Alice"}\x03' 
+00:28:07 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"UNKNOWN_USER"}' 
+00:29:16 09/03/2026 Using proactor: IocpProactor 
+00:29:16 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:29:16 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"","type":"REGISTER"}\x03' 
+00:29:16 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:29:16 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:29:16 09/03/2026 [CLT] [+] P2P thread started. 
+00:29:16 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:29:19 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:29:19 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"","type":"REGISTER"}\x03' 
+00:29:19 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:29:19 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:29:19 09/03/2026 [CLT] [+] P2P thread started. 
+00:29:19 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+00:29:21 09/03/2026 [CLT] [!] UDP request timed out. 
+00:29:21 09/03/2026 [CLT] [@] I AM ALIVE 
+00:29:24 09/03/2026 [CLT] [!] UDP request timed out. 
+00:29:24 09/03/2026 [CLT] [@] I AM ALIVE 
+00:29:26 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"CREATE_GROUP","name":"TestGroup","members":["Bob"]}\x03' 
+00:29:26 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:29:26 09/03/2026 [CLT] [+] Created group TestGroup successfully. 
+00:29:26 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:29:28 09/03/2026 [CLT] [!] UDP request timed out. 
+00:29:28 09/03/2026 [CLT] [@] I AM ALIVE 
+00:29:31 09/03/2026 [CLT] [!] UDP request timed out. 
+00:29:31 09/03/2026 [CLT] [@] I AM ALIVE 
+00:29:34 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:29:34 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":5419}' 
+00:29:34 09/03/2026 [CLT] [*] TCP response received. 
+00:29:34 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:29:34 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:29:35 09/03/2026 [CLT] [!] UDP request timed out. 
+00:29:35 09/03/2026 [CLT] [@] I AM ALIVE 
+00:29:38 09/03/2026 [CLT] [!] UDP request timed out. 
+00:29:38 09/03/2026 [CLT] [@] I AM ALIVE 
+00:29:39 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+00:29:39 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":3823}' 
+00:29:39 09/03/2026 [CLT] [*] TCP response received. 
+00:29:39 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:29:40 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"PUT_FILE","groupID":11,"fileName":"test_file.txt","sha256":"C600D0359B013BC7A288A520CBD0A31E6FFF8E0FECE75CBE0B3784F7A5D1435F"}\x03' 
+00:29:40 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:29:40 09/03/2026 [CLT] [+] File test_file.txt advertised to group 11. 
+00:29:40 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:29:40 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":91,"beforeEventID":null}\x03' 
+00:29:40 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":179}' 
+00:29:40 09/03/2026 [CLT] [*] TCP response received. 
+00:29:40 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:29:40 09/03/2026 [CLT] [*] Awaiting TCP response. 
+00:29:41 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_EVENTS","groupID":null,"afterEventID":91,"beforeEventID":null}\x03' 
+00:29:41 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK","length":179}' 
+00:29:41 09/03/2026 [CLT] [*] TCP response received. 
+00:29:41 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+00:29:42 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Bob","serverID":"3PEK7PxtR5EP432A","type":"GET_PEER","groupID":11,"peerUserID":"Alice"}\x03' 
+00:29:42 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"UNKNOWN_USER"}' 
+00:33:58 09/03/2026 Using proactor: IocpProactor 
+00:33:58 09/03/2026 [CLT] [*] Local IP address is 192.168.68.128 
+00:33:58 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Alice","serverID":"","type":"REGISTER"}\x03' 
+00:33:58 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"3PEK7PxtR5EP432A","status":"OK"}' 
+00:33:58 09/03/2026 [CLT] [+] Successfully registered on the server. 
+00:33:58 09/03/2026 [CLT] [+] P2P thread started. 
+00:33:58 09/03/2026 [CLT] [+] IM ALIVE thread started. 
