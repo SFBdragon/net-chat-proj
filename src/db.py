@@ -1,12 +1,16 @@
+# ---------------------------------------------------------------------------------------
+
+# Standard modules
 from __future__ import annotations
-import secrets
 from typing import Iterable
-
-import aiosqlite
 from pydantic import BaseModel
+import secrets
+import aiosqlite
 
+# Custom Modules
 import protocol
 
+# Event definitions
 EVENT_TYPE_MESSAGE = 1
 EVENT_TYPE_FILE_AVAILABILITY = 2
 EVENT_TYPE_ADD_MEMBER = 3
@@ -18,6 +22,11 @@ class FileAvailabilityEventData(BaseModel):
 
 
 def init_db(db_path: str) -> str:
+    """
+    Creates tables and generates server ID.
+
+    :param db_path: Path of database file.
+    """
     import sqlite3
 
     with sqlite3.connect(db_path) as db:
@@ -81,6 +90,9 @@ def init_db(db_path: str) -> str:
 
 class Database:
     def __init__(self, db_path: str):
+        """
+        Set database file path and initialize async io connection.
+        """
         self.db_path = db_path
         self._connection: aiosqlite.Connection | None = None
 
@@ -101,6 +113,9 @@ class DatabaseConnection:
     async def create_event(
         self, to_group_id: int, from_user_id: str, event_data: str, event_type: int
     ) -> int:
+        """
+        Creates event by inserting into events table.
+        """
         cursor = await self.db.execute(
             "INSERT INTO events(toGroupID, fromUserID, eventData, eventType) VALUES(?, ?, ?, ?)",
             (to_group_id, from_user_id, event_data, event_type),
@@ -112,6 +127,9 @@ class DatabaseConnection:
         return cursor.lastrowid
 
     async def create_membership(self, group_id: int, user_id: str):
+        """
+        Creates member by inserting into memberships table.
+        """
         await self.db.execute(
             "INSERT OR IGNORE INTO memberships(groupID, userID) VALUES(?, ?)",
             (group_id, user_id),
@@ -119,6 +137,9 @@ class DatabaseConnection:
         await self.db.commit()
 
     async def create_group(self, group_name: str) -> int:
+        """
+        Creates group by inserting into groups table.
+        """
         cursor = await self.db.execute(
             "INSERT INTO groups(groupName) VALUES(?)", (group_name,)
         )
@@ -136,9 +157,9 @@ class DatabaseConnection:
         before_event_id: int | None = None,
     ) -> Iterable[protocol.Event] | None:
 
-        def parse_event_row(row: aiosqlite.Row) -> protocol.Event:
-            """Parse a database row into a typed Event.
-
+        async def parse_event_row(row: aiosqlite.Row) -> protocol.Event:
+            """
+            Parse a database row into a typed Event.
             Row format: (eventID, toGroupID, fromUserID, eventData, eventType)
             """
 
@@ -163,12 +184,22 @@ class DatabaseConnection:
                     fileName=data.name,
                 )
             elif event_type == EVENT_TYPE_ADD_MEMBER:
+                cursor = await self.db.execute(
+                    "SELECT groupName FROM groups WHERE groupID = ?", (to_group_id,)
+                )
+                await self.db.commit()
+
+                group_name_row = await cursor.fetchone()
+                if not group_name_row:
+                    raise
+
                 return protocol.AddMemberEvent(
                     eventID=event_id,
                     groupID=to_group_id,
                     senderUserID=from_user_id,
                     type="ADD_MEMBER",
                     userID=event_data,
+                    groupName=group_name_row[0],
                 )
             else:
                 raise ValueError(f"Unknown event type: {event_type}")
@@ -199,9 +230,12 @@ class DatabaseConnection:
         if not rows:
             return None
 
-        return [parse_event_row(row) for row in rows]
+        return [await parse_event_row(row) for row in rows]
 
     async def check_membership(self, user_id: str, group_id: int) -> bool:
+        """
+        Checks if a user is a member of a particular group.
+        """
         print(f"Checking for membership in {group_id} for {user_id}")
         async with self.db.execute(
             "SELECT * FROM memberships WHERE groupID == ? AND userID == ?",
@@ -217,6 +251,9 @@ class DatabaseConnection:
                 return False
 
     async def group_members(self, group_id: int) -> Iterable[str] | None:
+        """
+        Gets all groups which a user is a member of.
+        """
         async with self.db.execute(
             "SELECT userID FROM memberships WHERE groupID == ?",
             (group_id),

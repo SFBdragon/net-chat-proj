@@ -7,6 +7,7 @@ from pydantic import TypeAdapter
 
 import db as database
 import protocol
+from utils import run_async_in_thread
 
 LIVENESS_TIMEOUT = 5.0
 
@@ -20,8 +21,10 @@ class Server:
         # 1. Time since epoch of last IM_ALIVE
         #   - Needed to track liveness
         # 2. The client's IP on its LAN
-        #   - Necessary for initiating P2P
+        #   - Necessary for facilitating client P2P networking
         self._user_liveness: dict[str, tuple[float, str]] = {}
+        # Synchronize motifications to the user liveness dict.
+        self._user_liveness_lock = threading.RLock()
 
         # Bind both ports upfront.
         # Save the ports that were bound in case we bound to port 0 (any available port)
@@ -105,6 +108,50 @@ class Server:
 
         print("UDP server stopped...")
 
+    async def _handle_udp_request(self, data, addr, db: database.DatabaseConnection):
+        """Handle a single UDP request."""
+
+        loop = asyncio.get_event_loop()
+
+        print(f"> UDP received from {addr}: {data}")
+
+        try:
+            header = protocol.parse_request_header(data, self.server_id)
+
+            # Only IM_ALIVE requests should arrive on UDP.
+            if not isinstance(header, protocol.ImAlive):
+                raise protocol.Status(protocol.STATUS_BAD_REQUEST)
+
+            with self._user_liveness_lock:
+                self._user_liveness[header.userID] = time.time(), header.localIP
+
+            events = await db.get_events(
+                header.userID, None, header.afterEventID or 0, None
+            )
+
+            updated = False
+            if events:
+                if events:
+                    updated = True
+
+            response = protocol.ImAliveResponse(
+                version=protocol.MAP_VER,
+                serverID=self.server_id,
+                status=protocol.STATUS_OK,
+                isOutdated=updated,
+            )
+        except protocol.Status as s:
+            response = protocol.GenericResponse(
+                version=protocol.MAP_VER, serverID=self.server_id, status=s.status
+            )
+
+        response_json_str = response.model_dump_json()
+
+        print(f"< UDP sending to {addr}: {response_json_str}")
+
+        response_bytes = response_json_str.encode("utf-8") + b"\x03"
+        await loop.sock_sendto(self._udp_socket, response_bytes, addr)
+
     async def _tcp_server(self):
         async with database.Database(self._db_path) as db:
             addr, port = self._tcp_socket.getsockname()
@@ -153,6 +200,12 @@ class Server:
                             group_id = await db.create_group(header.name)
 
                             await db.create_membership(group_id, header.userID)
+                            await db.create_event(
+                                group_id,
+                                header.userID,
+                                header.userID,
+                                database.EVENT_TYPE_ADD_MEMBER,
+                            )
 
                             for member in header.members:
                                 await db.create_membership(group_id, member)
@@ -169,7 +222,9 @@ class Server:
                                 status=protocol.STATUS_OK,
                             )
                         case protocol.PutMessage():
-                            if not await db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(
+                                header.userID, header.groupID
+                            ):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -196,7 +251,9 @@ class Server:
                                     status=protocol.STATUS_OK,
                                 )
                         case protocol.PutFile():
-                            if not await db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(
+                                header.userID, header.groupID
+                            ):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -221,7 +278,9 @@ class Server:
                                     status=protocol.STATUS_OK,
                                 )
                         case protocol.PutMember():
-                            if not await db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(
+                                header.userID, header.groupID
+                            ):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -252,7 +311,8 @@ class Server:
                                 raise protocol.Status(protocol.STATUS_NOT_MEMBER)
 
                             try:
-                                t, ip = self._user_liveness[header.peerUserID]
+                                with self._user_liveness_lock:
+                                    t, ip = self._user_liveness[header.peerUserID]
                             except KeyError:
                                 raise protocol.Status(protocol.STATUS_UNKNOWN_USER)
 
@@ -302,7 +362,9 @@ class Server:
                                 length=len(response_body),
                             )
                         case protocol.GetAlive():
-                            if not await db.check_membership(header.userID, header.groupID):
+                            if not await db.check_membership(
+                                header.userID, header.groupID
+                            ):
                                 response_header = protocol.GenericResponse(
                                     version=protocol.MAP_VER,
                                     serverID=self.server_id,
@@ -313,13 +375,14 @@ class Server:
 
                                 if members:
                                     t = time.time()
-                                    members = filter(
-                                        lambda member: (
-                                            self._user_liveness[member][0]
-                                            > t - LIVENESS_TIMEOUT
-                                        ),
-                                        members,
-                                    )
+                                    with self._user_liveness_lock:
+                                        members = filter(
+                                            lambda member: (
+                                                self._user_liveness[member][0]
+                                                > t - LIVENESS_TIMEOUT
+                                            ),
+                                            members,
+                                        )
                                     members = list(members)
                                 else:
                                     members = []
@@ -358,69 +421,6 @@ class Server:
         finally:
             sock.close()
             print(f"TCP closed: {addr}")
-
-    async def _handle_udp_request(self, data, addr, db: database.DatabaseConnection):
-        """Handle a single UDP request."""
-
-        loop = asyncio.get_event_loop()
-
-        print(f"> UDP received from {addr}: {data}")
-
-        try:
-            header = protocol.parse_request_header(data, self.server_id)
-
-            # Only IM_ALIVE requests should arrive on UDP.
-            if not isinstance(header, protocol.ImAlive):
-                raise protocol.Status(protocol.STATUS_BAD_REQUEST)
-
-            # TODO validate userID
-            # TODO check if outdated
-
-            self._user_liveness[header.userID] = time.time(), header.localIP
-
-            events = await db.get_events(
-                header.userID, None, header.afterEventID or 0, None
-            )
-
-            updated = False
-            if events:
-                if events:
-                    updated = True
-
-            response = protocol.ImAliveResponse(
-                version=protocol.MAP_VER,
-                serverID=self.server_id,
-                status=protocol.STATUS_OK,
-                isOutdated=updated,
-            )
-        except protocol.Status as s:
-            response = protocol.GenericResponse(
-                version=protocol.MAP_VER, serverID=self.server_id, status=s.status
-            )
-
-        response_json_str = response.model_dump_json()
-
-        print(f"< UDP sending to {addr}: {response_json_str}")
-
-        response_bytes = response_json_str.encode("utf-8")
-        await loop.sock_sendto(self._udp_socket, response_bytes, addr)
-
-
-# Entry point for threading
-def run_async_in_thread(target_coroutine):
-    def thread_target():
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(target_coroutine)
-        finally:
-            loop.close()
-
-    thread = threading.Thread(target=thread_target)
-    thread.daemon = True
-    thread.start()
-
-    return thread
 
 
 if __name__ == "__main__":
