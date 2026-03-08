@@ -133,7 +133,7 @@ def parse_request_header(header_bytes: bytes, expected_server_id: str) -> Reques
 
     # Raise a Status exception if the server_id field doesn't match the
     if header.serverID != expected_server_id and not (
-        header.type == "REGISTER" and not header.serverID
+        header.type == "REGISTER" and not header.serverID and not header.type == "FILE_REQUEST"
     ):
         raise Status(STATUS_UNKNOWN_SERVER)
 
