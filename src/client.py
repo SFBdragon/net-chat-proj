@@ -143,7 +143,7 @@ class Client:
     # def add_to_group(user_ids: list[str]) -> bool:
 
     #Obtains file from peer and writes to disk, returns True if succesful and False if not
-    def get_file(self, peer_user_id: str, sha256_file_id: str, save_path: str) -> bool:
+    async def get_file(self, peer_user_id: str, sha256_file_id: str, save_path: str) -> bool:
         """
         :param peer_user_id: Username of peer hosting the file.
         :param sha256_file_id: Hash of file.
@@ -152,10 +152,10 @@ class Client:
         """
 
         group_id = self.AppState["current_group"]
-        peer_ip = self._GET_PEER(peer_user_id)
+        peer_ip = await self._GET_PEER(peer_user_id)
 
-        return self.FILE_REQUEST(peer_ip, sha256_file_id,group_id, save_path)
-
+        file_req_status = await self.FILE_REQUEST(peer_ip, sha256_file_id, group_id, save_path)
+        return file_req_status
 
     async def share_file(self, file_path: str) -> bool:
         """
@@ -216,6 +216,7 @@ class Client:
         logging.debug(MOD_CODE + f"[-] Failed to advertise file {file_name}: {response_header.status}")
         return False
     
+
     async def _REGISTER(self, user_id: str, server_id="") -> bool:
         """
         Verify server reachability, protocol compatibility, and register the user ID with the server.
@@ -270,45 +271,50 @@ class Client:
         _, response_body_bytes = await self._tcp_request(request, self.server_ip)
         logging.debug(MOD_CODE + "[*] TCP response received.")
 
-        response_body_json = response_body_bytes.decode("utf-8")
-        response_body_list = protocol.parse_events_response_body(response_body_json)
+        #Guarding for if no new events
+        if(response_body_bytes):
+            response_body_json = response_body_bytes.decode("utf-8")
+            response_body_list = protocol.parse_events_response_body(response_body_json)
 
-        initialLoad = False
-        if self.AppState["last_event_id"] == 0:
-            initialLoad = True
-            self.AppState["events"] = response_body_list
+            initialLoad = False
+            if self.AppState["last_event_id"] == 0:
+                initialLoad = True
+                self.AppState["events"] = response_body_list
 
-        # Set last event ID to the last event in the returned list
-        self.AppState["last_event_id"] = response_body_list[-1].eventID
+            # Set last event ID to the last event in the returned list
+            self.AppState["last_event_id"] = response_body_list[-1].eventID
 
-        for event in response_body_list:
-            if not initialLoad:
-                self.AppState["events"].append(event)
+            for event in response_body_list:
+                if not initialLoad:
+                    self.AppState["events"].append(event)
 
-            print(event)
-            if isinstance(event, protocol.MessageEvent):
-                print(f"[MSG] {event.senderUserID}: {event.message}")
-            elif isinstance(event, protocol.FileAvailableEvent):
-                print(f"[FILE] {event.senderUserID} shared {event.fileName}")
-            elif isinstance(event, protocol.AddMemberEvent):
-                print(f"[MEMBER] {event.userID} was added by {event.senderUserID}")
 
-                group_id = str(event.groupID)
+                if isinstance(event, protocol.MessageEvent):
+                    print(f"[MSG] {event.senderUserID}: {event.message}")
+                elif isinstance(event, protocol.FileAvailableEvent):
+                    print(f"[FILE] {event.senderUserID} shared {event.fileName}")
+                elif isinstance(event, protocol.AddMemberEvent):
+                    print(f"[MEMBER] {event.userID} was added by {event.senderUserID}")
 
-                if group_id not in self.AppState["groups"]:
-                    self.AppState["groups"][group_id] = {
-                        "group_id": event.groupID,
-                        "group_name": event.groupName,
-                        "members": [],
-                    }
+                    group_id = str(event.groupID)
 
-                self.AppState["groups"][group_id]["members"].append(event.userID)
+                    if group_id not in self.AppState["groups"]:
+                        self.AppState["groups"][group_id] = {
+                            "group_id": event.groupID,
+                            "group_name": event.groupName,
+                            "members": [],
+                        }
 
-                print(self.AppState["groups"])
+                    self.AppState["groups"][group_id]["members"].append(event.userID)
 
-        # tell TUI to redraw
-        logging.debug(MOD_CODE + "[!] Attempting to broadcast data update.")
-        self.ui.post_message(DataUpdated())
+                    print(self.AppState["groups"])
+
+            # tell TUI to redraw
+            logging.debug(MOD_CODE + "[!] Attempting to broadcast data update.")
+            #self.ui.post_message(DataUpdated())
+        else:
+            
+            response_body_list = None
 
         return response_body_list
 
@@ -560,7 +566,6 @@ class Client:
                 )
                 print("TRYING UDP")
                 response = self._udp_request(request, self.server_ip)
-                print("[@] IM ALIVE: ")
                 logging.debug(MOD_CODE + "[@] I AM ALIVE")
 
                 if (
