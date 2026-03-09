@@ -7084,3 +7084,114 @@
 10:45:29 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"TestP2P2","serverID":"ux0wKiUxWf8hulPi","type":"FILE_REQUEST","groupID":1,"sha256":"C600D0359B013BC7A288A520CBD0A31E6FFF8E0FECE75CBE0B3784F7A5D1435F"}\x03' 
 10:45:29 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"ux0wKiUxWf8hulPi","status":"OK","length":44}' 
 10:45:29 09/03/2026 [CLT] [@] I AM ALIVE 
+11:04:43 09/03/2026 Using proactor: IocpProactor 
+11:05:17 09/03/2026 Using proactor: IocpProactor 
+11:05:24 09/03/2026 [TUI] [+] Logging in as user Luca to  
+11:05:24 09/03/2026 [CLT] [*] Local IP address is 196.42.64.220 
+11:05:24 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Luca","serverID":"","type":"REGISTER"}\x03' 
+11:05:24 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"ux0wKiUxWf8hulPi","status":"OK"}' 
+11:05:24 09/03/2026 [CLT] [+] Successfully registered on the server. 
+11:05:24 09/03/2026 [CLT] [+] P2P thread started. 
+11:05:24 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+11:05:24 09/03/2026 [DTS] [!] Data sync called. 
+11:05:24 09/03/2026 [TUI] [*] Login status: True 
+11:05:24 09/03/2026 [TUI] [*] Calling data update 
+11:05:24 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+11:05:24 09/03/2026 [TUI] [~] New groups are {} 
+11:05:24 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:26 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:29 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:29 09/03/2026 [TUI] [+] Logging in as user Thomas to  
+11:05:29 09/03/2026 [CLT] [*] Local IP address is 196.42.64.220 
+11:05:29 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"","type":"REGISTER"}\x03' 
+11:05:29 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"ux0wKiUxWf8hulPi","status":"OK"}' 
+11:05:29 09/03/2026 [CLT] [+] Successfully registered on the server. 
+11:05:29 09/03/2026 [CLT] [+] P2P thread started. 
+11:05:29 09/03/2026 [CLT] [+] IM ALIVE thread started. 
+11:05:29 09/03/2026 [DTS] [!] Data sync called. 
+11:05:29 09/03/2026 [TUI] [*] Login status: True 
+11:05:29 09/03/2026 [TUI] [*] Calling data update 
+11:05:29 09/03/2026 [TUI] [*] Invoking data update in chat interface. 
+11:05:29 09/03/2026 [TUI] [~] New groups are {} 
+11:05:29 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:31 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:31 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:33 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:36 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:38 09/03/2026 [CLT] [!] UDP request timed out. 
+11:05:38 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:38 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:40 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:40 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:42 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:42 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:49 09/03/2026 [CLT] [!] UDP request timed out. 
+11:05:49 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:49 09/03/2026 [CLT] [!] UDP request timed out. 
+11:05:49 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:51 09/03/2026 [TUI] [+] Modal submitted for Create Group. 
+11:05:51 09/03/2026 [TUI] [*] Creating group. 
+11:05:51 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:52 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:52 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"ux0wKiUxWf8hulPi","type":"CREATE_GROUP","name":"DemoGroup","members":["Thomas","Luca"]}\x03' 
+11:05:52 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"ux0wKiUxWf8hulPi","status":"OK"}' 
+11:05:52 09/03/2026 [CLT] [+] Created group DemoGroup successfully. 
+11:05:52 09/03/2026 [CLT] [*] Awaiting TCP response. 
+11:05:53 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"ux0wKiUxWf8hulPi","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+11:05:53 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"ux0wKiUxWf8hulPi","status":"OK","length":335}' 
+11:05:53 09/03/2026 [CLT] [*] TCP response received. 
+11:05:53 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+11:05:54 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:54 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:54 09/03/2026 [CLT] [@] Events are outdated 
+11:05:54 09/03/2026 Using proactor: IocpProactor 
+11:05:54 09/03/2026 [CLT] [*] Awaiting TCP response. 
+11:05:55 09/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Luca","serverID":"ux0wKiUxWf8hulPi","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+11:05:55 09/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"ux0wKiUxWf8hulPi","status":"OK","length":335}' 
+11:05:55 09/03/2026 [CLT] [*] TCP response received. 
+11:05:55 09/03/2026 [CLT] [!] Attempting to broadcast data update. 
+11:05:56 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:57 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:58 09/03/2026 [CLT] [@] I AM ALIVE 
+11:05:59 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:00 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:01 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:03 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:03 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:05 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:05 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:07 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:08 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:09 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:10 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:11 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:12 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:14 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:14 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:16 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:16 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:18 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:19 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:20 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:21 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:23 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:25 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:27 09/03/2026 [CLT] [!] UDP request timed out. 
+11:06:27 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:27 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:29 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:30 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:32 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:34 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:37 09/03/2026 [CLT] [!] UDP request timed out. 
+11:06:37 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:39 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:41 09/03/2026 [CLT] [!] UDP request timed out. 
+11:06:41 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:41 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:43 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:48 09/03/2026 [CLT] [!] UDP request timed out. 
+11:06:48 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:50 09/03/2026 [CLT] [!] UDP request timed out. 
+11:06:50 09/03/2026 [CLT] [@] I AM ALIVE 
+11:06:50 09/03/2026 [CLT] [WinError 10054] An existing connection was forcibly closed by the remote host 

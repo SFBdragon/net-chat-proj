@@ -311,7 +311,7 @@ class Client:
 
             # tell TUI to redraw
             logging.debug(MOD_CODE + "[!] Attempting to broadcast data update.")
-            #self.ui.post_message(DataUpdated())
+            self.ui.post_message(DataUpdated())
         else:
             
             response_body_list = None
