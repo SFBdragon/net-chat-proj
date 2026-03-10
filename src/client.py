@@ -170,13 +170,16 @@ class Client:
         # Read file and compute SHA256
         with open(file_path, "rb") as f:
             file_bytes = f.read()
+        logging.debug("[+] Read file successfully.")
 
         sha256 = hashlib.sha256(file_bytes).hexdigest().upper()
+        logging.debug("[+] File hash is {sha256}.")
 
         #Add file to local dict which maintains which files have been shared along with sha256 hash,
         #  so _handle_p2p_request can serve it
         self.AppState["shared_files"][sha256] = file_path
-
+        
+        logging.debug("[+] Calling PUT_FILE.")
         return await self._PUT_FILE(group_id, file_path, sha256)
     
 
