@@ -9,7 +9,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Center, Horizontal, Vertical, VerticalScroll
 from textual.events import Focus, Key
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, Static
+from textual.widgets import Button, Input, Label, Static, DirectoryTree
 
 import asyncio
 from pathlib import Path
@@ -141,6 +141,7 @@ class ActionModal(ModalScreen):
         match self._title:
             case "Send File":
                 logging.debug(MOD_CODE + "[*] Sharing file.")
+                
             case "Create Group":
                 logging.debug(MOD_CODE + "[*] Creating group.")
                 group_name = self.query_one("#input-1", Input).value
@@ -156,14 +157,80 @@ class ActionModal(ModalScreen):
         Handles keypresses; escape to dismiss.
         """
         if event.key == "escape":
+            event.stop()
             self.dismiss()
         # Prevent propagation.
         if event.key not in ("tab", "backspace", "enter"):
             event.stop()
             event.prevent_default()
 
-
 # ---------------------------------------------------------------------------------------
+
+# File picker modal
+
+class PlainDirectoryTree(DirectoryTree):
+    """
+    DirectoryTree with icons stripped so they don't render as broken characters.
+    """
+    ICON_NODE = ""
+    ICON_NODE_EXPANDED = ""
+    ICON_FILE = ""
+
+
+class FilePickerModal(ModalScreen):
+    """
+    Modal for picking files with directory tree and auto navigation.
+    """
+    CSS_PATH = str(Path(__file__).parent / "../styles/action_modal.tcss")
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="modal-box"):
+            yield Label("Send File", id="modal-title")
+            yield Input(placeholder="File path...", id="file-path-input", classes="modal-input")
+            yield PlainDirectoryTree(str(Path("~/").expanduser()), id="file-tree")
+            yield Input(placeholder="Description", id="file-description", classes="modal-input")
+            yield Button("Submit", id="modal-submit")
+
+    def on_screen_resume(self) -> None:
+        self.query_one(PlainDirectoryTree).focus()
+
+    def on_mount(self) -> None:
+        self.query_one(PlainDirectoryTree).focus()
+
+    def on_directory_tree_file_selected(self, event: DirectoryTree.FileSelected) -> None:
+        event.stop()
+        # Set flag to prevent on_input_changed from re-syncing the tree
+        self._syncing_from_tree = True
+        self.query_one("#file-path-input", Input).value = str(event.path)
+        self._syncing_from_tree = False
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        if event.input.id != "file-path-input":
+            return
+        # Skip if this change was triggered by a tree selection
+        if getattr(self, "_syncing_from_tree", False):
+            return
+        p = Path(event.value).expanduser()
+        tree = self.query_one(PlainDirectoryTree)
+        # Navigate to the closest valid parent so partial paths don't crash
+        if p.is_dir():
+            tree.path = p
+        elif p.parent.is_dir():
+            tree.path = p.parent
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        file_path = self.query_one("#file-path-input", Input).value
+        description = self.query_one("#file-description", Input).value
+        self.dismiss((file_path, description))
+
+    def on_key(self, event: Key) -> None:
+        if event.key == "escape":
+            event.stop()
+            self.dismiss(None)
+        if event.key not in ("tab", "backspace", "enter"):
+            event.stop()
+            event.prevent_default()
 
 # ---------------------------------------------------------------------------------------
 
@@ -214,16 +281,24 @@ class ChatInterface(App):
         
         # Infer action from button ID
         if btn_id in ACTION_CONFIG:
-            title, field1, field2 = ACTION_CONFIG[btn_id]
-            self.app.push_screen(ActionModal(title, field1, field2))
+            if btn_id == "action-send-file":
+                def handle_file(result):
+                    if result:
+                        file_path, description = result
+                        logging.debug(MOD_CODE + f"[*] Sharing file {file_path}: {description}")
+                        # await client.send_file(self.current_group, file_path, description)
+                self.app.push_screen(FilePickerModal(), handle_file)
+            else:
+                title, field1, field2 = ACTION_CONFIG[btn_id]
+                self.app.push_screen(ActionModal(title, field1, field2))
 
         else:
             group_id = int(btn_id.split("-")[1])
             self.current_group = group_id
 
-            group_name = group_id
+            group_banner = f"[bold]{event.button.label}[/bold]\n{' '.join(list(dict.fromkeys(event.button.group_members)))}"
 
-            self.query_one("#group-banner", Static).update(f" {group_name}")
+            self.query_one("#group-banner", Static).update(f"{group_banner}")
 
             group_buttons = [
                 b for b in self.query(Button) if b.id and b.id.startswith("group-")
@@ -241,10 +316,24 @@ class ChatInterface(App):
             scroll = self.query_one("#message-scroll", VerticalScroll)
             self.call_after_refresh(scroll.scroll_end, animate=False)
 
+    def on_screen_suspend(self) -> None:
+        """
+        Called when a modal is pushed on top — disable key handling.
+        """
+        self._saved_pane = self.current_pane
+        self.current_pane = None
+
+    def on_screen_resume(self) -> None:
+        """Called when modal is dismissed — restore key handling."""
+        if hasattr(self, "_saved_pane") and self._saved_pane is not None:
+            self.current_pane = self._saved_pane
+            self.update_pane_selection()
+
     async def on_key(self, event: Key) -> None:
         """
         Handle key press events for navigation.
         """
+        logging.debug(MOD_CODE + f"[~] Active screen: {self.app.screen}, focused: {self.app.focused}")
         match self.current_pane:
 
             case "left":
@@ -352,8 +441,9 @@ class ChatInterface(App):
             for group_id, group_data in self.groups.items():
                 group_id = group_data["group_id"]
                 group_name = group_data["group_name"]
-                members = group_data["members"]
-                left_pane.mount(Button(group_name, id=f"group-{group_id}"))
+                button = Button(group_name, id=f"group-{group_id}")
+                button.group_members = group_data["members"]
+                left_pane.mount(button)
         else:
             left_pane.mount(Static("Join/create a group."))
 

@@ -14,11 +14,10 @@ Screen {
 }
 
 #group-banner {
-	height: 1;
+	height: 2;
 	padding: 0 1;
 	background: #2d3b3b;
 	color: #7DAEA3;
-	text-style: bold;
 	width: 100%;
 }
 
