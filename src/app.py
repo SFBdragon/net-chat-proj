@@ -141,6 +141,7 @@ class ActionModal(ModalScreen):
         match self._title:
             case "Send File":
                 logging.debug(MOD_CODE + "[*] Sharing file.")
+                
             case "Create Group":
                 logging.debug(MOD_CODE + "[*] Creating group.")
                 group_name = self.query_one("#input-1", Input).value
@@ -162,8 +163,6 @@ class ActionModal(ModalScreen):
             event.stop()
             event.prevent_default()
 
-
-# ---------------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------------
 
@@ -221,9 +220,9 @@ class ChatInterface(App):
             group_id = int(btn_id.split("-")[1])
             self.current_group = group_id
 
-            group_name = group_id
+            group_banner = f"[bold]{event.button.label}[/bold]\n{' '.join(list(dict.fromkeys(event.button.group_members)))}"
 
-            self.query_one("#group-banner", Static).update(f" {group_name}")
+            self.query_one("#group-banner", Static).update(f"{group_banner}")
 
             group_buttons = [
                 b for b in self.query(Button) if b.id and b.id.startswith("group-")
@@ -352,8 +351,9 @@ class ChatInterface(App):
             for group_id, group_data in self.groups.items():
                 group_id = group_data["group_id"]
                 group_name = group_data["group_name"]
-                members = group_data["members"]
-                left_pane.mount(Button(group_name, id=f"group-{group_id}"))
+                button = Button(group_name, id=f"group-{group_id}")
+                button.group_members = group_data["members"]
+                left_pane.mount(button)
         else:
             left_pane.mount(Static("Join/create a group."))
 
