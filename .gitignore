@@ -17,5 +17,13 @@ database.sqlite3
 debug.log
 src/debug.log
 
+# Share file lists
+*.pkl
+src/*.pkl
+
+# File downloads
+chat-downloads/*
+src/chat-downloads/*
+
 # Documentation builds
-docs/build
+docs/build 
