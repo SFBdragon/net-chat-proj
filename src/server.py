@@ -287,6 +287,10 @@ class Server:
                                     status=protocol.STATUS_NOT_MEMBER,
                                 )
                             else:
+                                await db.create_membership(
+                                    header.groupID, header.addUserID
+                                )
+
                                 await db.create_event(
                                     header.groupID,
                                     header.userID,
