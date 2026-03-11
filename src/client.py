@@ -120,7 +120,7 @@ class Client:
             )
             await self.GET_EVENTS()
 
-    async def add_user_to_group(self, group_id: int, user_id: str):
+    async def add_group_member(self, group_id: int, user_id: str):
         """
         Adds user to the specified group.
 
