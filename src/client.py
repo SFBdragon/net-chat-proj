@@ -4,13 +4,11 @@
 import hashlib
 import logging
 import os
+import pickle
 import socket
 import threading
 import time
 from typing import Optional
-import utils
-import os
-import pickle
 
 # Custom modules
 import protocol
@@ -170,9 +168,6 @@ class Client:
             logging.debug(MOD_CODE + f"[+] Created group {group_name} successfully.")
             await self.GET_EVENTS()
 
-    # TODO
-    # def add_to_group(user_ids: list[str]) -> bool:
-
     # Obtains file from peer and writes to disk, returns True if succesful and False if not
     async def get_file(
         self, peer_user_id: str, sha256_file_id: str, save_path: str
@@ -187,10 +182,11 @@ class Client:
         group_id = self.AppState["current_group"]
         peer_ip = await self._GET_PEER(peer_user_id)
 
-        file_req_status = await self.FILE_REQUEST(
-            peer_ip, sha256_file_id, group_id, save_path
-        )
-        return file_req_status
+        if peer_ip is not None:
+            file_req_status = await self.FILE_REQUEST(
+                peer_ip, sha256_file_id, group_id, save_path
+            )
+            return file_req_status
 
     async def share_file(self, file_path: str) -> bool:
         """
@@ -212,14 +208,15 @@ class Client:
         sha256 = hashlib.sha256(file_bytes).hexdigest().upper()
         logging.debug("[+] File hash is {sha256}.")
 
-        #Add file to local database which maintains which files have been shared along with sha256 hash and
-        #group ID, per user
+        # Add file to local database which maintains which files have been shared along with sha256 hash and
+        # group ID, per user
         # so _handle_p2p_request can serve it
-        self._save_shared_files(group_id, sha256, os.path.basename(file_path), file_path)
+        self._save_shared_files(
+            group_id, sha256, os.path.basename(file_path), file_path
+        )
 
-        #DEPRECATED
-        #self.AppState["shared_files"][sha256] = file_path 
-
+        # DEPRECATED
+        # self.AppState["shared_files"][sha256] = file_path
 
         return await self._PUT_FILE(group_id, file_path, sha256)
 
@@ -361,7 +358,7 @@ class Client:
 
         return response_body_list
 
-    async def _GET_PEER(self, peer_user_id: str) -> str:
+    async def _GET_PEER(self, peer_user_id: str) -> str | None:
         """
         Request the most recently advertised localIP for a member of the group which the requesting user is also on.
         This facilitates the ability of a client to initiate a P2P exchange with another client.
@@ -379,14 +376,11 @@ class Client:
             request, self.server_ip
         )
 
+        if response_header.status != protocol.STATUS_OK:
+            return None
+
         response_body_str = response_body_bytes.decode("utf-8")  # Peer IP Address
-
-        if response_header.status == protocol.STATUS_OK:
-            return response_body_str
-
-        return "0.0.0.0"
-
-        # TODO: Add error handling here?
+        return response_body_str
 
     # ---------------------------------------------------------------------------------------------------------------------
     # P2P request and response methods
@@ -410,8 +404,7 @@ class Client:
         response_header, response_body_bytes = await self._tcp_request(
             request, peer_ip, b"", P2P_PORT
         )
-
-        if response_header.status != protocol.STATUS_OK:
+        if response_header.status != protocol.STATUS_OK or response_body_bytes is None:
             return False
 
         # Verifying file integrity
@@ -448,9 +441,16 @@ class Client:
 
                     sha256 = header.sha256
 
-                    #Look for shared file which matches sha256 hash of request
-                    file_path = next((f for _, f_sha256, _, f in self._load_shared_files() if f_sha256 == sha256), None)
-                    
+                    # Look for shared file which matches sha256 hash of request
+                    file_path = next(
+                        (
+                            f
+                            for _, f_sha256, _, f in self._load_shared_files()
+                            if f_sha256 == sha256
+                        ),
+                        None,
+                    )
+
                     logging.debug(MOD_CODE + f"File Path: {file_path}")
 
                     # If file matching sha256 hash from request does exist and is shared, parse it
@@ -647,26 +647,31 @@ class Client:
         finally:
             s.close()
 
-
     def _load_shared_files(self) -> list[tuple]:
         """Load shared files registry from disk, returning empty list if not found."""
-        shared_files_path = SHARED_FILES_BASE_PATH + "." + self.AppState["user_id"] + ".pkl"
+        shared_files_path = (
+            SHARED_FILES_BASE_PATH + "." + self.AppState["user_id"] + ".pkl"
+        )
         try:
             with open(shared_files_path, "rb") as f:
                 return pickle.load(f)
-        except (FileNotFoundError, EOFError):
+        except FileNotFoundError, EOFError:
             return []
 
-    def _save_shared_files(self, group_id: str, sha256: str, file_name: str, file_path:str):
+    def _save_shared_files(
+        self, group_id: str, sha256: str, file_name: str, file_path: str
+    ):
         """Persist shared files registry to disk."""
-        
-        shared_files_path = SHARED_FILES_BASE_PATH + "." + self.AppState["user_id"] + ".pkl"
+
+        shared_files_path = (
+            SHARED_FILES_BASE_PATH + "." + self.AppState["user_id"] + ".pkl"
+        )
         shared = self._load_shared_files()
         shared.append((group_id, sha256, file_name, file_path))
 
         with open(shared_files_path, "wb") as f:
             pickle.dump(shared, f)
-    
+
     # -------------------------------------------------------------------------------------------------------------------------
 
 
