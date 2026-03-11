@@ -7195,3 +7195,48 @@
 11:06:50 09/03/2026 [CLT] [!] UDP request timed out. 
 11:06:50 09/03/2026 [CLT] [@] I AM ALIVE 
 11:06:50 09/03/2026 [CLT] [WinError 10054] An existing connection was forcibly closed by the remote host 
+10:29:11 11/03/2026 Using proactor: IocpProactor 
+10:29:25 11/03/2026 [TUI] [+] Logging in as user Thomas to  
+10:29:25 11/03/2026 [CLT] [*] Local IP address is 196.42.64.103 
+10:29:25 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"","type":"REGISTER"}\x03' 
+10:29:25 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK"}' 
+10:29:25 11/03/2026 [CLT] [+] Successfully registered on the server. 
+10:29:25 11/03/2026 [CLT] [+] P2P thread started. 
+10:29:25 11/03/2026 [CLT] [+] IM ALIVE thread started. 
+10:29:25 11/03/2026 [DTS] [!] Data sync called. 
+10:29:25 11/03/2026 [TUI] [*] Login status: True 
+10:29:25 11/03/2026 [TUI] [*] Calling data update 
+10:29:25 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:29:25 11/03/2026 [TUI] [~] New groups are {} 
+10:29:25 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:25 11/03/2026 [CLT] [@] Events are outdated 
+10:29:25 11/03/2026 Using proactor: IocpProactor 
+10:29:25 11/03/2026 [CLT] [*] Awaiting TCP response. 
+10:29:26 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+10:29:26 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK","length":1729}' 
+10:29:26 11/03/2026 [CLT] [*] TCP response received. 
+10:29:26 11/03/2026 [CLT] [!] Attempting to broadcast data update. 
+10:29:26 11/03/2026 [DTS] [!] Data sync called. 
+10:29:26 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:29:26 11/03/2026 [TUI] [~] New groups are {'1': {'group_id': 1, 'group_name': 'Demo Group', 'members': ['Thomas', 'Krishnaraj']}, '2': {'group_id': 2, 'group_name': 'Demo Group 2', 'members': ['Shaun', 'Thomas', 'Krishnaraj']}} 
+10:29:27 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:29 11/03/2026 [TUI] [~] UI retrieved 17 events from client. 
+10:29:34 11/03/2026 [CLT] [!] UDP request timed out. 
+10:29:34 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:37 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:39 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:46 11/03/2026 [CLT] [!] UDP request timed out. 
+10:29:46 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:48 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:50 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:52 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:54 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:57 11/03/2026 [CLT] [@] I AM ALIVE 
+10:29:59 11/03/2026 [CLT] [@] I AM ALIVE 
+10:30:01 11/03/2026 [CLT] [@] I AM ALIVE 
+10:30:03 11/03/2026 [CLT] [@] I AM ALIVE 
+10:30:05 11/03/2026 [CLT] [@] I AM ALIVE 
+10:30:07 11/03/2026 [CLT] [@] I AM ALIVE 
+10:30:10 11/03/2026 [CLT] [@] I AM ALIVE 
+10:30:12 11/03/2026 [CLT] [@] I AM ALIVE 
+10:30:14 11/03/2026 [CLT] [@] I AM ALIVE 
