@@ -1,21 +1,31 @@
 # ---------------------------------------------------------------------------------------
 
 # Textual for TUI
-from textual import events, keys
-from textual.app import App, ComposeResult
-from textual.containers import Center, Horizontal, Vertical, VerticalScroll
-from textual.events import Focus, Key
-from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, Static, DirectoryTree, ListView, ListItem
-
-import os
-import asyncio
-from pathlib import Path
-from utils import run_async_in_thread
-
 # Logging
 import logging
-logging.basicConfig(level=logging.DEBUG, filename="debug.log", format="%(asctime)s %(message)s ", datefmt="%H:%M:%S %d/%m/%Y",)
+import os
+from pathlib import Path
+
+from textual.app import App, ComposeResult
+from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.events import Key
+from textual.screen import ModalScreen
+from textual.widgets import (
+    Button,
+    DirectoryTree,
+    Input,
+    Label,
+    ListItem,
+    ListView,
+    Static,
+)
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename="debug.log",
+    format="%(asctime)s %(message)s ",
+    datefmt="%H:%M:%S %d/%m/%Y",
+)
 MOD_CODE = "[TUI] "
 
 # Custom modules
@@ -30,6 +40,7 @@ client = None
 # ---------------------------------------------------------------------------------------
 
 # Login Modal
+
 
 class LoginModal(ModalScreen):
     CSS_PATH = str(Path(__file__).parent / "../styles/login_modal.tcss")
@@ -69,8 +80,8 @@ class LoginModal(ModalScreen):
         # Get input values
         username = self.query_one("#login-username", Input).value
         server_ip = self.query_one("#login-server-ip", Input).value
-        #password = self.query_one("#login-password", Input).value
-        
+        # password = self.query_one("#login-password", Input).value
+
         logging.debug(MOD_CODE + f"[+] Logging in as user {username} to ")
 
         # Initialize client and login
@@ -91,6 +102,7 @@ class LoginModal(ModalScreen):
         if event.key not in ("tab", "backspace", "enter"):
             event.stop()
             event.prevent_default()
+
 
 # ---------------------------------------------------------------------------------------
 
@@ -134,12 +146,12 @@ class ActionModal(ModalScreen):
         event.stop()
 
         logging.debug(MOD_CODE + f"[+] Modal submitted for {self._title}.")
-        
+
         # Infer action from modal title
         match self._title:
             case "Send File":
                 logging.debug(MOD_CODE + "[*] Sharing file.")
-                
+
             case "Create Group":
                 logging.debug(MOD_CODE + "[*] Creating group.")
                 group_name = self.query_one("#input-1", Input).value
@@ -162,14 +174,17 @@ class ActionModal(ModalScreen):
             event.stop()
             event.prevent_default()
 
+
 # ---------------------------------------------------------------------------------------
 
 # File picker modal
+
 
 class PlainDirectoryTree(DirectoryTree):
     """
     DirectoryTree with icons stripped so they don't render as broken characters.
     """
+
     ICON_NODE = ""
     ICON_NODE_EXPANDED = ""
     ICON_FILE = ""
@@ -179,6 +194,7 @@ class FilePickerModal(ModalScreen):
     """
     Modal for picking files with directory tree and auto navigation.
     """
+
     CSS_PATH = str(Path(__file__).parent / "../styles/action_modal.tcss")
 
     def compose(self) -> ComposeResult:
@@ -187,9 +203,13 @@ class FilePickerModal(ModalScreen):
         """
         with Vertical(id="modal-box"):
             yield Label("Send File", id="modal-title")
-            yield Input(placeholder="File path...", id="file-path-input", classes="modal-input")
+            yield Input(
+                placeholder="File path...", id="file-path-input", classes="modal-input"
+            )
             yield PlainDirectoryTree(str(Path("~/").expanduser()), id="file-tree")
-            yield Input(placeholder="Description", id="file-description", classes="modal-input")
+            yield Input(
+                placeholder="Description", id="file-description", classes="modal-input"
+            )
             yield Button("Submit", id="modal-submit")
 
     def on_screen_resume(self) -> None:
@@ -198,7 +218,9 @@ class FilePickerModal(ModalScreen):
     def on_mount(self) -> None:
         self.query_one(PlainDirectoryTree).focus()
 
-    def on_directory_tree_file_selected(self, event: DirectoryTree.FileSelected) -> None:
+    def on_directory_tree_file_selected(
+        self, event: DirectoryTree.FileSelected
+    ) -> None:
         """
         Sets input bar when file from tree is selected.
         """
@@ -244,9 +266,11 @@ class FilePickerModal(ModalScreen):
             event.stop()
             event.prevent_default()
 
+
 # ---------------------------------------------------------------------------------------
 
 # File message widget
+
 
 class FileMessageItem(ListItem):
     """
@@ -273,9 +297,11 @@ class FileMessageItem(ListItem):
         label = f"[bold]{file_event.senderUserID}[/bold] shared [italic]{file_event.fileName}[/italic] [dim][enter to download][/dim]"
         super().__init__(Label(label))
 
+
 # ---------------------------------------------------------------------------------------
 
 # Main View
+
 
 class ChatInterface(App):
     CSS_PATH = str(Path(__file__).parent / "../styles/chat_interface.tcss")
@@ -285,7 +311,7 @@ class ChatInterface(App):
         Create chat interface with 3 panes.
         """
         self.message_input = MessageInput(self)
-        
+
         with Horizontal():
             with VerticalScroll(id="left-pane"):
                 yield Static("Join/create a group.")
@@ -317,7 +343,7 @@ class ChatInterface(App):
         Handles button presses in chat interface.
         """
         btn_id = event.button.id
-        
+
         # Infer action from button ID
         if btn_id in ACTION_CONFIG:
             if btn_id == "action-send-file":
@@ -358,9 +384,16 @@ class ChatInterface(App):
         """
         if isinstance(event.item, FileMessageItem):
             file_event = event.item.file_event
-            logging.debug(MOD_CODE + f"[*] Downloading file {file_event.fileName} from {file_event.senderUserID}")
+            logging.debug(
+                MOD_CODE
+                + f"[*] Downloading file {file_event.fileName} from {file_event.senderUserID}"
+            )
             os.makedirs("./chat-downloads", exist_ok=True)
-            await client.get_file(file_event.senderUserID, file_event.sha256, f"./chat-downloads/{file_event.fileName}")
+            await client.get_file(
+                file_event.senderUserID,
+                file_event.sha256,
+                f"./chat-downloads/{file_event.fileName}",
+            )
 
     def on_screen_suspend(self) -> None:
         """
@@ -379,16 +412,20 @@ class ChatInterface(App):
         """
         Handle key press events for navigation.
         """
-        logging.debug(MOD_CODE + f"[~] Active screen: {self.app.screen}, focused: {self.app.focused}")
+        logging.debug(
+            MOD_CODE
+            + f"[~] Active screen: {self.app.screen}, focused: {self.app.focused}"
+        )
         match self.current_pane:
-
             case "left":
                 if event.key == "right":
                     self.current_pane = "right"
                     self.update_pane_selection()
 
                 elif event.key == "down":
-                    self.selected_button = min(self.selected_button + 1, len(self.groups) - 1)
+                    self.selected_button = min(
+                        self.selected_button + 1, len(self.groups) - 1
+                    )
                     self.update_pane_selection()
 
                 elif event.key == "up":
@@ -396,7 +433,6 @@ class ChatInterface(App):
                     self.update_pane_selection()
 
             case "right":
-
                 if event.key == "down":
                     self.query_one("#message-list", ListView).scroll_down()
                     event.prevent_default()
@@ -414,13 +450,14 @@ class ChatInterface(App):
                     self.update_pane_selection()
 
             case "action":
-
                 if event.key == "left":
                     self.current_pane = "right"
                     self.update_pane_selection()
 
                 elif event.key == "down":
-                    self.selected_action = min(self.selected_action + 1, len(self.action_ids) - 1)
+                    self.selected_action = min(
+                        self.selected_action + 1, len(self.action_ids) - 1
+                    )
                     self.update_pane_selection()
                     event.prevent_default()
 
@@ -533,6 +570,7 @@ class MessageInput(Input):
                 await client.send_message(self.chat_interface.current_group, message)
                 self.clear()
             event.prevent_default()
+
 
 if __name__ == "__main__":
     ChatInterface().run()
