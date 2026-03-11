@@ -3,15 +3,15 @@
 # Imports
 import hashlib
 import logging
+import os
 import socket
 import threading
 import time
 from typing import Optional
-import utils
-import os
 
 # Custom modules
 import protocol
+import utils
 from datasync import DataUpdated
 from utils import run_async_in_thread
 
@@ -85,9 +85,8 @@ class Client:
             alive_thread.start()
 
         return login_status
-    
-    
-    async def send_message(self, group_id: int, message: str) -> bool:
+
+    async def send_message(self, group_id: int, message: str):
         """
         Sends message to specified group.
 
@@ -106,7 +105,9 @@ class Client:
         )
 
         logging.debug(MOD_CODE + "[*] Message send. Awaiting response.")
-        response_header, _ = await self._tcp_request(request, self.server_ip, message_body)
+        response_header, _ = await self._tcp_request(
+            request, self.server_ip, message_body
+        )
         logging.debug(MOD_CODE + "[*] Message response received.")
 
         if response_header.status == protocol.STATUS_OK:
@@ -116,7 +117,34 @@ class Client:
             )
             await self.GET_EVENTS()
 
-    async def create_group(self, group_name: str, user_ids: list[str]) -> bool:
+    async def add_user_to_group(self, group_id: int, user_id: str):
+        """
+        Adds user to the specified group.
+
+        :param group_id: Group to add the user as a member of.
+        :param user_id: User ID of the new member.
+        """
+
+        request = protocol.PutMember(
+            version=protocol.MAP_VER,
+            userID=self.AppState["user_id"],
+            serverID=self.AppState["server_id"],
+            type="PUT_MEMBER",
+            groupID=group_id,
+            addUserID=user_id,
+        )
+
+        logging.debug(MOD_CODE + "[*] Sending PUT_MEMBER request. Awaiting response.")
+        response_header, _ = await self._tcp_request(request, self.server_ip)
+        logging.debug(MOD_CODE + "[*] PUT_MEMBER response received.")
+
+        if response_header.status == protocol.STATUS_OK:
+            logging.debug(
+                MOD_CODE + f"[+] Added member to group_id {group_id} successfully."
+            )
+            await self.GET_EVENTS()
+
+    async def create_group(self, group_name: str, user_ids: list[str]):
         """
         Creates group with specified members.
 
@@ -142,8 +170,10 @@ class Client:
     # TODO
     # def add_to_group(user_ids: list[str]) -> bool:
 
-    #Obtains file from peer and writes to disk, returns True if succesful and False if not
-    async def get_file(self, peer_user_id: str, sha256_file_id: str, save_path: str) -> bool:
+    # Obtains file from peer and writes to disk, returns True if succesful and False if not
+    async def get_file(
+        self, peer_user_id: str, sha256_file_id: str, save_path: str
+    ) -> bool:
         """
         :param peer_user_id: Username of peer hosting the file.
         :param sha256_file_id: Hash of file.
@@ -154,7 +184,9 @@ class Client:
         group_id = self.AppState["current_group"]
         peer_ip = await self._GET_PEER(peer_user_id)
 
-        file_req_status = await self.FILE_REQUEST(peer_ip, sha256_file_id, group_id, save_path)
+        file_req_status = await self.FILE_REQUEST(
+            peer_ip, sha256_file_id, group_id, save_path
+        )
         return file_req_status
 
     async def share_file(self, file_path: str) -> bool:
@@ -166,7 +198,9 @@ class Client:
         :param file_path: Local path of the file to share.
         :return: True if successful, False if not.
         """
-        group_id = self.AppState["current_group"] #Obtain current group id ASAP when function called by UI
+        group_id = self.AppState[
+            "current_group"
+        ]  # Obtain current group id ASAP when function called by UI
         # Read file and compute SHA256
         with open(file_path, "rb") as f:
             file_bytes = f.read()
@@ -175,19 +209,18 @@ class Client:
         sha256 = hashlib.sha256(file_bytes).hexdigest().upper()
         logging.debug("[+] File hash is {sha256}.")
 
-        #Add file to local dict which maintains which files have been shared along with sha256 hash,
+        # Add file to local dict which maintains which files have been shared along with sha256 hash,
         #  so _handle_p2p_request can serve it
         self.AppState["shared_files"][sha256] = file_path
-        
+
         logging.debug("[+] Calling PUT_FILE.")
         return await self._PUT_FILE(group_id, file_path, sha256)
-    
 
     # ---------------------------------------------------------------------------------------------------------------------
     # Client-Server Request Functions
     # ---------------------------------------------------------------------------------------------------------------------
 
-    async def _PUT_FILE(self, group_id:int, file_path: str, sha256: str) -> bool:
+    async def _PUT_FILE(self, group_id: int, file_path: str, sha256: str) -> bool:
         """
         Notifies the server that a file is available for P2P download.
 
@@ -212,13 +245,17 @@ class Client:
 
         if response_header.status == protocol.STATUS_OK:
             print(f"[+] File {file_name} advertised to group {group_id} successfully.")
-            logging.debug(MOD_CODE + f"[+] File {file_name} advertised to group {group_id}.")
+            logging.debug(
+                MOD_CODE + f"[+] File {file_name} advertised to group {group_id}."
+            )
             await self.GET_EVENTS()
             return True
 
-        logging.debug(MOD_CODE + f"[-] Failed to advertise file {file_name}: {response_header.status}")
+        logging.debug(
+            MOD_CODE
+            + f"[-] Failed to advertise file {file_name}: {response_header.status}"
+        )
         return False
-    
 
     async def _REGISTER(self, user_id: str, server_id="") -> bool:
         """
@@ -246,8 +283,7 @@ class Client:
                 "current_group": None,  # group_name of whichever group the user has open
                 "last_event_id": 0,
                 "error": "",
-                "shared_files": {}  # sha256 -> local file path for shared files
-
+                "shared_files": {},  # sha256 -> local file path for shared files
             }
             logging.debug(MOD_CODE + "[+] Successfully registered on the server.")
             return True
@@ -274,8 +310,8 @@ class Client:
         _, response_body_bytes = await self._tcp_request(request, self.server_ip)
         logging.debug(MOD_CODE + "[*] TCP response received.")
 
-        #Guarding for if no new events
-        if(response_body_bytes):
+        # Guarding for if no new events
+        if response_body_bytes:
             response_body_json = response_body_bytes.decode("utf-8")
             response_body_list = protocol.parse_events_response_body(response_body_json)
 
@@ -290,7 +326,6 @@ class Client:
             for event in response_body_list:
                 if not initialLoad:
                     self.AppState["events"].append(event)
-
 
                 if isinstance(event, protocol.MessageEvent):
                     print(f"[MSG] {event.senderUserID}: {event.message}")
@@ -316,7 +351,6 @@ class Client:
             logging.debug(MOD_CODE + "[!] Attempting to broadcast data update.")
             self.ui.post_message(DataUpdated())
         else:
-            
             response_body_list = None
 
         return response_body_list
@@ -327,17 +361,19 @@ class Client:
         This facilitates the ability of a client to initiate a P2P exchange with another client.
         """
         request = protocol.GetPeer(
-            version = MAP_VERSION,
-            userID = self.AppState["user_id"],
-            serverID = self.AppState["server_id"],
-            type = "GET_PEER",
-            peerUserID = peer_user_id,
-            groupID = self.AppState["current_group"]
+            version=MAP_VERSION,
+            userID=self.AppState["user_id"],
+            serverID=self.AppState["server_id"],
+            type="GET_PEER",
+            peerUserID=peer_user_id,
+            groupID=self.AppState["current_group"],
         )
 
-        response_header, response_body_bytes = await self._tcp_request(request, self.server_ip)
+        response_header, response_body_bytes = await self._tcp_request(
+            request, self.server_ip
+        )
 
-        response_body_str = response_body_bytes.decode("utf-8") #Peer IP Address
+        response_body_str = response_body_bytes.decode("utf-8")  # Peer IP Address
 
         if response_header.status == protocol.STATUS_OK:
             return response_body_str
@@ -351,16 +387,18 @@ class Client:
     # ---------------------------------------------------------------------------------------------------------------------
 
     # Requests file from peer and saves it if file transferred succesfully
-    async def FILE_REQUEST(self, peer_ip: str, sha256_file_id: str, group_id: int, save_path: str) -> bool:
+    async def FILE_REQUEST(
+        self, peer_ip: str, sha256_file_id: str, group_id: int, save_path: str
+    ) -> bool:
         """Requests file from peer and saves it if file transferred succesfully"""
-        
+
         request = protocol.FileRequest(
-            version = MAP_VERSION,
-            userID = self.AppState["user_id"],
-            serverID = self.AppState["server_id"],
-            type = "FILE_REQUEST",
-            groupID = group_id,
-            sha256 = sha256_file_id
+            version=MAP_VERSION,
+            userID=self.AppState["user_id"],
+            serverID=self.AppState["server_id"],
+            type="FILE_REQUEST",
+            groupID=group_id,
+            sha256=sha256_file_id,
         )
 
         response_header, response_body_bytes = await self._tcp_request(
@@ -369,24 +407,25 @@ class Client:
 
         if response_header.status != protocol.STATUS_OK:
             return False
-        
-        #Verifying file integrity
+
+        # Verifying file integrity
         computed_hash = hashlib.sha256(response_body_bytes).hexdigest().upper()
-        if computed_hash != sha256_file_id or response_header.length != len(response_body_bytes):
-            return False 
+        if computed_hash != sha256_file_id or response_header.length != len(
+            response_body_bytes
+        ):
+            return False
 
         # Write raw bytes directly to disk
         with open(save_path, "wb") as f:
             f.write(response_body_bytes)
-            
+
         return True
 
     async def _handle_p2p_request(self, sock: socket.socket, peer_ip):
-
-        """Responds to P2P request, sending appropriate response header along with requested file (if 
+        """Responds to P2P request, sending appropriate response header along with requested file (if
         valid file was requested)
 
-        """        
+        """
         try:
             stream = protocol.MapStreamBuffer(sock)
 
@@ -397,26 +436,29 @@ class Client:
                 response_body = None
 
                 try:
-                    
-                    header = protocol.parse_request_header(header_bytes, self.AppState["server_id"])
-                    
+                    header = protocol.parse_request_header(
+                        header_bytes, self.AppState["server_id"]
+                    )
+
                     sha256 = header.sha256
 
-                    #Look for shared file which matches sha256 hash of request
-                    file_path = self.AppState["shared_files"].get(sha256)  # None if not found
+                    # Look for shared file which matches sha256 hash of request
+                    file_path = self.AppState["shared_files"].get(
+                        sha256
+                    )  # None if not found
 
-                    #If file matching sha256 hash from request does exist and is shared, parse it
+                    # If file matching sha256 hash from request does exist and is shared, parse it
                     #  and formulate appropriate header
                     if file_path and os.path.exists(file_path):
                         with open(file_path, "rb") as f:
                             response_body = f.read()
 
                             response_header = protocol.BodyResponse(
-                            version=protocol.MAP_VER,
-                            serverID=self.AppState["server_id"],
-                            status=protocol.STATUS_OK,
-                            length=len(response_body),
-                        )
+                                version=protocol.MAP_VER,
+                                serverID=self.AppState["server_id"],
+                                status=protocol.STATUS_OK,
+                                length=len(response_body),
+                            )
                     else:
                         response_body = None
                         response_header = protocol.GenericResponse(
@@ -424,7 +466,6 @@ class Client:
                             serverID=self.AppState["server_id"],
                             status=protocol.STATUS_FILE_UNAVAILABLE,
                         )
-
 
                 except protocol.Status as s:
                     response_header = protocol.GenericResponse(
@@ -436,12 +477,12 @@ class Client:
                 response_json = response_header.model_dump_json()
                 response_bytes = response_json.encode("utf-8")
 
-                #Send response header
+                # Send response header
                 print(f"< P2P TCP sending to {peer_ip}: {response_json}\x03")
                 sock.sendall(response_bytes)
                 sock.sendall(b"\x03")
 
-                #Send file (response body)
+                # Send file (response body)
                 if response_body:
                     print(f"< P2P TCP sending to {peer_ip}: {response_body}")
                     sock.sendall(response_body)
@@ -461,7 +502,7 @@ class Client:
         header: protocol.BaseRequest,
         ip_address=default_server_ip,
         body: bytes = b"",
-        port = TCP_PORT
+        port=TCP_PORT,
     ) -> tuple[protocol.Response, Optional[bytes]]:
         """
         Creates and sends TCP request, and returns Response object with response header and body.
