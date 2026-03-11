@@ -7240,3 +7240,530 @@
 10:30:10 11/03/2026 [CLT] [@] I AM ALIVE 
 10:30:12 11/03/2026 [CLT] [@] I AM ALIVE 
 10:30:14 11/03/2026 [CLT] [@] I AM ALIVE 
+10:34:29 11/03/2026 Using proactor: IocpProactor 
+10:34:50 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-username', classes='login-input -valid') 
+10:34:50 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-username', classes='login-input -valid') 
+10:34:51 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-username', classes='login-input -valid') 
+10:34:53 11/03/2026 [TUI] [+] Logging in as user Thomas to  
+10:34:53 11/03/2026 [CLT] [*] Local IP address is 196.42.64.103 
+10:34:53 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"","type":"REGISTER"}\x03' 
+10:34:53 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK"}' 
+10:34:53 11/03/2026 [CLT] [+] Successfully registered on the server. 
+10:34:53 11/03/2026 [CLT] [+] P2P thread started. 
+10:34:53 11/03/2026 [CLT] [+] IM ALIVE thread started. 
+10:34:53 11/03/2026 [DTS] [!] Data sync called. 
+10:34:53 11/03/2026 [TUI] [*] Login status: True 
+10:34:53 11/03/2026 [TUI] [*] Calling data update 
+10:34:53 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:34:53 11/03/2026 [TUI] [~] New groups are {} 
+10:34:54 11/03/2026 [CLT] [@] I AM ALIVE 
+10:34:54 11/03/2026 [CLT] [@] Events are outdated 
+10:34:54 11/03/2026 Using proactor: IocpProactor 
+10:34:54 11/03/2026 [CLT] [*] Awaiting TCP response. 
+10:34:55 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+10:34:55 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK","length":1729}' 
+10:34:55 11/03/2026 [CLT] [*] TCP response received. 
+10:34:55 11/03/2026 [CLT] [!] Attempting to broadcast data update. 
+10:34:55 11/03/2026 [DTS] [!] Data sync called. 
+10:34:55 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:34:55 11/03/2026 [TUI] [~] New groups are {'1': {'group_id': 1, 'group_name': 'Demo Group', 'members': ['Thomas', 'Krishnaraj']}, '2': {'group_id': 2, 'group_name': 'Demo Group 2', 'members': ['Shaun', 'Thomas', 'Krishnaraj']}} 
+10:34:56 11/03/2026 [CLT] [@] I AM ALIVE 
+10:34:58 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:00 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:07 11/03/2026 [CLT] [!] UDP request timed out. 
+10:35:07 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:08 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: VerticalScroll(id='left-pane') 
+10:35:08 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: VerticalScroll(id='left-pane') 
+10:35:09 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='selected -style-default') 
+10:35:09 11/03/2026 [TUI] [~] UI retrieved 17 events from client. 
+10:35:10 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:12 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='selected -style-default') 
+10:35:12 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:14 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:16 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:18 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:21 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:23 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:25 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:32 11/03/2026 [CLT] [!] UDP request timed out. 
+10:35:32 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:34 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:36 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:38 11/03/2026 [TUI] [*] Sharing file C:\Users\thoma\Documents\University\EEE3096S Lab\drum.wav:  
+10:35:38 11/03/2026 [+] Read file successfully. 
+10:35:38 11/03/2026 [+] File hash is {sha256}. 
+10:35:39 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:39 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"PUT_FILE","groupID":1,"fileName":"drum.wav","sha256":"68B61B7FF58EC90D81AA2A8A154DAF808C2702B41141551B3B9940795A4976F7"}\x03' 
+10:35:39 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK"}' 
+10:35:39 11/03/2026 [CLT] [+] File drum.wav advertised to group 1. 
+10:35:39 11/03/2026 [CLT] [*] Awaiting TCP response. 
+10:35:39 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"GET_EVENTS","groupID":null,"afterEventID":28,"beforeEventID":null}\x03' 
+10:35:39 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK","length":174}' 
+10:35:39 11/03/2026 [CLT] [*] TCP response received. 
+10:35:39 11/03/2026 [CLT] [!] Attempting to broadcast data update. 
+10:35:39 11/03/2026 [DTS] [!] Data sync called. 
+10:35:39 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:35:39 11/03/2026 [TUI] [~] New groups are {'1': {'group_id': 1, 'group_name': 'Demo Group', 'members': ['Thomas', 'Krishnaraj']}, '2': {'group_id': 2, 'group_name': 'Demo Group 2', 'members': ['Shaun', 'Thomas', 'Krishnaraj']}} 
+10:35:39 11/03/2026 [TUI] [~] UI retrieved 18 events from client. 
+10:35:41 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:43 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:45 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:47 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:49 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:52 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:54 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:56 11/03/2026 [CLT] [@] I AM ALIVE 
+10:35:57 11/03/2026 Using proactor: IocpProactor 
+10:35:58 11/03/2026 Using proactor: IocpProactor 
+10:35:58 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:01 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:03 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:05 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:07 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:09 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:12 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:14 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:15 11/03/2026 Using proactor: IocpProactor 
+10:36:16 11/03/2026 Using proactor: IocpProactor 
+10:36:16 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:18 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:20 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:22 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:23 11/03/2026 Using proactor: IocpProactor 
+10:36:24 11/03/2026 Using proactor: IocpProactor 
+10:36:24 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:27 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:29 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:31 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:33 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:34 11/03/2026 Using proactor: IocpProactor 
+10:36:35 11/03/2026 Using proactor: IocpProactor 
+10:36:35 11/03/2026 Using proactor: IocpProactor 
+10:36:35 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:35 11/03/2026 Using proactor: IocpProactor 
+10:36:37 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:40 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:42 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:44 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:46 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:48 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:50 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:53 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:55 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:57 11/03/2026 [CLT] [@] I AM ALIVE 
+10:36:59 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:01 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:03 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:06 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:06 11/03/2026 Using proactor: IocpProactor 
+10:37:07 11/03/2026 Using proactor: IocpProactor 
+10:37:08 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:10 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:12 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:14 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:16 11/03/2026 Using proactor: IocpProactor 
+10:37:16 11/03/2026 Using proactor: IocpProactor 
+10:37:16 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:17 11/03/2026 Using proactor: IocpProactor 
+10:37:19 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:21 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:23 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:25 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:27 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:30 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:32 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:34 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:36 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:38 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:40 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:43 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:45 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:47 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:49 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:51 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:53 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:56 11/03/2026 [CLT] [@] I AM ALIVE 
+10:37:58 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:00 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:02 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:04 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:07 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:09 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:11 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:13 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:15 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:17 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:20 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:22 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:24 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:26 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:29 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:31 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:33 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:35 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:37 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:39 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:42 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:44 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:46 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:48 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:50 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:52 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:55 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:57 11/03/2026 [CLT] [@] I AM ALIVE 
+10:38:59 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:01 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:03 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:05 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:08 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:10 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:12 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:14 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:16 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:19 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:21 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:23 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:25 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:28 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:30 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:32 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:34 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:36 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:39 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:41 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:48 11/03/2026 [CLT] [!] UDP request timed out. 
+10:39:48 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:50 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:52 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:54 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:57 11/03/2026 [CLT] [@] I AM ALIVE 
+10:39:59 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:01 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:03 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:05 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:07 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:10 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:17 11/03/2026 [CLT] [!] UDP request timed out. 
+10:40:17 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:19 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:21 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:23 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:25 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:28 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:30 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:32 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:34 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:36 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:38 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:45 11/03/2026 [CLT] [!] UDP request timed out. 
+10:40:45 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:47 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:50 11/03/2026 [CLT] [@] I AM ALIVE 
+10:40:52 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:21 11/03/2026 Using proactor: IocpProactor 
+10:41:31 11/03/2026 [TUI] [+] Logging in as user Thomas to  
+10:41:31 11/03/2026 [CLT] [*] Local IP address is 196.42.64.103 
+10:41:32 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"","type":"REGISTER"}\x03' 
+10:41:32 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK"}' 
+10:41:32 11/03/2026 [CLT] [+] Successfully registered on the server. 
+10:41:32 11/03/2026 [CLT] [+] P2P thread started. 
+10:41:32 11/03/2026 [CLT] [+] IM ALIVE thread started. 
+10:41:32 11/03/2026 [DTS] [!] Data sync called. 
+10:41:32 11/03/2026 [TUI] [*] Login status: True 
+10:41:32 11/03/2026 [TUI] [*] Calling data update 
+10:41:32 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:41:32 11/03/2026 [TUI] [~] New groups are {} 
+10:41:32 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:32 11/03/2026 [CLT] [@] Events are outdated 
+10:41:32 11/03/2026 Using proactor: IocpProactor 
+10:41:32 11/03/2026 [CLT] [*] Awaiting TCP response. 
+10:41:33 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+10:41:33 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK","length":1902}' 
+10:41:33 11/03/2026 [CLT] [*] TCP response received. 
+10:41:33 11/03/2026 [CLT] [!] Attempting to broadcast data update. 
+10:41:33 11/03/2026 [DTS] [!] Data sync called. 
+10:41:33 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:41:33 11/03/2026 [TUI] [~] New groups are {'1': {'group_id': 1, 'group_name': 'Demo Group', 'members': ['Thomas', 'Krishnaraj']}, '2': {'group_id': 2, 'group_name': 'Demo Group 2', 'members': ['Shaun', 'Thomas', 'Krishnaraj']}} 
+10:41:35 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: VerticalScroll(id='left-pane') 
+10:41:35 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:35 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: VerticalScroll(id='left-pane') 
+10:41:36 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='selected -style-default') 
+10:41:36 11/03/2026 [TUI] [~] UI retrieved 18 events from client. 
+10:41:37 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:38 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='selected -style-default') 
+10:41:39 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:41 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:43 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:45 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:46 11/03/2026 Using proactor: IocpProactor 
+10:41:46 11/03/2026 [CLT] File Path: drum.wav 
+10:41:46 11/03/2026 Using proactor: IocpProactor 
+10:41:46 11/03/2026 [CLT] File Path: drum.wav 
+10:41:48 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:50 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:52 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:54 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:56 11/03/2026 [CLT] [@] I AM ALIVE 
+10:41:57 11/03/2026 Using proactor: IocpProactor 
+10:41:57 11/03/2026 [CLT] File Path: drum.wav 
+10:41:58 11/03/2026 Using proactor: IocpProactor 
+10:41:58 11/03/2026 [CLT] File Path: drum.wav 
+10:41:59 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:01 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:03 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:05 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:07 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:10 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:12 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:14 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:16 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:18 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:21 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:23 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:25 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:27 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:29 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:32 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:34 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:36 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:38 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:40 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:43 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:45 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:47 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:49 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:51 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:54 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:56 11/03/2026 [CLT] [@] I AM ALIVE 
+10:42:58 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:00 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:02 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:04 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:06 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:09 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:11 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:13 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:15 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:17 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:19 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:22 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:24 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:26 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:28 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:30 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:32 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:35 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:37 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:39 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:41 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:44 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:46 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:48 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:50 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:57 11/03/2026 [CLT] [!] UDP request timed out. 
+10:43:57 11/03/2026 [CLT] [@] I AM ALIVE 
+10:43:59 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:01 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:03 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:06 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:08 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:10 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:12 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:14 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:17 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:19 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:21 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:23 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:25 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:32 11/03/2026 [CLT] [!] UDP request timed out. 
+10:44:32 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:34 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:37 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:39 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:41 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:44 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:46 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:48 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:50 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:52 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:55 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:57 11/03/2026 [CLT] [@] I AM ALIVE 
+10:44:59 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:01 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:03 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:06 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:08 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:10 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:12 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:14 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:19 11/03/2026 Using proactor: IocpProactor 
+10:45:25 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-server-ip', classes='-valid login-input') 
+10:45:28 11/03/2026 [TUI] [+] Logging in as user Thomas to  
+10:45:28 11/03/2026 [CLT] [*] Local IP address is 196.42.64.103 
+10:45:42 11/03/2026 Using proactor: IocpProactor 
+10:45:44 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-server-ip', classes='-valid login-input') 
+10:45:45 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-server-ip', classes='-valid login-input') 
+10:45:50 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-server-ip', classes='-valid login-input') 
+10:45:52 11/03/2026 [TUI] [+] Logging in as user Thomas to  
+10:45:52 11/03/2026 [CLT] [*] Local IP address is 196.42.64.103 
+10:45:52 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"","type":"REGISTER"}\x03' 
+10:45:52 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK"}' 
+10:45:52 11/03/2026 [CLT] [+] Successfully registered on the server. 
+10:45:52 11/03/2026 [CLT] [+] P2P thread started. 
+10:45:52 11/03/2026 [CLT] [+] IM ALIVE thread started. 
+10:45:52 11/03/2026 [DTS] [!] Data sync called. 
+10:45:52 11/03/2026 [TUI] [*] Login status: True 
+10:45:52 11/03/2026 [TUI] [*] Calling data update 
+10:45:52 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:45:52 11/03/2026 [TUI] [~] New groups are {} 
+10:45:53 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:53 11/03/2026 [CLT] [@] Events are outdated 
+10:45:53 11/03/2026 Using proactor: IocpProactor 
+10:45:53 11/03/2026 [CLT] [*] Awaiting TCP response. 
+10:45:54 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+10:45:54 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK","length":1902}' 
+10:45:54 11/03/2026 [CLT] [*] TCP response received. 
+10:45:54 11/03/2026 [CLT] [!] Attempting to broadcast data update. 
+10:45:54 11/03/2026 [DTS] [!] Data sync called. 
+10:45:54 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:45:54 11/03/2026 [TUI] [~] New groups are {'1': {'group_id': 1, 'group_name': 'Demo Group', 'members': ['Thomas', 'Krishnaraj']}, '2': {'group_id': 2, 'group_name': 'Demo Group 2', 'members': ['Shaun', 'Thomas', 'Krishnaraj']}} 
+10:45:55 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:56 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: VerticalScroll(id='left-pane') 
+10:45:57 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: VerticalScroll(id='left-pane') 
+10:45:57 11/03/2026 [CLT] [@] I AM ALIVE 
+10:45:58 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-2', classes='-style-default selected') 
+10:45:58 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='-style-default selected') 
+10:45:58 11/03/2026 [TUI] [~] UI retrieved 18 events from client. 
+10:45:59 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='-style-default selected') 
+10:46:04 11/03/2026 [CLT] [!] UDP request timed out. 
+10:46:04 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:06 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:09 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:11 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:13 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:16 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:18 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:27 11/03/2026 Using proactor: IocpProactor 
+10:46:33 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-server-ip', classes='-valid login-input') 
+10:46:34 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-server-ip', classes='-valid login-input') 
+10:46:37 11/03/2026 [TUI] [+] Logging in as user Thomas to  
+10:46:37 11/03/2026 [CLT] [*] Local IP address is 196.42.64.103 
+10:46:37 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"","type":"REGISTER"}\x03' 
+10:46:37 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK"}' 
+10:46:37 11/03/2026 [CLT] [+] Successfully registered on the server. 
+10:46:37 11/03/2026 [CLT] [+] P2P thread started. 
+10:46:37 11/03/2026 [CLT] [+] IM ALIVE thread started. 
+10:46:37 11/03/2026 [DTS] [!] Data sync called. 
+10:46:37 11/03/2026 [TUI] [*] Login status: True 
+10:46:37 11/03/2026 [TUI] [*] Calling data update 
+10:46:37 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:46:37 11/03/2026 [TUI] [~] New groups are {} 
+10:46:38 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:38 11/03/2026 [CLT] [@] Events are outdated 
+10:46:38 11/03/2026 Using proactor: IocpProactor 
+10:46:38 11/03/2026 [CLT] [*] Awaiting TCP response. 
+10:46:39 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+10:46:39 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK","length":1902}' 
+10:46:39 11/03/2026 [CLT] [*] TCP response received. 
+10:46:39 11/03/2026 [CLT] [!] Attempting to broadcast data update. 
+10:46:39 11/03/2026 [DTS] [!] Data sync called. 
+10:46:39 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:46:39 11/03/2026 [TUI] [~] New groups are {'1': {'group_id': 1, 'group_name': 'Demo Group', 'members': ['Thomas', 'Krishnaraj']}, '2': {'group_id': 2, 'group_name': 'Demo Group 2', 'members': ['Shaun', 'Thomas', 'Krishnaraj']}} 
+10:46:40 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:41 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: VerticalScroll(id='left-pane') 
+10:46:41 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='selected -style-default') 
+10:46:41 11/03/2026 [TUI] [~] UI retrieved 18 events from client. 
+10:46:42 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:42 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='selected -style-default') 
+10:46:44 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:47 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:49 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:51 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:53 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:55 11/03/2026 [CLT] [@] I AM ALIVE 
+10:46:58 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:00 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:02 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:05 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:07 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:09 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:11 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:14 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:14 11/03/2026 [TUI] [*] Sharing file C:\Users\thoma\Documents\University\CSC2002S Assignments\PCP Assignment 1\visualiseSearch.png:  
+10:47:14 11/03/2026 [+] Read file successfully. 
+10:47:14 11/03/2026 [+] File hash is {sha256}. 
+10:47:14 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"PUT_FILE","groupID":1,"fileName":"visualiseSearch.png","sha256":"D8644E5BAC66F57127E42C4E10B3FB52D8AFD0BCEFA76B6A9CCF93C59F6DD817"}\x03' 
+10:47:14 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK"}' 
+10:47:14 11/03/2026 [CLT] [+] File visualiseSearch.png advertised to group 1. 
+10:47:14 11/03/2026 [CLT] [*] Awaiting TCP response. 
+10:47:15 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"GET_EVENTS","groupID":null,"afterEventID":39,"beforeEventID":null}\x03' 
+10:47:15 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK","length":185}' 
+10:47:15 11/03/2026 [CLT] [*] TCP response received. 
+10:47:15 11/03/2026 [CLT] [!] Attempting to broadcast data update. 
+10:47:15 11/03/2026 [DTS] [!] Data sync called. 
+10:47:15 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:47:15 11/03/2026 [TUI] [~] New groups are {'1': {'group_id': 1, 'group_name': 'Demo Group', 'members': ['Thomas', 'Krishnaraj']}, '2': {'group_id': 2, 'group_name': 'Demo Group 2', 'members': ['Shaun', 'Thomas', 'Krishnaraj']}} 
+10:47:15 11/03/2026 [TUI] [~] UI retrieved 19 events from client. 
+10:47:16 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:18 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:20 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:22 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:24 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:25 11/03/2026 Using proactor: IocpProactor 
+10:47:25 11/03/2026 [CLT] File Path: C:\Users\thoma\Documents\University\CSC2002S Assignments\PCP Assignment 1\visualiseSearch.png 
+10:47:26 11/03/2026 Using proactor: IocpProactor 
+10:47:26 11/03/2026 [CLT] File Path: C:\Users\thoma\Documents\University\CSC2002S Assignments\PCP Assignment 1\visualiseSearch.png 
+10:47:27 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:29 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:31 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:33 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:35 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:38 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:40 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:44 11/03/2026 Using proactor: IocpProactor 
+10:47:50 11/03/2026 [TUI] [~] Active screen: LoginModal(), focused: Input(id='login-server-ip', classes='-valid login-input') 
+10:47:53 11/03/2026 [TUI] [+] Logging in as user Thomas to  
+10:47:53 11/03/2026 [CLT] [*] Local IP address is 196.42.64.103 
+10:47:53 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"","type":"REGISTER"}\x03' 
+10:47:53 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK"}' 
+10:47:53 11/03/2026 [CLT] [+] Successfully registered on the server. 
+10:47:53 11/03/2026 [CLT] [+] P2P thread started. 
+10:47:53 11/03/2026 [CLT] [+] IM ALIVE thread started. 
+10:47:53 11/03/2026 [DTS] [!] Data sync called. 
+10:47:53 11/03/2026 [TUI] [*] Login status: True 
+10:47:53 11/03/2026 [TUI] [*] Calling data update 
+10:47:53 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:47:53 11/03/2026 [TUI] [~] New groups are {} 
+10:47:53 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:53 11/03/2026 [CLT] [@] Events are outdated 
+10:47:53 11/03/2026 Using proactor: IocpProactor 
+10:47:53 11/03/2026 [CLT] [*] Awaiting TCP response. 
+10:47:54 11/03/2026 [CLT] [=] TCP request payload b'{"version":"1.0","userID":"Thomas","serverID":"OjbjIVenEqkY9EU9","type":"GET_EVENTS","groupID":null,"afterEventID":0,"beforeEventID":null}\x03' 
+10:47:54 11/03/2026 [CLT] [=] TCP response header bytes b'{"version":"1.0","serverID":"OjbjIVenEqkY9EU9","status":"OK","length":2086}' 
+10:47:54 11/03/2026 [CLT] [*] TCP response received. 
+10:47:54 11/03/2026 [CLT] [!] Attempting to broadcast data update. 
+10:47:54 11/03/2026 [DTS] [!] Data sync called. 
+10:47:54 11/03/2026 [TUI] [*] Invoking data update in chat interface. 
+10:47:54 11/03/2026 [TUI] [~] New groups are {'1': {'group_id': 1, 'group_name': 'Demo Group', 'members': ['Thomas', 'Krishnaraj']}, '2': {'group_id': 2, 'group_name': 'Demo Group 2', 'members': ['Shaun', 'Thomas', 'Krishnaraj']}} 
+10:47:55 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:57 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: VerticalScroll(id='left-pane') 
+10:47:57 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='-style-default selected') 
+10:47:57 11/03/2026 [TUI] [~] UI retrieved 19 events from client. 
+10:47:58 11/03/2026 [CLT] [@] I AM ALIVE 
+10:47:58 11/03/2026 [TUI] [~] Active screen: Screen(id='_default'), focused: Button(id='group-1', classes='-style-default selected') 
+10:48:00 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:02 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:04 11/03/2026 Using proactor: IocpProactor 
+10:48:04 11/03/2026 [CLT] File Path: C:\Users\thoma\Documents\University\CSC2002S Assignments\PCP Assignment 1\visualiseSearch.png 
+10:48:04 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:06 11/03/2026 Using proactor: IocpProactor 
+10:48:06 11/03/2026 [CLT] File Path: C:\Users\thoma\Documents\University\CSC2002S Assignments\PCP Assignment 1\visualiseSearch.png 
+10:48:06 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:09 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:11 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:13 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:15 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:17 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:19 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:22 11/03/2026 [CLT] [@] I AM ALIVE 
+10:48:24 11/03/2026 [CLT] [@] I AM ALIVE 

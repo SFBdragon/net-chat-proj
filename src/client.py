@@ -179,7 +179,7 @@ class Client:
         #Add file to local database which maintains which files have been shared along with sha256 hash and
         #group ID, per user
         # so _handle_p2p_request can serve it
-        self._save_shared_files(group_id, sha256, os.path.basename(file_path))
+        self._save_shared_files(group_id, sha256, os.path.basename(file_path), file_path)
 
         #DEPRECATED
         #self.AppState["shared_files"][sha256] = file_path 
@@ -406,7 +406,9 @@ class Client:
                     sha256 = header.sha256
 
                     #Look for shared file which matches sha256 hash of request
-                    file_path = next((f for _, f_sha256, f in self._load_shared_files() if f_sha256 == sha256), None)
+                    file_path = next((f for _, f_sha256, _, f in self._load_shared_files() if f_sha256 == sha256), None)
+                    
+                    logging.debug(MOD_CODE + f"File Path: {file_path}")
 
                     #If file matching sha256 hash from request does exist and is shared, parse it
                     #  and formulate appropriate header
@@ -613,12 +615,12 @@ class Client:
         except (FileNotFoundError, EOFError):
             return []
 
-    def _save_shared_files(self, group_id: str, sha256: str, file_name: str):
+    def _save_shared_files(self, group_id: str, sha256: str, file_name: str, file_path:str):
         """Persist shared files registry to disk."""
         
         shared_files_path = SHARED_FILES_BASE_PATH + "." + self.AppState["user_id"] + ".pkl"
         shared = self._load_shared_files()
-        shared.append((group_id, sha256, file_name))
+        shared.append((group_id, sha256, file_name, file_path))
 
         with open(shared_files_path, "wb") as f:
             pickle.dump(shared, f)
