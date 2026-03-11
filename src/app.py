@@ -111,7 +111,7 @@ class LoginModal(ModalScreen):
 ACTION_CONFIG = {
     "action-send-file": ("Send File", "File Path", "Description"),
     "action-create-group": ("Create Group", "Group Name", "Users"),
-    "action-edit-group": ("Edit Group", "Group Description", "Users"),
+    "action-add-users": ("Add Users", "Group Description", "Users"),
 }
 
 
@@ -157,8 +157,13 @@ class ActionModal(ModalScreen):
                 group_name = self.query_one("#input-1", Input).value
                 group_members = (self.query_one("#input-2", Input).value).split(",")
                 await client.create_group(group_name, group_members)
-            case "Edit Group":
-                logging.debug(MOD_CODE + "[*] Editting group.")
+
+            case "Add Users":
+                logging.debug(MOD_CODE + "[*] Adding users group.")
+                group_description = self.query_one("#input-1", Input).value
+                group_members = (self.query_one("#input-2", Input).value).split(",")
+                for member in group_members:
+                    await client.add_group_member(client.AppState["current_group"], member)
 
         self.dismiss()
 
@@ -327,7 +332,7 @@ class ChatInterface(App):
                 yield Button(
                     "Create Group", id="action-create-group", classes="action-btn"
                 )
-                yield Button("Edit Group", id="action-edit-group", classes="action-btn")
+                yield Button("Add Users", id="action-add-users", classes="action-btn")
 
         self.current_pane = "left"
         self.selected_button = 0
@@ -335,7 +340,7 @@ class ChatInterface(App):
         self.action_ids = [
             "action-send-file",
             "action-create-group",
-            "action-edit-group",
+            "action-add-users",
         ]
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -359,7 +364,8 @@ class ChatInterface(App):
             client.AppState["current_group"] = group_id
 
             group_banner = f"[bold]{event.button.label}[/bold]\n{' '.join(list(dict.fromkeys(event.button.group_members)))}"
-
+            
+            self.current_banner = group_banner
             self.query_one("#group-banner", Static).update(f"{group_banner}")
 
             group_buttons = [
@@ -389,11 +395,18 @@ class ChatInterface(App):
                 + f"[*] Downloading file {file_event.fileName} from {file_event.senderUserID}"
             )
             os.makedirs("./chat-downloads", exist_ok=True)
-            await client.get_file(
-                file_event.senderUserID,
-                file_event.sha256,
-                f"./chat-downloads/{file_event.fileName}",
-            )
+            try:
+                success = await client.get_file(
+                    file_event.senderUserID,
+                    file_event.sha256,
+                    f"./chat-downloads/{file_event.fileName}",
+                )
+                if success:
+                    self.notify(f"{file_event.fileName} downloaded successfully.", severity="information")
+                else:
+                    self.notify(f"{file_event.fileName} downloaded failed.", severity="information")
+            except:
+                self.notify(f"{file_event.fileName} downloaded failed.", severity="information")
 
     def on_screen_suspend(self) -> None:
         """
@@ -542,16 +555,33 @@ class ChatInterface(App):
         lv.clear()
 
         logging.debug(MOD_CODE + f"[~] UI retrieved {len(events)} events from client.")
+        
+        #group_name = group_id;
+        #group_members = client.AppState["groups"][group_id]["members"];
+        #group_banner = f"[bold]{group_name}[/bold]\n{' '.join(group_members)}"
+        #self.query_one("#group-banner", Static).update(f"{group_banner}")
+        self.query_one("#group-banner", Static).update("")
+        self.current_banner = f"[bold]{group_id}[/bold]\n"
 
         found = False
+        processed_events = []
         for event in events:
             if event.groupID != group_id:
                 continue
-            found = True
-            if isinstance(event, protocol.MessageEvent):
-                lv.append(ListItem(Label(f"{event.senderUserID}: {event.message}")))
-            elif isinstance(event, protocol.FileAvailableEvent):
-                lv.append(FileMessageItem(event))
+            logging.debug(MOD_CODE + f" [E] EventID is {event.eventID}")
+            if event.eventID not in processed_events:
+                found = True
+                if isinstance(event, protocol.MessageEvent):
+                    lv.append(ListItem(Label(f"{event.senderUserID}: {event.message}")))
+                elif isinstance(event, protocol.FileAvailableEvent):
+                    lv.append(FileMessageItem(event))
+                elif isinstance(event, protocol.AddMemberEvent):
+                    logging.debug(MOD_CODE + f" [=] This event is a AddMemberEvent: {event}")
+                    self.query_one("#group-banner", Static).update("")
+                    self.current_banner = f"{self.current_banner}{event.userID} "
+                    self.query_one("#group-banner", Static).update(f"{self.current_banner}")
+                    event.userID
+                processed_events.append(event.eventID)
 
         if not found:
             lv.append(ListItem(Label("No messages for this group.")))
