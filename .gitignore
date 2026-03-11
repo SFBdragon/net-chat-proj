@@ -15,6 +15,7 @@ database.sqlite3
 
 # Debug files
 debug.log
+src/debug.log
 
 # Documentation builds
 docs/build
