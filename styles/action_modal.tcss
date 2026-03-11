@@ -24,3 +24,9 @@ ActionModal {
 	width: 100%;
 	margin-top: 1;
 }
+
+#file-tree {
+    width: 1fr;
+    border: round #4a6060;
+    margin: 1 1 1 1;
+}

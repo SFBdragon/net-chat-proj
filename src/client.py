@@ -171,8 +171,10 @@ class Client:
         # Read file and compute SHA256
         with open(file_path, "rb") as f:
             file_bytes = f.read()
+        logging.debug("[+] Read file successfully.")
 
         sha256 = hashlib.sha256(file_bytes).hexdigest().upper()
+        logging.debug("[+] File hash is {sha256}.")
 
         #Add file to local database which maintains which files have been shared along with sha256 hash and
         #group ID, per user

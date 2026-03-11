@@ -1,18 +1,17 @@
 # ---------------------------------------------------------------------------------------
 
 # Textual for TUI
-# Print to console
-import logging
-
 from textual import events, keys
 from textual.app import App, ComposeResult
 from textual.containers import Center, Horizontal, Vertical, VerticalScroll
 from textual.events import Focus, Key
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, Static
+from textual.widgets import Button, Input, Label, Static, DirectoryTree, ListView, ListItem
 
+import os
 import asyncio
 from pathlib import Path
+from utils import run_async_in_thread
 
 # Logging
 import logging
@@ -31,7 +30,6 @@ client = None
 # ---------------------------------------------------------------------------------------
 
 # Login Modal
-
 
 class LoginModal(ModalScreen):
     CSS_PATH = str(Path(__file__).parent / "../styles/login_modal.tcss")
@@ -141,6 +139,7 @@ class ActionModal(ModalScreen):
         match self._title:
             case "Send File":
                 logging.debug(MOD_CODE + "[*] Sharing file.")
+                
             case "Create Group":
                 logging.debug(MOD_CODE + "[*] Creating group.")
                 group_name = self.query_one("#input-1", Input).value
@@ -156,14 +155,123 @@ class ActionModal(ModalScreen):
         Handles keypresses; escape to dismiss.
         """
         if event.key == "escape":
+            event.stop()
             self.dismiss()
         # Prevent propagation.
         if event.key not in ("tab", "backspace", "enter"):
             event.stop()
             event.prevent_default()
 
+# ---------------------------------------------------------------------------------------
+
+# File picker modal
+
+class PlainDirectoryTree(DirectoryTree):
+    """
+    DirectoryTree with icons stripped so they don't render as broken characters.
+    """
+    ICON_NODE = ""
+    ICON_NODE_EXPANDED = ""
+    ICON_FILE = ""
+
+
+class FilePickerModal(ModalScreen):
+    """
+    Modal for picking files with directory tree and auto navigation.
+    """
+    CSS_PATH = str(Path(__file__).parent / "../styles/action_modal.tcss")
+
+    def compose(self) -> ComposeResult:
+        """
+        Specifies modal format.
+        """
+        with Vertical(id="modal-box"):
+            yield Label("Send File", id="modal-title")
+            yield Input(placeholder="File path...", id="file-path-input", classes="modal-input")
+            yield PlainDirectoryTree(str(Path("~/").expanduser()), id="file-tree")
+            yield Input(placeholder="Description", id="file-description", classes="modal-input")
+            yield Button("Submit", id="modal-submit")
+
+    def on_screen_resume(self) -> None:
+        self.query_one(PlainDirectoryTree).focus()
+
+    def on_mount(self) -> None:
+        self.query_one(PlainDirectoryTree).focus()
+
+    def on_directory_tree_file_selected(self, event: DirectoryTree.FileSelected) -> None:
+        """
+        Sets input bar when file from tree is selected.
+        """
+        event.stop()
+        # Set flag to prevent on_input_changed from re-syncing the tree
+        self._syncing_from_tree = True
+        self.query_one("#file-path-input", Input).value = str(event.path)
+        self._syncing_from_tree = False
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """
+        Updates tree when input bar changes.
+        """
+        if event.input.id != "file-path-input":
+            return
+        # Skip if this change was triggered by a tree selection
+        if getattr(self, "_syncing_from_tree", False):
+            return
+        p = Path(event.value).expanduser()
+        tree = self.query_one(PlainDirectoryTree)
+        # Navigate to the closest valid parent so partial paths don't crash
+        if p.is_dir():
+            tree.path = p
+        elif p.parent.is_dir():
+            tree.path = p.parent
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        """
+        Shares file on submit.
+        """
+        event.stop()
+        file_path = self.query_one("#file-path-input", Input).value
+        description = self.query_one("#file-description", Input).value
+        logging.debug(MOD_CODE + f"[*] Sharing file {file_path}: {description}")
+        self.dismiss((file_path, description))
+        await client.share_file(file_path)
+
+    def on_key(self, event: Key) -> None:
+        if event.key == "escape":
+            event.stop()
+            self.dismiss(None)
+        if event.key not in ("tab", "backspace", "enter"):
+            event.stop()
+            event.prevent_default()
 
 # ---------------------------------------------------------------------------------------
+
+# File message widget
+
+class FileMessageItem(ListItem):
+    """
+    A clickable list item representing a shared file event.
+    Stores the originating FileAvailableEvent so it can be downloaded on selection.
+    """
+
+    DEFAULT_CSS = """
+    FileMessageItem {
+        background: $panel;
+        color: $accent;
+        padding: 0 1;
+    }
+    FileMessageItem:hover {
+        background: $accent 20%;
+    }
+    FileMessageItem.--highlight {
+        background: $accent 30%;
+    }
+    """
+
+    def __init__(self, file_event: protocol.FileAvailableEvent) -> None:
+        self.file_event = file_event
+        label = f"[bold]{file_event.senderUserID}[/bold] shared [italic]{file_event.fileName}[/italic] [dim][enter to download][/dim]"
+        super().__init__(Label(label))
 
 # ---------------------------------------------------------------------------------------
 
@@ -180,14 +288,12 @@ class ChatInterface(App):
         
         with Horizontal():
             with VerticalScroll(id="left-pane"):
-                self.message_display = Static("Join/create a group.")
-                yield self.message_display
+                yield Static("Join/create a group.")
 
             with Vertical(id="right-pane"):
                 yield Static("", id="group-banner")
-                with VerticalScroll(id="message-scroll"):
-                    self.message_display = Static("Select a group to see messages.")
-                    yield self.message_display
+                # ListView replaces the single Static — each message is its own item
+                yield ListView(id="message-list")
                 yield self.message_input
 
             with Vertical(id="action-pane"):
@@ -214,16 +320,21 @@ class ChatInterface(App):
         
         # Infer action from button ID
         if btn_id in ACTION_CONFIG:
-            title, field1, field2 = ACTION_CONFIG[btn_id]
-            self.app.push_screen(ActionModal(title, field1, field2))
+            if btn_id == "action-send-file":
+                self.app.push_screen(FilePickerModal())
+            else:
+                title, field1, field2 = ACTION_CONFIG[btn_id]
+                self.app.push_screen(ActionModal(title, field1, field2))
 
         else:
             group_id = int(btn_id.split("-")[1])
             self.current_group = group_id
 
-            group_name = group_id
+            client.AppState["current_group"] = group_id
 
-            self.query_one("#group-banner", Static).update(f" {group_name}")
+            group_banner = f"[bold]{event.button.label}[/bold]\n{' '.join(list(dict.fromkeys(event.button.group_members)))}"
+
+            self.query_one("#group-banner", Static).update(f"{group_banner}")
 
             group_buttons = [
                 b for b in self.query(Button) if b.id and b.id.startswith("group-")
@@ -235,16 +346,40 @@ class ChatInterface(App):
                     button.focus()
                     self.current_pane = "left"
 
-            group_messages = self.get_messages_for_group(group_id)
-            self.message_display.update(group_messages)
+            self.render_messages_for_group(group_id)
 
-            scroll = self.query_one("#message-scroll", VerticalScroll)
-            self.call_after_refresh(scroll.scroll_end, animate=False)
+            lv = self.query_one("#message-list", ListView)
+            self.call_after_refresh(lv.scroll_end, animate=False)
+
+    async def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """
+        Handles selection of a message list item.
+        If the selected item is a FileMessageItem, trigger a file download.
+        """
+        if isinstance(event.item, FileMessageItem):
+            file_event = event.item.file_event
+            logging.debug(MOD_CODE + f"[*] Downloading file {file_event.fileName} from {file_event.senderUserID}")
+            os.makedirs("./chat-downloads", exist_ok=True)
+            await client.get_file(file_event.senderUserID, file_event.sha256, f"./chat-downloads/{file_event.fileName}")
+
+    def on_screen_suspend(self) -> None:
+        """
+        Called when a modal is pushed on top — disable key handling.
+        """
+        self._saved_pane = self.current_pane
+        self.current_pane = None
+
+    def on_screen_resume(self) -> None:
+        """Called when modal is dismissed — restore key handling."""
+        if hasattr(self, "_saved_pane") and self._saved_pane is not None:
+            self.current_pane = self._saved_pane
+            self.update_pane_selection()
 
     async def on_key(self, event: Key) -> None:
         """
         Handle key press events for navigation.
         """
+        logging.debug(MOD_CODE + f"[~] Active screen: {self.app.screen}, focused: {self.app.focused}")
         match self.current_pane:
 
             case "left":
@@ -263,11 +398,11 @@ class ChatInterface(App):
             case "right":
 
                 if event.key == "down":
-                    self.query_one("#message-scroll", VerticalScroll).scroll_down()
+                    self.query_one("#message-list", ListView).scroll_down()
                     event.prevent_default()
 
                 elif event.key == "up":
-                    self.query_one("#message-scroll", VerticalScroll).scroll_up()
+                    self.query_one("#message-list", ListView).scroll_up()
                     event.prevent_default()
 
                 elif event.key == "left":
@@ -334,10 +469,9 @@ class ChatInterface(App):
         logging.debug(MOD_CODE + f"[*] Invoking data update in chat interface.")
         await self.update_groups(client.AppState["groups"])
         if hasattr(self, "current_group"):
-            group_messages = self.get_messages_for_group(self.current_group)
-            self.message_display.update(group_messages)
-            scroll = self.query_one("#message-scroll", VerticalScroll)
-            self.call_after_refresh(scroll.scroll_end, animate=False)
+            self.render_messages_for_group(self.current_group)
+            lv = self.query_one("#message-list", ListView)
+            self.call_after_refresh(lv.scroll_end, animate=False)
 
     async def update_groups(self, new_groups):
         """
@@ -352,29 +486,39 @@ class ChatInterface(App):
             for group_id, group_data in self.groups.items():
                 group_id = group_data["group_id"]
                 group_name = group_data["group_name"]
-                members = group_data["members"]
-                left_pane.mount(Button(group_name, id=f"group-{group_id}"))
+                button = Button(group_name, id=f"group-{group_id}")
+                button.group_members = group_data["members"]
+                left_pane.mount(button)
         else:
             left_pane.mount(Static("Join/create a group."))
 
-    def get_messages_for_group(self, group_id):
+    def render_messages_for_group(self, group_id):
         """
-        Iterates through events to return all those in the specified group.
-        
-        :param group_id: Group ID to return events for.
-        :return: Group chat history.
-        :rtype: str
+        Clears and repopulates the message ListView for the given group.
+        Regular messages become plain ListItems; file events become
+        FileMessageItems which trigger a download when selected.
+
+        :param group_id: Group ID whose messages should be rendered.
         """
         events = client.AppState["events"]
-        groupchat = []
+        lv = self.query_one("#message-list", ListView)
+        lv.clear()
+
         logging.debug(MOD_CODE + f"[~] UI retrieved {len(events)} events from client.")
+
+        found = False
         for event in events:
-            if event.groupID == group_id:
-                if isinstance(event, protocol.MessageEvent):
-                    groupchat.append(f"{event.senderUserID}: {event.message}")
-        if (len(groupchat) == 0):
-            return "No messages for this group."
-        return "\n".join(groupchat)
+            if event.groupID != group_id:
+                continue
+            found = True
+            if isinstance(event, protocol.MessageEvent):
+                lv.append(ListItem(Label(f"{event.senderUserID}: {event.message}")))
+            elif isinstance(event, protocol.FileAvailableEvent):
+                lv.append(FileMessageItem(event))
+
+        if not found:
+            lv.append(ListItem(Label("No messages for this group.")))
+
 
 class MessageInput(Input):
     def __init__(self, app: ChatInterface) -> None:
