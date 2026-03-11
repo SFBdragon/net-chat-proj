@@ -9,6 +9,7 @@ import time
 from typing import Optional
 import utils
 import os
+import pickle
 
 # Custom modules
 import protocol
@@ -37,7 +38,7 @@ HEADER_BODY_DELIMITER = b"\x03"
 MOD_CODE = "[CLT] "
 
 default_server_ip = "127.0.0.1"
-
+SHARED_FILES_BASE_PATH = "shared_files"
 threads = []
 tasks = []
 
@@ -175,11 +176,15 @@ class Client:
         sha256 = hashlib.sha256(file_bytes).hexdigest().upper()
         logging.debug("[+] File hash is {sha256}.")
 
-        #Add file to local dict which maintains which files have been shared along with sha256 hash,
-        #  so _handle_p2p_request can serve it
-        self.AppState["shared_files"][sha256] = file_path
-        
-        logging.debug("[+] Calling PUT_FILE.")
+        #Add file to local database which maintains which files have been shared along with sha256 hash and
+        #group ID, per user
+        # so _handle_p2p_request can serve it
+        self._save_shared_files(group_id, sha256, os.path.basename(file_path), file_path)
+
+        #DEPRECATED
+        #self.AppState["shared_files"][sha256] = file_path 
+
+
         return await self._PUT_FILE(group_id, file_path, sha256)
     
 
@@ -246,8 +251,6 @@ class Client:
                 "current_group": None,  # group_name of whichever group the user has open
                 "last_event_id": 0,
                 "error": "",
-                "shared_files": {}  # sha256 -> local file path for shared files
-
             }
             logging.debug(MOD_CODE + "[+] Successfully registered on the server.")
             return True
@@ -403,7 +406,9 @@ class Client:
                     sha256 = header.sha256
 
                     #Look for shared file which matches sha256 hash of request
-                    file_path = self.AppState["shared_files"].get(sha256)  # None if not found
+                    file_path = next((f for _, f_sha256, _, f in self._load_shared_files() if f_sha256 == sha256), None)
+                    
+                    logging.debug(MOD_CODE + f"File Path: {file_path}")
 
                     #If file matching sha256 hash from request does exist and is shared, parse it
                     #  and formulate appropriate header
@@ -600,6 +605,26 @@ class Client:
         finally:
             s.close()
 
+
+    def _load_shared_files(self) -> list[tuple]:
+        """Load shared files registry from disk, returning empty list if not found."""
+        shared_files_path = SHARED_FILES_BASE_PATH + "." + self.AppState["user_id"] + ".pkl"
+        try:
+            with open(shared_files_path, "rb") as f:
+                return pickle.load(f)
+        except (FileNotFoundError, EOFError):
+            return []
+
+    def _save_shared_files(self, group_id: str, sha256: str, file_name: str, file_path:str):
+        """Persist shared files registry to disk."""
+        
+        shared_files_path = SHARED_FILES_BASE_PATH + "." + self.AppState["user_id"] + ".pkl"
+        shared = self._load_shared_files()
+        shared.append((group_id, sha256, file_name, file_path))
+
+        with open(shared_files_path, "wb") as f:
+            pickle.dump(shared, f)
+    
     # -------------------------------------------------------------------------------------------------------------------------
 
 
