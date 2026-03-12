@@ -1,13 +1,19 @@
 # CSC3002F Networking Project — Messaging App
 
-A terminal-based messaging application built with Python and [Textual](https://textual.textualize.io/).
+An terminal-based messaging application built with Python and [Textual](https://textual.textualize.io/).
+
+Features an asynchronous server and client, with support for peer-to-peer file sharing.
 
 ![Login Screen](screenshots/login.png)
 
 ## Features
 
 - Real time messaging
-- Group chats
+- Create group chats
+- Add users to groups
+- Share files
+
+Not that the application is still being tested - some features may not work as expected.
 
 ## Setup
 
@@ -48,14 +54,6 @@ Start the client:
 uv run src/client.py
 ```
 
-## WIP
-
-These features currently do not work, but are planned to be completed in the near future:
-- Edit groups
-- Share files
-
-Not that the application is still being tested - some features may not work as expected.
-
 ## Usage
 
 1. On launch, a login modal will appear; enter the **server IP** and a **username** to connect.
@@ -86,4 +84,13 @@ net-chat-proj/
 ├── styles/
 ├── pyproject.toml
 └── README.md
+```
+
+## Documentation
+
+The documentation is generated from the docstring in the codebase using [Sphinx Doc](https://www.sphinx-doc.org/en/master/):
+
+```
+cd docs
+uv run make html
 ```
