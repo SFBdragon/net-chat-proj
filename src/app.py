@@ -187,7 +187,7 @@ class ActionModal(ModalScreen):
             case "Create Group":
                 logging.debug(MOD_CODE + "[*] Creating group.")
                 group_name = self.query_one("#input-1", Input).value
-                group_members = (self.query_one("#input-2", Input).value).split(",")
+                group_members = [m.strip() for m in (self.query_one("#input-2", Input).value).split(",")]
                 try:
                     await client.create_group(group_name, group_members)
                     self.dismiss()
@@ -196,7 +196,7 @@ class ActionModal(ModalScreen):
 
             case "Add Users":
                 logging.debug(MOD_CODE + "[*] Adding users group.")
-                group_members = (self.query_one("#input-1", Input).value).split(",")
+                group_members = [m.strip() for m in (self.query_one("#input-1", Input).value).split(",")]
                 for member in group_members:
                     try:
                         await client.add_group_member(client.current_group, member)
@@ -347,9 +347,9 @@ class FileMessageItem(ListItem):
 
 # Main View
 
-# Arrow keys that should always be captured by the App level navigation handler
-# Never consumed by children
+# Arrow keys that should always be captured by the App level navigation handler.
 _NAV_KEYS = {"left", "right", "up", "down"}
+
 
 class ChatInterface(App):
     CSS_PATH = str(Path(__file__).parent / "../styles/chat_interface.tcss")
@@ -399,14 +399,14 @@ class ChatInterface(App):
         """
         Intercept arrow keys for pane navigation before any focused child widget can consume them.  
         """
-        # Only intercept when no modal present
+        # Only intercept when no modal is present
         if self.current_pane is None:
             return
 
         if event.key not in _NAV_KEYS:
             return
 
-        # Consume the event so focused children don't propogate it
+        # Consume the event so focused children do not consume it
         event.stop()
         event.prevent_default()
 
@@ -418,7 +418,7 @@ class ChatInterface(App):
 
                 elif event.key == "down":
                     self.selected_button = min(
-                        self.selected_button + 1, len(self.groups) - 1
+                        self.selected_button + 1, len(self.groups)
                     )
                     self._apply_pane_selection()
 
@@ -429,10 +429,6 @@ class ChatInterface(App):
             case "right":
                 if event.key == "left":
                     self.current_pane = "left"
-                    self._apply_pane_selection()
-
-                elif event.key == "right":
-                    self.current_pane = "action"
                     self._apply_pane_selection()
 
                 elif event.key == "down":
@@ -547,12 +543,14 @@ class ChatInterface(App):
         """
         if self.current_pane == "left":
             group_buttons = [
+                b for b in self.query(Button) if b.id == "action-create-group"
+            ] + [
                 b for b in self.query(Button) if b.id and b.id.startswith("group-")
             ]
             for idx, button in enumerate(group_buttons):
                 button.remove_class("selected")
                 if idx == self.selected_button:
-                    if client is not None:
+                    if client is not None and button.id.startswith("group-"):
                         group_id = int(button.id.split("-")[1])
                         client.current_group = group_id
                     button.add_class("selected")
