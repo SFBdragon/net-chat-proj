@@ -11,9 +11,11 @@ Features an asynchronous server and client, with support for peer-to-peer file s
 ## Features
 
 - Real time messaging
-- Create group chats
-- Add users to groups
-- Share files
+- Create group chats (1, 2, or more members)
+- Add additional users to groups
+- Share files and media
+- Mouse or keyboard navigation
+- Cross-device synchronization and logins
 
 Not that the application is still being tested - some features may not work as expected.
 
@@ -53,7 +55,7 @@ uv run src/server.py
 
 Start the client:
 ```shell
-uv run src/client.py
+uv run src/app.py
 ```
 
 ## Usage
