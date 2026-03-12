@@ -5,8 +5,9 @@ import hashlib
 import logging
 import os
 import time
-from client import Client
+
 import protocol
+from client import Client
 
 # Test configuration
 TEST_FILE_PATH = "test_file.txt"
@@ -17,14 +18,16 @@ SERVER_IP = "127.0.0.1"
 
 def get_group_id(client: Client) -> int:
     """Returns the first group_id from AppState."""
-    groups = client.AppState["groups"]
+    groups = client.groups
     assert len(groups) > 0, "Client has no groups in AppState"
-    return next(iter(groups.values()))["group_id"]
+    return next(iter(groups.values())).id
 
 
-def find_file_event(client: Client, group_id: int) -> protocol.FileAvailableEvent | None:
+def find_file_event(
+    client: Client, group_id: int
+) -> protocol.FileAvailableEvent | None:
     """Returns the first FileAvailableEvent in a given group, or None."""
-    for event in client.AppState["events"]:
+    for event in client.events:
         if isinstance(event, protocol.FileAvailableEvent) and event.groupID == group_id:
             return event
     return None
@@ -63,7 +66,7 @@ async def main():
     await asyncio.sleep(5)
 
     # c2 fetches events so it learns the group_id via AddMemberEvents.
-    await c2.GET_EVENTS()
+    await c2.update()
     print("[+] c2 fetched initial events.")
 
     # ------------------------------------------------------------------
@@ -72,29 +75,31 @@ async def main():
     group_id = get_group_id(c1)
     print(f"[*] Shared group_id = {group_id}")
 
-    c1.AppState["current_group"] = group_id
-    c2.AppState["current_group"] = group_id
+    c1.current_group = group_id
+    c2.current_group = group_id
 
     # ------------------------------------------------------------------
     # 5. c1 shares the file
     # ------------------------------------------------------------------
-    assert await c1.share_file(TEST_FILE_PATH), "c1 failed to share file"
+    assert await c1._share_file(TEST_FILE_PATH), "c1 failed to share file"
     print("[+] c1 shared file.")
 
     # ------------------------------------------------------------------
     # 6. c2 polls for the FileAvailableEvent
     # ------------------------------------------------------------------
     await asyncio.sleep(2)
-    await c2.GET_EVENTS()
+    await c2.update()
 
     file_event = find_file_event(c2, group_id)
     assert file_event is not None, "c2 did not receive a FileAvailableEvent"
-    print(f"[+] c2 received FileAvailableEvent: {file_event.fileName} ({file_event.sha256})")
+    print(
+        f"[+] c2 received FileAvailableEvent: {file_event.fileName} ({file_event.sha256})"
+    )
 
     # ------------------------------------------------------------------
     # 7. c2 downloads the file via get_file (resolves peer IP internally)
     # ------------------------------------------------------------------
-    download_ok = await c2.get_file(
+    download_ok = await c2._get_file(
         peer_user_id="TestP2P1",
         sha256_file_id=file_event.sha256,
         save_path=DOWNLOAD_PATH,
@@ -125,7 +130,6 @@ async def main():
     print(f"    Original  : {TEST_FILE_CONTENT}")
     print(f"    Downloaded: {downloaded_bytes}")
     print(f"    SHA-256   : {computed_hash}")
-    
 
 
 if __name__ == "__main__":

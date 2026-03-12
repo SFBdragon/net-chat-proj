@@ -25,25 +25,24 @@ Screen {
 	height: 1fr;
 }
 
-#message-input {
-	height: auto;
-	dock: bottom;
-	border: round #89B482;
+#group-actions {
+    height: 3;
+    dock: bottom;
 }
 
-#action-pane {
-	width: 0.25fr;
-	border: round #A9B665;
-	layout: vertical;
-	align: center bottom;
-	padding: 0 0 1 0;
+#message-input {
+	width: 1fr;
+	height: auto;
+	/*dock: left;*/
+	border: round #89B482;
+	margin: 0 0 1 0;
 }
 
 .action-btn {
-	/*width: 3;
-	height: 2;*/
-	min-width: 3;
+	width: 15;
+	height: auto;
 	text-align: center;
+	border: round #89B482;
 	margin: 0 0 1 0;
 }
 

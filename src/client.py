@@ -8,7 +8,6 @@ import pickle
 import socket
 import threading
 import time
-from typing import Optional
 
 # Custom modules
 import protocol
@@ -24,68 +23,123 @@ logging.basicConfig(
 )
 
 
+def log(msg: str):
+    logging.debug("[CLT] " + msg)
+
+
 # Client configuration
 
-MAP_VERSION = "1.0"
-TCP_PORT = 3030
-UDP_PORT = 3031
-P2P_PORT = 3032
-
-ALIVE_INTERVAL = 2  # seconds between IM_ALIVE requests
+ALIVE_INTERVAL = 1  # seconds between IM_ALIVE requests
 ALIVE_TIMEOUT = 5
-HEADER_BODY_DELIMITER = b"\x03"
 
-MOD_CODE = "[CLT] "
-
-default_server_ip = "127.0.0.1"
 SHARED_FILES_BASE_PATH = "shared_files"
-threads = []
-tasks = []
+
+
+async def login(server_ip: str, user_id: str, ui) -> Client:
+    """
+    Registers client on server.
+
+    :param server_ip: The IP address of the server to connect to.
+    :param user_id: Username of user.
+    :return: Returns a Client if successful, otherwise raises an exception.
+    :rtype: Client
+    """
+
+    try:
+        server_id = await _register(server_ip, user_id)
+    except Exception as e:
+        e.add_note("Login failed. Check your connection or server IP.")
+        raise e
+
+    return Client(ui, server_ip, server_id, user_id)
 
 
 class Client:
-    def __init__(self, ui, server_ip):
+    def __init__(self, ui, server_ip: str, server_id: str, user_id: str):
         """
-        Sets client configuration.
+        Create a Client - a collection of state and behaviour associated
+        with a registered, active user.
 
         :param ui: Reference to user interface for callbacks.
         :param server_ip: IP address of server.
+        :param user_id: The ID of the user of this client.
         """
-        self.server_ip = server_ip
-        self.local_ip = self._get_local_ip()
-        print(f"[*] Local IP address is {self.local_ip}")
-        logging.debug(MOD_CODE + f"[*] Local IP address is {self.local_ip}")
 
-        # Maintains state of client backend for the UI to reference when refreshing
-        # Only set after succesful REGISTER
-        self.AppState = None
         self.ui = ui
+        self.server_ip = server_ip
+        self.server_id = server_id
+        self.user_id = user_id
+        self.current_group: int | None = None
+        self.groups: dict[int, Group] = {}
+        self.last_event_id: int = 0
+        self.events: dict[int, protocol.Event] = {}
 
-    # REGISTER request to server, called by GUI when login button pressed
-    async def login(self, user_id: str, server_id="") -> bool:
+        self.local_ip = self._get_local_ip()
+        log(f"[*] Local IP address is {self.local_ip}")
+
+        # Start listening for P2P requests
+        self.p2p_thread = threading.Thread(target=self._listen_p2p, daemon=True)
+        self.p2p_thread.start()
+        log("[+] P2P thread started.")
+
+        # Start periodic poll for updates
+        self.alive_thread = threading.Thread(target=self._im_alive_loop, daemon=True)
+        self.alive_thread.start()
+        log("[+] IM ALIVE thread started.")
+
+    async def update(self):
         """
-        Registers client on server.
-
-        :param user_id: Username of user.
-        :param server_id: Unique server identifier.
-        :return: Login status; whether login was successful or not.
-        :rtype: bool
+        Update the client state by requesting and processing all events since last update.
+        Notify the UI to update once completed.
         """
-        login_status = await self._REGISTER(user_id, server_id)
-        if login_status == True:
-            # Start listening for P2P requests
-            p2p_thread = threading.Thread(target=self._listen_P2P, daemon=True)
-            threads.append(p2p_thread)
-            p2p_thread.start()
-            logging.debug(MOD_CODE + "[+] P2P thread started.")
 
-            # Start periodic poll for updates
-            logging.debug(MOD_CODE + "[+] IM ALIVE thread started.")
-            alive_thread = threading.Thread(target=self._im_alive_loop, daemon=True)
-            threads.append(alive_thread)
-            alive_thread.start()
+        try:
+            events = await self.get_events(self.last_event_id)
+        except Exception as e:
+            e.add_note("Update failed: GET_EVENTS request failed.")
+            raise e
 
-        return login_status
+        for event in events:
+            if event.eventID not in self.events:
+                self.events[event.eventID] = event
+
+                if isinstance(event, protocol.MessageEvent):
+                    log(f"[MSG] {event.senderUserID}: {event.message}")
+                elif isinstance(event, protocol.FileAvailableEvent):
+                    log(f"[FILE] {event.senderUserID} shared {event.fileName}")
+                elif isinstance(event, protocol.AddMemberEvent):
+                    log(f"[MEMBER] {event.userID} was added by {event.senderUserID}")
+
+                if event.groupID not in self.groups:
+                    self.groups[event.groupID] = Group(event.groupID, "", set())
+
+                if isinstance(event, protocol.AddMemberEvent):
+                    if event.userID == self.user_id:
+                        self.groups[event.groupID].name = event.groupName
+
+                        if event.senderUserID != self.user_id:
+                            # Fetch all group events before we got invited so we can access message history.
+                            backlog = await self.get_events(
+                                0, event.eventID, event.groupID
+                            )
+
+                            for event in backlog:
+                                if event.eventID not in self.events:
+                                    self.events[event.eventID] = event
+                                    if isinstance(event, protocol.AddMemberEvent):
+                                        self.groups[event.groupID].members.add(
+                                            event.userID
+                                        )
+                    else:
+                        self.groups[event.groupID].members.add(event.userID)
+
+        log(f"events: {self.events}")
+
+        if len(events) > 0:
+            self.last_event_id = events[-1].eventID
+
+        log("[!] Triggering UI redraw.")
+        self.ui.post_message(DataUpdated())
 
     async def send_message(self, group_id: int, message: str):
         """
@@ -98,25 +152,25 @@ class Client:
 
         request = protocol.PutMessage(
             version=protocol.MAP_VER,
-            userID=self.AppState["user_id"],
-            serverID=self.AppState["server_id"],
+            userID=self.user_id,
+            serverID=self.server_id,
             type="PUT_MESSAGE",
             groupID=group_id,
             length=len(message_body),
         )
 
-        logging.debug(MOD_CODE + "[*] Message send. Awaiting response.")
-        response_header, _ = await self._tcp_request(
-            request, self.server_ip, message_body
-        )
-        logging.debug(MOD_CODE + "[*] Message response received.")
-
-        if response_header.status == protocol.STATUS_OK:
-            print(f"[+] Send message to group_id {group_id} successfully.")
-            logging.debug(
-                MOD_CODE + f"[+] Send message to group_id {group_id} successfully."
+        try:
+            log("[*] Message send. Awaiting response.")
+            response_header, _ = await _tcp_request(
+                self.server_ip, request, message_body
             )
-            await self.GET_EVENTS()
+            log("[*] Message response received.")
+        except Exception as e:
+            e.add_note("Failed to send message: PUT_MESSAGE request failed.")
+            raise e
+
+        log(f"[+] Sent message to group_id {group_id}.")
+        await self.update()
 
     async def add_group_member(self, group_id: int, user_id: str):
         """
@@ -128,22 +182,23 @@ class Client:
 
         request = protocol.PutMember(
             version=protocol.MAP_VER,
-            userID=self.AppState["user_id"],
-            serverID=self.AppState["server_id"],
+            userID=self.user_id,
+            serverID=self.server_id,
             type="PUT_MEMBER",
             groupID=group_id,
             addUserID=user_id,
         )
 
-        logging.debug(MOD_CODE + "[*] Sending PUT_MEMBER request. Awaiting response.")
-        response_header, _ = await self._tcp_request(request, self.server_ip)
-        logging.debug(MOD_CODE + "[*] PUT_MEMBER response received.")
+        try:
+            log("[*] Sending PUT_MEMBER request. Awaiting response.")
+            response_header, _ = await _tcp_request(self.server_ip, request)
+            log("[*] PUT_MEMBER response received.")
+        except Exception as e:
+            e.add_note("Failed to add group member: PUT_MEMBER request failed.")
+            raise e
 
-        if response_header.status == protocol.STATUS_OK:
-            logging.debug(
-                MOD_CODE + f"[+] Added member to group_id {group_id} successfully."
-            )
-            await self.GET_EVENTS()
+        log(f"[+] Added member to group_id {group_id}.")
+        await self.update()
 
     async def create_group(self, group_name: str, user_ids: list[str]):
         """
@@ -154,24 +209,24 @@ class Client:
         """
         request = protocol.CreateGroup(
             version=protocol.MAP_VER,
-            userID=self.AppState["user_id"],
-            serverID=self.AppState["server_id"],
+            userID=self.user_id,
+            serverID=self.server_id,
             type="CREATE_GROUP",
             name=group_name,
             members=user_ids,
         )
 
-        response_header, _ = await self._tcp_request(request, self.server_ip)
+        try:
+            await _tcp_request(self.server_ip, request)
+        except Exception as e:
+            e.add_note("Failed to create group: CREATE_GROUP request failed.")
+            raise e
 
-        if response_header.status == protocol.STATUS_OK:
-            print(f"[+] Created group {group_name} successfully.")
-            logging.debug(MOD_CODE + f"[+] Created group {group_name} successfully.")
-            await self.GET_EVENTS()
+        log(f"[+] Created group {group_name} successfully.")
+        await self.update()
 
     # Obtains file from peer and writes to disk, returns True if succesful and False if not
-    async def get_file(
-        self, peer_user_id: str, sha256_file_id: str, save_path: str
-    ) -> bool:
+    async def get_file(self, peer_user_id: str, sha256_file_id: str, save_path: str):
         """
         :param peer_user_id: Username of peer hosting the file.
         :param sha256_file_id: Hash of file.
@@ -179,16 +234,28 @@ class Client:
         :return: True if succesful and False if not
         """
 
-        group_id = self.AppState["current_group"]
-        peer_ip = await self._GET_PEER(peer_user_id)
+        group_id = self.current_group
 
-        if peer_ip is not None:
-            file_req_status = await self.FILE_REQUEST(
-                peer_ip, sha256_file_id, group_id, save_path
+        if group_id is None:
+            raise Exception("Failed to get file: current group is not set.")
+
+        try:
+            peer_ip = await self._get_peer(peer_user_id)
+            log(f"GET_PEER successful - peer IP: {peer_ip}")
+        except Exception as e:
+            e.add_note("Failed to get file: GET_PEER request failed.")
+            raise e
+
+        try:
+            await self._file_request(peer_ip, sha256_file_id, group_id, save_path)
+            log("FILE_REQUEST successful")
+        except Exception as e:
+            e.add_note(
+                "Failed to get file: FILE_REQUEST failed. The user might have gone offline."
             )
-            return file_req_status
+            raise e
 
-    async def share_file(self, file_path: str) -> bool:
+    async def share_file(self, file_path: str):
         """
         Registers a file as available for P2P download by group members.
         Called by the UI when the user shares a file. Also sends _PUT_FILE request to server
@@ -197,34 +264,41 @@ class Client:
         :param file_path: Local path of the file to share.
         :return: True if successful, False if not.
         """
-        group_id = self.AppState[
-            "current_group"
-        ]  # Obtain current group id ASAP when function called by UI
+
+        # Obtain current current group ID immediately (before the user has a chance to switch groups)
+        group_id = self.current_group
+
+        if group_id is None:
+            raise Exception("Sharing file failed: current group is not set.")
+
         # Read file and compute SHA256
-        with open(file_path, "rb") as f:
-            file_bytes = f.read()
-        logging.debug("[+] Read file successfully.")
+        try:
+            with open(file_path, "rb") as f:
+                file_bytes = f.read()
+            log("[+] Read file successfully.")
+        except Exception as e:
+            e.add_note(
+                f"Sharing file failed: {file_path} is not a file or is not readable."
+            )
+            raise e
 
         sha256 = hashlib.sha256(file_bytes).hexdigest().upper()
-        logging.debug("[+] File hash is {sha256}.")
+        log(f"[+] File hash is {sha256}.")
 
-        # Add file to local database which maintains which files have been shared along with sha256 hash and
-        # group ID, per user
-        # so _handle_p2p_request can serve it
-        self._save_shared_files(
+        # Add file to local database which maintains which files have
+        # been shared along with sha256 hash and group ID, per user
+        # so _handle_p2p_request can serve it.
+        self._append_shared_files_registry(
             group_id, sha256, os.path.basename(file_path), file_path
         )
 
-        # DEPRECATED
-        # self.AppState["shared_files"][sha256] = file_path
-
-        return await self._PUT_FILE(group_id, file_path, sha256)
+        await self.put_file(group_id, file_path, sha256)
 
     # ---------------------------------------------------------------------------------------------------------------------
     # Client-Server Request Functions
     # ---------------------------------------------------------------------------------------------------------------------
 
-    async def _PUT_FILE(self, group_id: int, file_path: str, sha256: str) -> bool:
+    async def put_file(self, group_id: int, file_path: str, sha256: str):
         """
         Notifies the server that a file is available for P2P download.
 
@@ -236,189 +310,152 @@ class Client:
         file_name = os.path.basename(file_path)
 
         request = protocol.PutFile(
-            version=MAP_VERSION,
-            userID=self.AppState["user_id"],
-            serverID=self.AppState["server_id"],
+            version=protocol.MAP_VER,
+            userID=self.user_id,
+            serverID=self.server_id,
             type="PUT_FILE",
             groupID=group_id,
             sha256=sha256,
             fileName=file_name,
         )
 
-        response_header, _ = await self._tcp_request(request, self.server_ip)
+        try:
+            response_header, _ = await _tcp_request(self.server_ip, request)
+        except Exception as e:
+            e.add_note("Failed to make file available: PUT_FILE request failed.")
+            raise e
 
-        if response_header.status == protocol.STATUS_OK:
-            print(f"[+] File {file_name} advertised to group {group_id} successfully.")
-            logging.debug(
-                MOD_CODE + f"[+] File {file_name} advertised to group {group_id}."
-            )
-            await self.GET_EVENTS()
-            return True
+        log(f"[+] {file_name} advertised to group {group_id}.")
+        await self.update()
 
-        logging.debug(
-            MOD_CODE
-            + f"[-] Failed to advertise file {file_name}: {response_header.status}"
-        )
-        return False
-
-    async def _REGISTER(self, user_id: str, server_id="") -> bool:
-        """
-        Verify server reachability, protocol compatibility, and register the user ID with the server.
-        """
-        # Header for REGISTER request
-        request = protocol.Register(
-            version=MAP_VERSION, type="REGISTER", userID=user_id, serverID=server_id
-        )
-
-        response_header, _ = await self._tcp_request(request, self.server_ip)
-
-        if response_header.status == protocol.STATUS_OK:
-            # Only do this if registration was succesful, i.e. STATUS_OK
-            self.AppState = {
-                "user_id": user_id,
-                "server_id": response_header.serverID,
-                "groups": {
-                    # "group_name": {
-                    #     "group_id": int,
-                    #     "members": []   # list of user_id strings
-                    # }
-                },
-                "events": [],  # ordered list of event dicts from GET_EVENTS
-                "current_group": None,  # group_name of whichever group the user has open
-                "last_event_id": 0,
-                "error": "",
-            }
-            logging.debug(MOD_CODE + "[+] Successfully registered on the server.")
-            return True
-
-        logging.debug(MOD_CODE + "[-] Failed to register on the server.")
-        return False
-
-    # Returns all events after the latest eventID as a list of protocol.Event objects
-    async def GET_EVENTS(self) -> list[protocol.Event]:
+    async def get_events(
+        self,
+        after_event_id: int,
+        before_event_id: int | None = None,
+        group_id: int | None = None,
+    ) -> list[protocol.Event]:
         """
         Fetch a list of events. The events listed by the response are only those which the requesting user is a member of.
+
+        :param last_event_id: Only request events after this event ID.
+        :param group_id: Only request events for this group.
+        :returns: The list of events within the specified parameters.
         """
+
         request = protocol.GetEvents(
-            version=MAP_VERSION,
-            userID=self.AppState["user_id"],
-            serverID=self.AppState["server_id"],
+            version=protocol.MAP_VER,
+            userID=self.user_id,
+            serverID=self.server_id,
             type="GET_EVENTS",
-            groupID=None,
-            beforeEventID=None,
-            afterEventID=self.AppState["last_event_id"],
+            groupID=group_id,
+            beforeEventID=before_event_id,
+            afterEventID=after_event_id,
         )
 
-        logging.debug(MOD_CODE + "[*] Awaiting TCP response.")
-        _, response_body_bytes = await self._tcp_request(request, self.server_ip)
-        logging.debug(MOD_CODE + "[*] TCP response received.")
+        try:
+            log("[*] Awaiting TCP response.")
+            _, response_body_bytes = await _tcp_request(self.server_ip, request)
+            log("[*] TCP response received.")
+        except Exception as e:
+            e.add_note("Getting events failed: GET_EVENTS request failed.")
+            raise e
 
-        # Guarding for if no new events
-        if response_body_bytes:
-            response_body_json = response_body_bytes.decode("utf-8")
-            response_body_list = protocol.parse_events_response_body(response_body_json)
+        if not response_body_bytes:
+            raise Exception("Getting events failed: no response body length.")
 
-            initialLoad = False
-            if self.AppState["last_event_id"] == 0:
-                initialLoad = True
-                self.AppState["events"] = response_body_list
+        try:
+            events_json = response_body_bytes.decode("utf-8")
+            events = protocol.parse_events_response_body(events_json)
+            return events
+        except Exception as e:
+            e.add_note(
+                "Getting events failed: decoding and parsing events list failed."
+            )
+            raise e
 
-            # Set last event ID to the last event in the returned list
-            self.AppState["last_event_id"] = response_body_list[-1].eventID
-
-            for event in response_body_list:
-                if not initialLoad:
-                    self.AppState["events"].append(event)
-
-                if isinstance(event, protocol.MessageEvent):
-                    print(f"[MSG] {event.senderUserID}: {event.message}")
-                elif isinstance(event, protocol.FileAvailableEvent):
-                    print(f"[FILE] {event.senderUserID} shared {event.fileName}")
-                elif isinstance(event, protocol.AddMemberEvent):
-                    print(f"[MEMBER] {event.userID} was added by {event.senderUserID}")
-
-                    group_id = str(event.groupID)
-
-                    if group_id not in self.AppState["groups"]:
-                        self.AppState["groups"][group_id] = {
-                            "group_id": event.groupID,
-                            "group_name": event.groupName,
-                            "members": [],
-                        }
-
-                    self.AppState["groups"][group_id]["members"].append(event.userID)
-
-                    print(self.AppState["groups"])
-
-            # tell TUI to redraw
-            logging.debug(MOD_CODE + "[!] Attempting to broadcast data update.")
-            self.ui.post_message(DataUpdated())
-        else:
-            response_body_list = None
-
-        return response_body_list
-
-    async def _GET_PEER(self, peer_user_id: str) -> str | None:
+    async def _get_peer(self, peer_user_id: str) -> str:
         """
         Request the most recently advertised localIP for a member of the group which the requesting user is also on.
         This facilitates the ability of a client to initiate a P2P exchange with another client.
         """
+
+        if not self.current_group:
+            raise Exception("Failed to get peer IP: current group not set.")
+
         request = protocol.GetPeer(
-            version=MAP_VERSION,
-            userID=self.AppState["user_id"],
-            serverID=self.AppState["server_id"],
+            version=protocol.MAP_VER,
+            userID=self.user_id,
+            serverID=self.server_id,
             type="GET_PEER",
             peerUserID=peer_user_id,
-            groupID=self.AppState["current_group"],
+            groupID=self.current_group,
         )
 
-        response_header, response_body_bytes = await self._tcp_request(
-            request, self.server_ip
-        )
+        try:
+            response_header, peer_ip_bytes = await _tcp_request(self.server_ip, request)
+        except Exception as e:
+            e.add_note("Failed to get peer IP: GET_PEER request failed.")
+            raise e
 
-        if response_header.status != protocol.STATUS_OK:
-            return None
+        if not peer_ip_bytes:
+            raise Exception(
+                f"Failed to get peer IP: GET_PEER for user ID {peer_user_id} succeeded, but response did not include the IP."
+            )
 
-        response_body_str = response_body_bytes.decode("utf-8")  # Peer IP Address
-        return response_body_str
+        peer_ip = peer_ip_bytes.decode("utf-8")
+        return peer_ip
 
     # ---------------------------------------------------------------------------------------------------------------------
     # P2P request and response methods
     # ---------------------------------------------------------------------------------------------------------------------
 
     # Requests file from peer and saves it if file transferred succesfully
-    async def FILE_REQUEST(
+    async def _file_request(
         self, peer_ip: str, sha256_file_id: str, group_id: int, save_path: str
-    ) -> bool:
+    ):
         """Requests file from peer and saves it if file transferred succesfully"""
 
         request = protocol.FileRequest(
-            version=MAP_VERSION,
-            userID=self.AppState["user_id"],
-            serverID=self.AppState["server_id"],
+            version=protocol.MAP_VER,
+            userID=self.user_id,
+            serverID=self.server_id,
             type="FILE_REQUEST",
             groupID=group_id,
             sha256=sha256_file_id,
         )
 
-        response_header, response_body_bytes = await self._tcp_request(
-            request, peer_ip, b"", P2P_PORT
-        )
-        if response_header.status != protocol.STATUS_OK or response_body_bytes is None:
-            return False
+        try:
+            response_header, response_body_bytes = await _tcp_request(
+                peer_ip, request, b"", protocol.CLIENT_P2P_PORT
+            )
+        except Exception as e:
+            e.add_note("Failed to request file: FILE_REQUEST request failed.")
+            raise e
+
+        if (
+            not isinstance(response_header, protocol.BodyResponse)
+            or response_body_bytes is None
+        ):
+            raise Exception(
+                "Failed to request file: FILE_REQUEST succeeded but didn't return a body."
+            )
 
         # Verifying file integrity
         computed_hash = hashlib.sha256(response_body_bytes).hexdigest().upper()
         if computed_hash != sha256_file_id or response_header.length != len(
             response_body_bytes
         ):
-            return False
+            raise Exception(
+                "Failed to request file: file from user failed to validate."
+            )
 
-        # Write raw bytes directly to disk
-        with open(save_path, "wb") as f:
-            f.write(response_body_bytes)
-
-        return True
+        try:
+            # Write raw bytes directly to disk
+            with open(save_path, "wb") as f:
+                f.write(response_body_bytes)
+        except Exception as e:
+            e.add_note("Failed to request file: writing file to disk failed.")
+            raise e
 
     async def _handle_p2p_request(self, sock: socket.socket, peer_ip):
         """Responds to P2P request, sending appropriate response header along with requested file (if
@@ -429,63 +466,59 @@ class Client:
             stream = protocol.MapStreamBuffer(sock)
 
             while True:
-                header_bytes = await stream.read_header()
-                print(f"> TCP received from {peer_ip}: {header_bytes}")
-
                 response_body = None
 
                 try:
-                    header = protocol.parse_request_header(
-                        header_bytes, self.AppState["server_id"]
-                    )
+                    header_bytes = await stream.read_header()
 
-                    sha256 = header.sha256
+                    header = protocol.parse_request_header(header_bytes, self.server_id)
+
+                    if not isinstance(header, protocol.FileRequest):
+                        raise protocol.Status(protocol.STATUS_BAD_REQUEST)
 
                     # Look for shared file which matches sha256 hash of request
                     file_path = next(
                         (
                             f
-                            for _, f_sha256, _, f in self._load_shared_files()
-                            if f_sha256 == sha256
+                            for _, f_sha256, _, f in self._load_shared_files_registry()
+                            if f_sha256 == header.sha256
                         ),
                         None,
                     )
 
-                    logging.debug(MOD_CODE + f"File Path: {file_path}")
+                    log(f"File Path: {file_path}")
+
+                    # If we can't find the SHA256 or the file no longer exists, indicate
+                    # that the file is unavailable.
+                    if file_path is None or not os.path.exists(file_path):
+                        raise protocol.Status(protocol.STATUS_FILE_UNAVAILABLE)
 
                     # If file matching sha256 hash from request does exist and is shared, parse it
-                    #  and formulate appropriate header
-                    if file_path and os.path.exists(file_path):
+                    # and formulate appropriate header.
+                    try:
                         with open(file_path, "rb") as f:
                             response_body = f.read()
-
                             response_header = protocol.BodyResponse(
                                 version=protocol.MAP_VER,
-                                serverID=self.AppState["server_id"],
+                                serverID=self.server_id,
                                 status=protocol.STATUS_OK,
                                 length=len(response_body),
                             )
-                    else:
-                        response_body = None
-                        response_header = protocol.GenericResponse(
-                            version=protocol.MAP_VER,
-                            serverID=self.AppState["server_id"],
-                            status=protocol.STATUS_FILE_UNAVAILABLE,
-                        )
+                    except Exception as _:
+                        raise protocol.Status(protocol.STATUS_FILE_UNAVAILABLE)
 
                 except protocol.Status as s:
                     response_header = protocol.GenericResponse(
                         version=protocol.MAP_VER,
-                        serverID=self.AppState["server_id"],
+                        serverID=self.server_id,
                         status=s.status,
                     )
 
-                response_json = response_header.model_dump_json()
-                response_bytes = response_json.encode("utf-8")
+                response_header_json = response_header.model_dump_json()
+                response_header_bytes = response_header_json.encode("utf-8")
 
                 # Send response header
-                print(f"< P2P TCP sending to {peer_ip}: {response_json}\x03")
-                sock.sendall(response_bytes)
+                sock.sendall(response_header_bytes)
                 sock.sendall(b"\x03")
 
                 # Send file (response body)
@@ -500,101 +533,14 @@ class Client:
             print(f"TCP closed: {peer_ip}")
 
     # ---------------------------------------------------------------------------------------------------------------------
-    # Server communication
-    # ---------------------------------------------------------------------------------------------------------------------
-
-    async def _tcp_request(
-        self,
-        header: protocol.BaseRequest,
-        ip_address=default_server_ip,
-        body: bytes = b"",
-        port=TCP_PORT,
-    ) -> tuple[protocol.Response, Optional[bytes]]:
-        """
-        Creates and sends TCP request, and returns Response object with response header and body.
-
-        :param ip_address: IP address of server; defaults to localhost.
-        """
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(10)
-        sock.connect((ip_address, port))
-
-        # Build payload (serialise using JSON)
-        header_bytes = header.model_dump_json().encode("utf-8")
-        if body:
-            payload = header_bytes + HEADER_BODY_DELIMITER + body
-        else:
-            payload = header_bytes + HEADER_BODY_DELIMITER
-
-        sock.sendall(payload)
-        print(f"[+] Payload sent ({len(payload)}) characters.")
-
-        stream = protocol.MapStreamBuffer(sock)
-        response_header_bytes = await stream.read_header()
-        logging.debug(MOD_CODE + f"[=] TCP request payload {payload}")
-        logging.debug(
-            MOD_CODE + f"[=] TCP response header bytes {response_header_bytes}"
-        )
-        response_header_json = response_header_bytes.decode("utf-8")
-        response_header = protocol.parse_response_header(response_header_json)
-
-        if isinstance(
-            response_header, protocol.BodyResponse
-        ):  # Generic response header doesn't have length field
-            response_body_bytes = await stream.read_body(response_header.length)
-        else:
-            response_body_bytes = None
-
-        sock.close()
-        return response_header, response_body_bytes
-
-    def _udp_request(
-        self, header: protocol.BaseRequest, ip_address=default_server_ip
-    ) -> protocol.Response:
-        """
-        Sends UDP request, returns Response object.
-
-        :param ip_address: IP address of server; defaults to localhost.
-        """
-
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        # Very important, otherwise hangs forever on sock.recvfrom(65535)
-        sock.settimeout(ALIVE_TIMEOUT)
-
-        # Build payload
-        # No request body or response body is accomodated for here as it is not needed.
-        header_bytes = header.model_dump_json().encode("utf-8")
-
-        sock.sendto(header_bytes, (ip_address, UDP_PORT))
-
-        # Receive response and parse
-        try:
-            response_header_bytes, _ = sock.recvfrom(65535)
-            print("Completed UDP")
-            response_header_json = response_header_bytes.rstrip(
-                protocol.HEADER_BODY_DELIMITER
-            ).decode("utf-8")
-            sock.close()
-            return protocol.parse_response_header(response_header_json)
-        except socket.timeout:
-            print("[!] UDP request timed out")
-            logging.debug(MOD_CODE + "[!] UDP request timed out.")
-            sock.close()
-            return None
-
-    # ---------------------------------------------------------------------------------------------------------------------
     # TODO: Thread loops
     # ---------------------------------------------------------------------------------------------------------------------
 
-    def _listen_P2P(self):
-
+    def _listen_p2p(self):
         server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server_sock.bind(("0.0.0.0", P2P_PORT))
+        server_sock.bind(("0.0.0.0", protocol.CLIENT_P2P_PORT))
         server_sock.listen(10)
-
-        print(f"Listening for P2P requests")
 
         while True:
             peer_sock, (peer_ip, peer_port) = server_sock.accept()
@@ -604,31 +550,31 @@ class Client:
         """
         Periodically polls the server for updates.
         """
-        try:
-            while True:
+        while True:
+            try:
                 request = protocol.ImAlive(
-                    version=MAP_VERSION,
-                    userID=self.AppState["user_id"],
-                    serverID=self.AppState["server_id"],
+                    version=protocol.MAP_VER,
+                    userID=self.user_id,
+                    serverID=self.server_id,
                     type="IM_ALIVE",
                     localIP=self.local_ip,
-                    afterEventID=self.AppState["last_event_id"],
+                    afterEventID=self.last_event_id,
                 )
-                print("TRYING UDP")
-                response = self._udp_request(request, self.server_ip)
-                logging.debug(MOD_CODE + "[@] I AM ALIVE")
+
+                response = _udp_request(self.server_ip, request)
+                log("[@] I AM ALIVE")
 
                 if (
                     isinstance(response, protocol.ImAliveResponse)
                     and response.isOutdated
                 ):
-                    logging.debug(MOD_CODE + "[@] Events are outdated")
-                    run_async_in_thread(self.GET_EVENTS())
+                    log("[@] Events are outdated")
+                    run_async_in_thread(self.update())
 
                 time.sleep(ALIVE_INTERVAL)
 
-        except Exception as e:
-            logging.debug(MOD_CODE + str(e))
+            except Exception as e:
+                log(str(e))
 
     # ---------------------------------------------------------------------------------------------------------------------
     # Internal Helpers
@@ -647,32 +593,186 @@ class Client:
         finally:
             s.close()
 
-    def _load_shared_files(self) -> list[tuple]:
-        """Load shared files registry from disk, returning empty list if not found."""
-        shared_files_path = (
-            SHARED_FILES_BASE_PATH + "." + self.AppState["user_id"] + ".pkl"
-        )
-        try:
-            with open(shared_files_path, "rb") as f:
-                return pickle.load(f)
-        except FileNotFoundError, EOFError:
-            return []
+    def _shared_files_registry_path(self) -> str:
+        keepcharacters = (" ", "_")
+        pathsafe_user_id = "".join(
+            c for c in self.user_id if c.isalnum() or c in keepcharacters
+        ).rstrip()
 
-    def _save_shared_files(
-        self, group_id: str, sha256: str, file_name: str, file_path: str
+        return SHARED_FILES_BASE_PATH + "." + pathsafe_user_id + ".pkl"
+
+    def _load_shared_files_registry(self) -> list[tuple[int, str, str, str]]:
+        """Load shared files registry from disk, returning empty list if not found."""
+
+        path = self._shared_files_registry_path()
+
+        try:
+            if not os.path.isfile(path):
+                return []
+
+            with open(path, "rb") as f:
+                return pickle.load(f)
+        except Exception as e:
+            e.add_note(f"Loading shared files registry failed: opening {path} failed.")
+            raise e
+
+    def _append_shared_files_registry(
+        self, group_id: int, sha256: str, file_name: str, file_path: str
     ):
         """Persist shared files registry to disk."""
 
-        shared_files_path = (
-            SHARED_FILES_BASE_PATH + "." + self.AppState["user_id"] + ".pkl"
-        )
-        shared = self._load_shared_files()
+        try:
+            shared = self._load_shared_files_registry()
+        except Exception as e:
+            e.add_note(
+                "Appending to shared files registry failed: could not load registry."
+            )
+            raise e
+
         shared.append((group_id, sha256, file_name, file_path))
 
-        with open(shared_files_path, "wb") as f:
-            pickle.dump(shared, f)
+        try:
+            with open(self._shared_files_registry_path(), "wb") as f:
+                pickle.dump(shared, f)
+        except Exception as e:
+            e.add_note(
+                "Appending to shared files registry failed: could not write to registry file."
+            )
+            raise e
 
-    # -------------------------------------------------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Server communication
+# ---------------------------------------------------------------------------------------------------------------------
+
+
+async def _tcp_request(
+    ip_address: str,
+    header: protocol.BaseRequest,
+    body: bytes = b"",
+    port: int = protocol.SERVER_TCP_PORT,
+) -> tuple[protocol.Response, bytes | None]:
+    """
+    Creates and sends TCP request, and returns Response object with response header and body.
+
+    :param ip_address: IP address of server; defaults to localhost.
+    """
+
+    expected_server_id = header.serverID
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(10)
+
+    try:
+        sock.connect((ip_address, port))
+    except Exception as e:
+        e.add_note("TCP request failed: connect failed.")
+        raise e
+
+    # Serialize header data to JSON and encode as UTF-8
+    header_bytes = header.model_dump_json().encode("utf-8")
+    # Build payload
+    payload = header_bytes + protocol.HEADER_BODY_DELIMITER + body
+
+    log(f"[=] TCP request payload {payload}")
+    sock.sendall(payload)
+
+    stream = protocol.MapStreamBuffer(sock)
+    response_header_bytes = await stream.read_header()
+    log(f"[=] TCP response header bytes {response_header_bytes}")
+    response_header_json = response_header_bytes.decode("utf-8")
+    response_header = protocol.parse_response_header(response_header_json)
+
+    if response_header.status != protocol.STATUS_OK:
+        raise Exception(f"TCP request failed: status was {response_header.status}")
+
+    try:
+        protocol.check_versions_match(protocol.MAP_VER, response_header.version)
+    except Exception as e:
+        e.add_note(f"TCP request failed: server version was {response_header.version}")
+        raise e
+
+    if expected_server_id:
+        if response_header.serverID != expected_server_id:
+            raise Exception("TCP request failed: wrong server ID in response.")
+
+    # Generic response header doesn't have length field, and no body
+    if isinstance(response_header, protocol.BodyResponse):
+        response_body_bytes = await stream.read_body(response_header.length)
+    else:
+        response_body_bytes = None
+
+    sock.close()
+
+    return response_header, response_body_bytes
+
+
+async def _register(server_ip: str, user_id: str) -> str:
+    """
+    Register the user to the server if they are not yet registered.
+    This implicitly confirms whether the server is reachable and speaks a compatible MAP version.
+
+    :param server_ip: The IP of the server to connect and register with.
+    :returns: The server ID, if the request was successful.
+    """
+
+    request = protocol.Register(
+        version=protocol.MAP_VER,
+        type="REGISTER",
+        userID=user_id,
+        serverID="",
+    )
+
+    try:
+        response, _ = await _tcp_request(server_ip, request)
+    except Exception as e:
+        e.add_note("Registration failed: REGISTER request did not succeed.")
+        raise e
+
+    return response.serverID
+
+
+def _udp_request(
+    ip_address,
+    header: protocol.BaseRequest,
+    port=protocol.SERVER_UDP_PORT,
+) -> protocol.Response:
+    """
+    Sends UDP request, returns Response object.
+
+    :param ip_address: IP address of server; defaults to localhost.
+    """
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    # Very important, otherwise hangs forever on sock.recvfrom(65535)
+    sock.settimeout(ALIVE_TIMEOUT)
+
+    # Build payload
+    # No request body or response body is accomodated for here as it is not needed.
+    header_bytes = header.model_dump_json().encode("utf-8")
+
+    sock.sendto(header_bytes, (ip_address, port))
+
+    # Receive response and parse
+    try:
+        response_header_bytes, _ = sock.recvfrom(65535)
+        response_header_json = response_header_bytes.rstrip(
+            protocol.HEADER_BODY_DELIMITER
+        ).decode("utf-8")
+        sock.close()
+        return protocol.parse_response_header(response_header_json)
+    except socket.timeout:
+        raise Exception("UDP request failed: request timed out.")
+    finally:
+        sock.close()
+
+
+class Group:
+    def __init__(self, id: int, name: str, members: set[str]):
+        self.id = id
+        self.name = name
+        self.members: set[str] = members
 
 
 if __name__ == "__main__":
