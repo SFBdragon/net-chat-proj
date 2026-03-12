@@ -187,7 +187,10 @@ class ActionModal(ModalScreen):
             case "Create Group":
                 logging.debug(MOD_CODE + "[*] Creating group.")
                 group_name = self.query_one("#input-1", Input).value
-                group_members = [m.strip() for m in (self.query_one("#input-2", Input).value).split(",")]
+                group_members = [
+                    m.strip()
+                    for m in (self.query_one("#input-2", Input).value).split(",")
+                ]
                 try:
                     await client.create_group(group_name, group_members)
                     self.dismiss()
@@ -196,7 +199,10 @@ class ActionModal(ModalScreen):
 
             case "Add Users":
                 logging.debug(MOD_CODE + "[*] Adding users group.")
-                group_members = [m.strip() for m in (self.query_one("#input-1", Input).value).split(",")]
+                group_members = [
+                    m.strip()
+                    for m in (self.query_one("#input-1", Input).value).split(",")
+                ]
                 for member in group_members:
                     try:
                         await client.add_group_member(client.current_group, member)
@@ -387,17 +393,12 @@ class ChatInterface(App):
                     )
 
         self.current_pane = "left"
-        self.selected_button = 0
-        self.selected_action = 0
-        self.action_ids = [
-            "action-send-file",
-            "action-create-group",
-            "action-add-users",
-        ]
+        self.group_panel_focus_index = 0
+        self.message_panel_focus_index = 0
 
     async def _on_key(self, event: Key) -> None:
         """
-        Intercept arrow keys for pane navigation before any focused child widget can consume them.  
+        Intercept arrow keys for pane navigation before any focused child widget can consume them.
         """
         # Only intercept when no modal is present
         if self.current_pane is None:
@@ -406,29 +407,54 @@ class ChatInterface(App):
         if event.key not in _NAV_KEYS:
             return
 
-        # Consume the event so focused children do not consume it
-        event.stop()
-        event.prevent_default()
-
         match self.current_pane:
             case "left":
                 if event.key == "right":
-                    self.current_pane = "right"
-                    self._apply_pane_selection()
+                    if client and client.current_group is not None:
+                        self.current_pane = "right"
+                        self._apply_pane_selection()
 
                 elif event.key == "down":
-                    self.selected_button = min(
-                        self.selected_button + 1, len(self.groups)
+                    self.group_panel_focus_index = min(
+                        self.group_panel_focus_index + 1, len(self.groups)
                     )
                     self._apply_pane_selection()
 
                 elif event.key == "up":
-                    self.selected_button = max(self.selected_button - 1, 0)
+                    self.group_panel_focus_index = max(
+                        self.group_panel_focus_index - 1, 0
+                    )
                     self._apply_pane_selection()
 
             case "right":
+                message_input = self.query_one("#message-input", MessageInput)
+
                 if event.key == "left":
-                    self.current_pane = "left"
+                    match self.message_panel_focus_index:
+                        case 0:
+                            if message_input.value:
+                                return
+                            else:
+                                self.current_pane = "left"
+                        case 1:
+                            self.message_panel_focus_index = 0
+                        case 2:
+                            self.message_panel_focus_index = 1
+
+                    self._apply_pane_selection()
+
+                elif event.key == "right":
+                    match self.message_panel_focus_index:
+                        case 0:
+                            if message_input.value:
+                                return
+                            else:
+                                self.message_panel_focus_index = 1
+                        case 1:
+                            self.message_panel_focus_index = 2
+                        case 2:
+                            return
+
                     self._apply_pane_selection()
 
                 elif event.key == "down":
@@ -437,20 +463,9 @@ class ChatInterface(App):
                 elif event.key == "up":
                     self.query_one("#message-list", ListView).scroll_up()
 
-            case "action":
-                if event.key == "left":
-                    self.current_pane = "right"
-                    self._apply_pane_selection()
-
-                elif event.key == "down":
-                    self.selected_action = min(
-                        self.selected_action + 1, len(self.action_ids) - 1
-                    )
-                    self._apply_pane_selection()
-
-                elif event.key == "up":
-                    self.selected_action = max(self.selected_action - 1, 0)
-                    self._apply_pane_selection()
+        # Consume the event so focused children do not consume it
+        event.stop()
+        event.prevent_default()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
@@ -529,51 +544,29 @@ class ChatInterface(App):
             self.current_pane = self._saved_pane
             self._apply_pane_selection()
 
-    def update_pane_selection(self):
-        """Public alias kept for any external callers."""
-        self._apply_pane_selection()
-
     def _apply_pane_selection(self):
         """
         Update focus and visual selection to match self.current_pane.
-
-        Renamed from update_pane_selection so internal calls use the private
-        name (avoids accidental double-calls if Textual ever adds a hook with
-        the old name).
         """
+
         if self.current_pane == "left":
             group_buttons = [
-                b for b in self.query(Button) if b.id == "action-create-group"
-            ] + [
-                b for b in self.query(Button) if b.id and b.id.startswith("group-")
-            ]
+                self.query_one("#action-create-group", Button),
+            ] + [b for b in self.query(Button) if b.id and b.id.startswith("group-")]
             for idx, button in enumerate(group_buttons):
                 button.remove_class("selected")
-                if idx == self.selected_button:
-                    if client is not None and button.id.startswith("group-"):
-                        group_id = int(button.id.split("-")[1])
-                        client.current_group = group_id
+                if idx == self.group_panel_focus_index:
                     button.add_class("selected")
                     button.focus()
 
-        elif self.current_pane == "right":
-            # Focus the message input so the user can type immediately.
-            # Arrow keys are still intercepted by _on_key above, so up/down
-            # scroll the message list rather than moving the cursor.
-            self.query_one("#message-input", Input).focus()
-
-        elif self.current_pane == "action":
-            action_buttons = [
-                b for b in self.query(Button) if b.id and b.id.startswith("action-")
-            ]
-            for idx, button in enumerate(action_buttons):
-                button.remove_class("selected")
-                if idx == self.selected_action:
-                    button.add_class("selected")
-                    button.focus()
-
-        if client is not None and client.current_group is not None:
-            self.query_one("#right-pane", Vertical).disabled = False
+        if self.current_pane == "right":
+            match self.message_panel_focus_index:
+                case 0:
+                    self.query_one("#message-input").focus()
+                case 1:
+                    self.query_one("#action-send-file").focus()
+                case 2:
+                    self.query_one("#action-add-users").focus()
 
     def on_mount(self) -> None:
         """
@@ -608,7 +601,7 @@ class ChatInterface(App):
                 button.group_members = group.members
                 if client and client.current_group == group_id:
                     button.add_class("selected")
-                group_list.mount(button)
+                group_list.mount(ListItem(button))
 
     def render_messages_for_group(self, group_id):
         """
