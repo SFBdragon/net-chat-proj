@@ -20,6 +20,11 @@ from textual.widgets import (
     Static,
 )
 
+# Custom modules
+import protocol
+from client import Client, Group, login
+from datasync import DataUpdated
+
 logging.basicConfig(
     level=logging.DEBUG,
     filename="debug.log",
@@ -28,14 +33,10 @@ logging.basicConfig(
 )
 MOD_CODE = "[TUI] "
 
-# Custom modules
-import protocol
-from client import Client
-from datasync import DataUpdated
 
 # ---------------------------------------------------------------------------------------
 
-client = None
+client: Client | None = None
 
 # ---------------------------------------------------------------------------------------
 
@@ -78,21 +79,50 @@ class LoginModal(ModalScreen):
         event.stop()
 
         # Get input values
-        username = self.query_one("#login-username", Input).value
-        server_ip = self.query_one("#login-server-ip", Input).value
+        username_input = self.query_one("#login-username", Input)
+        username = username_input.value
+        server_ip_input = self.query_one("#login-server-ip", Input)
+        server_ip = server_ip_input.value
         # password = self.query_one("#login-password", Input).value
 
-        logging.debug(MOD_CODE + f"[+] Logging in as user {username} to ")
+        if len(username) < 4:
+            self.notify(
+                "",
+                title="Invalid username. Must be at least 4 characters.",
+                severity="error",
+            )
+            username_input.focus()
+            return
 
-        # Initialize client and login
-        global client
-        client = Client(ui=self.user_interface, server_ip=server_ip)
-        login_status = await client.login(username)
-        if login_status:
+        if len(username) > 20:
+            self.notify(
+                "",
+                title="Invalid username. Must be less than 21 characters.",
+                severity="error",
+            )
+            username_input.focus()
+            return
+
+        logging.debug(MOD_CODE + f"[+] Logging in as user {username}")
+        try:
+            global client
+            client = await login(server_ip, username, self.user_interface)
             self.app.post_message(DataUpdated())
-            logging.debug(MOD_CODE + f"[*] Login status: {login_status}")
-            logging.debug(MOD_CODE + f"[*] Calling data update")
-        self.dismiss()
+            logging.debug(MOD_CODE + "[*] Logged in successfully.")
+            self.dismiss()
+        except Exception as e:
+            self.notify(str(e), title="Login failed.", severity="error")
+            server_ip_input.focus()
+            return
+
+        logging.debug(MOD_CODE + "[*] Calling data update")
+        try:
+            await client.update()
+        except Exception as e:
+            self.notify(
+                str(e), title="Initial Client State Update Failed", severity="error"
+            )
+            logging.debug(MOD_CODE + f"[!] Update error:\n{str(e)}")
 
     def on_key(self, event: Key) -> None:
         """
@@ -109,16 +139,15 @@ class LoginModal(ModalScreen):
 # Popup Action Modal
 
 ACTION_CONFIG = {
-    "action-send-file": ("Send File", "File Path", "Description"),
     "action-create-group": ("Create Group", "Group Name", "Users"),
-    "action-add-users": ("Add Users", "Group Description", "Users"),
+    "action-add-users": ("Add Users", "Users", ""),
 }
 
 
 class ActionModal(ModalScreen):
     CSS_PATH = str(Path(__file__).parent / "../styles/action_modal.tcss")
 
-    def __init__(self, title: str, field1: str, field2: str) -> None:
+    def __init__(self, title: str, field1: str, field2: str | None) -> None:
         """
         Initializes action modal with specified field inputs.
         """
@@ -132,9 +161,12 @@ class ActionModal(ModalScreen):
         Creates action modal.
         """
         with Vertical(id="modal-box"):
-            yield Label(self._title, id="modal-title")
+            yield Label(self._title, id="modal-title", disabled=True)
             yield Input(placeholder=self._field1, id="input-1", classes="modal-input")
-            yield Input(placeholder=self._field2, id="input-2", classes="modal-input")
+            if self._field2:
+                yield Input(
+                    placeholder=self._field2, id="input-2", classes="modal-input"
+                )
             yield Button("Submit", id="modal-submit")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -156,16 +188,25 @@ class ActionModal(ModalScreen):
                 logging.debug(MOD_CODE + "[*] Creating group.")
                 group_name = self.query_one("#input-1", Input).value
                 group_members = (self.query_one("#input-2", Input).value).split(",")
-                await client.create_group(group_name, group_members)
+                try:
+                    await client.create_group(group_name, group_members)
+                    self.dismiss()
+                except Exception as e:
+                    self.notify(str(e), title="Group Creation Failed", severity="error")
 
             case "Add Users":
                 logging.debug(MOD_CODE + "[*] Adding users group.")
-                group_description = self.query_one("#input-1", Input).value
-                group_members = (self.query_one("#input-2", Input).value).split(",")
+                group_members = (self.query_one("#input-1", Input).value).split(",")
                 for member in group_members:
-                    await client.add_group_member(client.AppState["current_group"], member)
-
-        self.dismiss()
+                    try:
+                        await client.add_group_member(client.current_group, member)
+                    except Exception as e:
+                        self.notify(
+                            str(e),
+                            title=f"Adding `{member}` Failed",
+                            severity="warning",
+                        )
+                self.dismiss()
 
     def on_key(self, event: Key) -> None:
         """
@@ -212,9 +253,6 @@ class FilePickerModal(ModalScreen):
                 placeholder="File path...", id="file-path-input", classes="modal-input"
             )
             yield PlainDirectoryTree(str(Path("~/").expanduser()), id="file-tree")
-            yield Input(
-                placeholder="Description", id="file-description", classes="modal-input"
-            )
             yield Button("Submit", id="modal-submit")
 
     def on_screen_resume(self) -> None:
@@ -258,10 +296,12 @@ class FilePickerModal(ModalScreen):
         """
         event.stop()
         file_path = self.query_one("#file-path-input", Input).value
-        description = self.query_one("#file-description", Input).value
-        logging.debug(MOD_CODE + f"[*] Sharing file {file_path}: {description}")
-        self.dismiss((file_path, description))
-        await client.share_file(file_path)
+        logging.debug(MOD_CODE + f"[*] Sharing file {file_path}")
+        self.dismiss(file_path)
+        try:
+            await client.share_file(file_path)
+        except Exception as e:
+            self.notify(str(e), title="Sharing File Failed", severity="error")
 
     def on_key(self, event: Key) -> None:
         if event.key == "escape":
@@ -319,20 +359,29 @@ class ChatInterface(App):
 
         with Horizontal():
             with VerticalScroll(id="left-pane"):
-                yield Static("Join/create a group.")
+                yield Button(
+                    "[+] Create Group",
+                    id="action-create-group",
+                )
+                yield ListView(id="group-list")
 
-            with Vertical(id="right-pane"):
+            with Vertical(id="right-pane", disabled=True):
                 yield Static("", id="group-banner")
                 # ListView replaces the single Static — each message is its own item
                 yield ListView(id="message-list")
-                yield self.message_input
 
-            with Vertical(id="action-pane"):
-                yield Button("Share File", id="action-send-file", classes="action-btn")
-                yield Button(
-                    "Create Group", id="action-create-group", classes="action-btn"
-                )
-                yield Button("Add Users", id="action-add-users", classes="action-btn")
+                with Horizontal(id="group-actions"):
+                    yield self.message_input
+                    yield Button(
+                        "Share File",
+                        id="action-send-file",
+                        classes="action-btn",
+                    )
+                    yield Button(
+                        "Add Users",
+                        id="action-add-users",
+                        classes="action-btn",
+                    )
 
         self.current_pane = "left"
         self.selected_button = 0
@@ -350,21 +399,17 @@ class ChatInterface(App):
         btn_id = event.button.id
 
         # Infer action from button ID
-        if btn_id in ACTION_CONFIG:
-            if btn_id == "action-send-file":
-                self.app.push_screen(FilePickerModal())
-            else:
-                title, field1, field2 = ACTION_CONFIG[btn_id]
-                self.app.push_screen(ActionModal(title, field1, field2))
-
+        if btn_id == "action-send-file":
+            self.app.push_screen(FilePickerModal())
+        elif btn_id in ACTION_CONFIG:
+            title, field1, field2 = ACTION_CONFIG[btn_id]
+            self.app.push_screen(ActionModal(title, field1, field2))
         else:
             group_id = int(btn_id.split("-")[1])
-            self.current_group = group_id
+            client.current_group = group_id
 
-            client.AppState["current_group"] = group_id
+            group_banner = f"[bold]{event.button.label}[/bold]\n{', '.join(list(dict.fromkeys(event.button.group_members)))}"
 
-            group_banner = f"[bold]{event.button.label}[/bold]\n{' '.join(list(dict.fromkeys(event.button.group_members)))}"
-            
             self.current_banner = group_banner
             self.query_one("#group-banner", Static).update(f"{group_banner}")
 
@@ -383,6 +428,9 @@ class ChatInterface(App):
             lv = self.query_one("#message-list", ListView)
             self.call_after_refresh(lv.scroll_end, animate=False)
 
+        if client is not None and client.current_group is not None:
+            self.query_one("#right-pane", Vertical).disabled = False
+
     async def on_list_view_selected(self, event: ListView.Selected) -> None:
         """
         Handles selection of a message list item.
@@ -396,17 +444,17 @@ class ChatInterface(App):
             )
             os.makedirs("./chat-downloads", exist_ok=True)
             try:
-                success = await client.get_file(
+                await client.get_file(
                     file_event.senderUserID,
                     file_event.sha256,
                     f"./chat-downloads/{file_event.fileName}",
                 )
-                if success:
-                    self.notify(f"{file_event.fileName} downloaded successfully.", severity="information")
-                else:
-                    self.notify(f"{file_event.fileName} downloaded failed.", severity="information")
-            except:
-                self.notify(f"{file_event.fileName} downloaded failed.", severity="information")
+                self.notify(
+                    f"{file_event.fileName} downloaded successfully.",
+                    severity="information",
+                )
+            except Exception as e:
+                self.notify(str(e), title="Download Failed", severity="error")
 
     def on_screen_suspend(self) -> None:
         """
@@ -479,6 +527,9 @@ class ChatInterface(App):
                     self.update_pane_selection()
                     event.prevent_default()
 
+        if client is not None and client.current_group is not None:
+            self.query_one("#right-pane", Vertical).disabled = False
+
     def update_pane_selection(self):
         """
         Update the selection based on the current pane
@@ -491,7 +542,7 @@ class ChatInterface(App):
                 button.remove_class("selected")
                 if idx == self.selected_button:
                     group_id = int(button.id.split("-")[1])
-                    self.current_group = group_id
+                    client.current_group = group_id
                     button.add_class("selected")
                     button.focus()
         elif self.current_pane == "right":
@@ -506,6 +557,9 @@ class ChatInterface(App):
                     button.add_class("selected")
                     button.focus()
 
+        if client is not None and client.current_group is not None:
+            self.query_one("#right-pane", Vertical).disabled = False
+
     def on_mount(self) -> None:
         """
         Defines startup action.
@@ -516,31 +570,29 @@ class ChatInterface(App):
         """
         Handler for DataUpdated callback; fetches and triggers render of event updates.
         """
-        logging.debug(MOD_CODE + f"[*] Invoking data update in chat interface.")
-        await self.update_groups(client.AppState["groups"])
-        if hasattr(self, "current_group"):
-            self.render_messages_for_group(self.current_group)
+        logging.debug(MOD_CODE + "[*] Invoking data update in chat interface.")
+        await self.update_groups(client.groups)
+        if client and client.current_group:
+            self.render_messages_for_group(client.current_group)
             lv = self.query_one("#message-list", ListView)
             self.call_after_refresh(lv.scroll_end, animate=False)
 
-    async def update_groups(self, new_groups):
+    async def update_groups(self, new_groups: dict[int, Group]):
         """
         Re-renders updated group information.
         :param new_groups: Dictionary of new groups from client.
         """
         self.groups = new_groups
         logging.debug(MOD_CODE + f"[~] New groups are {self.groups}")
-        left_pane = self.query_one("#left-pane", VerticalScroll)
-        await left_pane.remove_children()
+        group_list = self.query_one("#group-list", ListView)
+        await group_list.remove_children()
         if len(self.groups) > 0:
-            for group_id, group_data in self.groups.items():
-                group_id = group_data["group_id"]
-                group_name = group_data["group_name"]
-                button = Button(group_name, id=f"group-{group_id}")
-                button.group_members = group_data["members"]
-                left_pane.mount(button)
-        else:
-            left_pane.mount(Static("Join/create a group."))
+            for group_id, group in self.groups.items():
+                button = Button(group.name, id=f"group-{group_id}")
+                button.group_members = group.members
+                if client and client.current_group == group_id:
+                    button.add_class("selected")
+                group_list.mount(button)
 
     def render_messages_for_group(self, group_id):
         """
@@ -550,41 +602,36 @@ class ChatInterface(App):
 
         :param group_id: Group ID whose messages should be rendered.
         """
-        events = client.AppState["events"]
+        events = client.events
         lv = self.query_one("#message-list", ListView)
         lv.clear()
 
         logging.debug(MOD_CODE + f"[~] UI retrieved {len(events)} events from client.")
-        
-        #group_name = group_id;
-        #group_members = client.AppState["groups"][group_id]["members"];
-        #group_banner = f"[bold]{group_name}[/bold]\n{' '.join(group_members)}"
-        #self.query_one("#group-banner", Static).update(f"{group_banner}")
-        self.query_one("#group-banner", Static).update("")
-        self.current_banner = f"[bold]{group_id}[/bold]\n"
 
-        found = False
-        processed_events = []
-        for event in events:
+        group_name = client.groups[group_id].name
+        # group_members = client.AppState["groups"][group_id]["members"];
+        # group_banner = f"[bold]{group_name}[/bold]\n{' '.join(group_members)}"
+        # self.query_one("#group-banner", Static).update(f"{group_banner}")
+        self.query_one("#group-banner", Static).update("")
+        self.current_banner = f"[bold]{group_name}[/bold]\n"
+
+        for event in sorted(events.values(), key=lambda e: e.eventID):
             if event.groupID != group_id:
                 continue
             logging.debug(MOD_CODE + f" [E] EventID is {event.eventID}")
-            if event.eventID not in processed_events:
-                found = True
-                if isinstance(event, protocol.MessageEvent):
-                    lv.append(ListItem(Label(f"{event.senderUserID}: {event.message}")))
-                elif isinstance(event, protocol.FileAvailableEvent):
-                    lv.append(FileMessageItem(event))
-                elif isinstance(event, protocol.AddMemberEvent):
-                    logging.debug(MOD_CODE + f" [=] This event is a AddMemberEvent: {event}")
-                    self.query_one("#group-banner", Static).update("")
-                    self.current_banner = f"{self.current_banner}{event.userID} "
-                    self.query_one("#group-banner", Static).update(f"{self.current_banner}")
-                    event.userID
-                processed_events.append(event.eventID)
 
-        if not found:
-            lv.append(ListItem(Label("No messages for this group.")))
+            if isinstance(event, protocol.MessageEvent):
+                lv.append(ListItem(Label(f"{event.senderUserID}: {event.message}")))
+            elif isinstance(event, protocol.FileAvailableEvent):
+                lv.append(FileMessageItem(event))
+            elif isinstance(event, protocol.AddMemberEvent):
+                logging.debug(
+                    MOD_CODE + f" [=] This event is a AddMemberEvent: {event}"
+                )
+                self.query_one("#group-banner", Static).update("")
+                self.current_banner = f"{self.current_banner}{event.userID} "
+                self.query_one("#group-banner", Static).update(f"{self.current_banner}")
+                event.userID
 
 
 class MessageInput(Input):
@@ -597,8 +644,11 @@ class MessageInput(Input):
             message = self.value
             if len(message) > 0:
                 logging.debug(MOD_CODE + f"[*] Send message ({message}) requested.")
-                await client.send_message(self.chat_interface.current_group, message)
-                self.clear()
+                try:
+                    await client.send_message(client.current_group, message)
+                    self.clear()
+                except Exception as e:
+                    self.notify(str(e), title="Send Message Failed", severity="error")
             event.prevent_default()
 
 

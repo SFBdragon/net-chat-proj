@@ -17,6 +17,12 @@ from server import Server
 
 
 def serve() -> Server:
+    """
+    Create a server for testing purposes. Runs on localhost and uses random available ports.
+
+    Use
+    """
+
     temp_db_file = tempfile.NamedTemporaryFile(
         suffix=".sqlite", mode="w", delete=False, delete_on_close=False
     )
@@ -174,8 +180,17 @@ class TestServer(unittest.TestCase):
                     groupID=1,
                     senderUserID="bjarne_stroustrup",
                     type="ADD_MEMBER",
+                    groupName="C/C++ Gang",
+                    userID="bjarne_stroustrup",
+                ),
+                protocol.AddMemberEvent(
+                    eventID=2,
+                    groupID=1,
+                    senderUserID="bjarne_stroustrup",
+                    type="ADD_MEMBER",
+                    groupName="C/C++ Gang",
                     userID="donald_knuth",
-                )
+                ),
             ],
         )
         self.get_all_events(
@@ -187,8 +202,17 @@ class TestServer(unittest.TestCase):
                     groupID=1,
                     senderUserID="bjarne_stroustrup",
                     type="ADD_MEMBER",
+                    groupName="C/C++ Gang",
+                    userID="bjarne_stroustrup",
+                ),
+                protocol.AddMemberEvent(
+                    eventID=2,
+                    groupID=1,
+                    senderUserID="bjarne_stroustrup",
+                    type="ADD_MEMBER",
+                    groupName="C/C++ Gang",
                     userID="donald_knuth",
-                )
+                ),
             ],
         )
 
@@ -208,10 +232,19 @@ class TestServer(unittest.TestCase):
                     groupID=1,
                     senderUserID="bjarne_stroustrup",
                     type="ADD_MEMBER",
+                    groupName="C/C++ Gang",
+                    userID="bjarne_stroustrup",
+                ),
+                protocol.AddMemberEvent(
+                    eventID=2,
+                    groupID=1,
+                    senderUserID="bjarne_stroustrup",
+                    type="ADD_MEMBER",
+                    groupName="C/C++ Gang",
                     userID="donald_knuth",
                 ),
                 protocol.MessageEvent(
-                    eventID=2,
+                    eventID=3,
                     groupID=1,
                     senderUserID="donald_knuth",
                     type="SEND_MESSAGE",
@@ -223,8 +256,16 @@ class TestServer(unittest.TestCase):
             server,
             "donald_knuth",
             [
-                protocol.MessageEvent(
+                protocol.AddMemberEvent(
                     eventID=2,
+                    groupID=1,
+                    senderUserID="bjarne_stroustrup",
+                    type="ADD_MEMBER",
+                    groupName="C/C++ Gang",
+                    userID="donald_knuth",
+                ),
+                protocol.MessageEvent(
+                    eventID=3,
                     groupID=1,
                     senderUserID="donald_knuth",
                     type="SEND_MESSAGE",
@@ -252,11 +293,10 @@ class TestServer(unittest.TestCase):
             afterEventID=after_event_id,
         )
         request_json = request.model_dump_json()
-        request_data = request_json.encode("utf-8")
+        request_data = request_json.encode("utf-8") + b"\x03"
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.sendto(request_data, ("127.0.0.1", server.udp_port()))
-        # sock.send(b"\x03")  # TODO this should probably be handled better
 
         expected_response = protocol.ImAliveResponse(
             version=protocol.MAP_VER,
@@ -268,7 +308,7 @@ class TestServer(unittest.TestCase):
         print("PRE_RECEIVE")
         response, _ = sock.recvfrom(65535)
         print("POST_RECEIVE")
-        response_header_json = response.decode("utf-8")
+        response_header_json = response.decode("utf-8").rstrip("\x03")
         response_header = protocol.parse_response_header(response_header_json)
 
         self.assertEqual(response_header, expected_response)

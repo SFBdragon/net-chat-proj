@@ -49,14 +49,22 @@ class Server:
         self._udp_thread: threading.Thread | None = None
 
     def tcp_port(self) -> int:
+        """Get the TCP port the server is listening on."""
         _, port = self._tcp_socket.getsockname()
         return port
 
     def udp_port(self) -> int:
+        """Get the UDP port the server is listening on."""
         _, port = self._udp_socket.getsockname()
         return port
 
     def run(self):
+        """
+        Start the TCP and UDP listening and request handling threads.
+
+        Use `.stop()` to stop the server listening for requests.
+        """
+
         assert self._tcp_thread is None
         assert self._udp_thread is None
 
@@ -66,6 +74,12 @@ class Server:
         self._udp_thread = run_async_in_thread(self._udp_server())
 
     def stop(self):
+        """
+        Stop the server listening threads.
+
+        This leaves the sockets bound. It's possible to run() the server again after calling stop().
+        """
+
         assert self._tcp_thread is not None
         assert self._udp_thread is not None
 
@@ -92,6 +106,8 @@ class Server:
         self._udp_thread = None
 
     async def _udp_server(self):
+        """Run the UDP listening and request handling loop."""
+
         async with database.Database(self._db_path) as db:
             addr, port = self._udp_socket.getsockname()
             print(f"UDP receiving on {addr}:{port}")
@@ -108,15 +124,23 @@ class Server:
 
         print("UDP server stopped...")
 
-    async def _handle_udp_request(self, data, addr, db: database.DatabaseConnection):
-        """Handle a single UDP request."""
+    async def _handle_udp_request(
+        self, data: bytes, addr, db: database.DatabaseConnection
+    ):
+        """
+        Handle a single UDP request.
+
+        :param data: The bytes within the datagram.
+        :param addr: The IP of the datagram sender.
+        :param db: The database connection for the current thread's async context.
+        """
 
         loop = asyncio.get_event_loop()
 
         print(f"> UDP received from {addr}: {data}")
 
         try:
-            header = protocol.parse_request_header(data, self.server_id)
+            header = protocol.parse_request_header(data.rstrip(b"\x03"), self.server_id)
 
             # Only IM_ALIVE requests should arrive on UDP.
             if not isinstance(header, protocol.ImAlive):
@@ -153,6 +177,8 @@ class Server:
         await loop.sock_sendto(self._udp_socket, response_bytes, addr)
 
     async def _tcp_server(self):
+        """Run the TCP listening and request handling loop."""
+
         async with database.Database(self._db_path) as db:
             addr, port = self._tcp_socket.getsockname()
             print(f"TCP listening on {addr}:{port}")
@@ -171,7 +197,12 @@ class Server:
     async def _handle_tcp_client(
         self, sock: socket.socket, addr, db: database.DatabaseConnection
     ):
-        """Handle a TCP client connection."""
+        """
+        Handle a TCP client connection.
+
+        :param sock: The connection we have with the client.
+        :param db: The database connection held by the current thread's async context.
+        """
 
         print(f"TCP connection from {addr}")
 
@@ -357,7 +388,7 @@ class Server:
                                     list(events)
                                 )
                                 if events
-                                else b""
+                                else b"[]"
                             )
                             response_header = protocol.BodyResponse(
                                 version=protocol.MAP_VER,
