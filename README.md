@@ -6,6 +6,8 @@ Features an asynchronous server and client, with support for peer-to-peer file s
 
 ![Login Screen](screenshots/login.png)
 
+![Group Chat](screenshots/group.png)
+
 ## Features
 
 - Real time messaging
