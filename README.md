@@ -1,6 +1,6 @@
 # CSC3002F Networking Project — Messaging App
 
-An terminal-based messaging application built with Python and [Textual](https://textual.textualize.io/).
+A terminal-based messaging application built with Python and [Textual](https://textual.textualize.io/).
 
 Features an asynchronous server and client, with support for peer-to-peer file sharing.
 
