@@ -67,7 +67,7 @@ uv run src/client.py
 
 | Key      | Action                             |
 | -------- | ---------------------------------- |
-| `←`/`→`  | Switch between panes               |
+| `←`/`→`  | Switch panes or adjacent buttons   |
 | `↑`/`↓`  | Navigate groups or scroll messages |
 | `Enter`  | Send message                       |
 | `Tab`    | Cycle focus within a modal         |
@@ -82,7 +82,9 @@ net-chat-proj/
 │   ├── client.py
 │   ├── server.py
 │   ├── db.py
-│   └── ...
+│   ├── protocol.py
+│   ├── utils.py
+│   └── test_*.py
 ├── styles/
 ├── pyproject.toml
 └── README.md
@@ -95,4 +97,5 @@ The documentation is generated from the docstrings in the codebase using [Sphinx
 ```
 cd docs
 uv run make html
+open build/html/index.html
 ```
