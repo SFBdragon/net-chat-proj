@@ -1,5 +1,7 @@
 # CSC3002F Networking Project — Messaging App
 
+_CSC3002F Group 63: Krishnaraj Eswari Niranjan, Shaun Beautement, Thomas Kruger_
+
 A terminal-based messaging application built with Python and [Textual](https://textual.textualize.io/).
 
 Features an asynchronous server and client, with support for peer-to-peer file sharing.
