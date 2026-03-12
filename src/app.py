@@ -347,6 +347,9 @@ class FileMessageItem(ListItem):
 
 # Main View
 
+# Arrow keys that should always be captured by the App level navigation handler
+# Never consumed by children
+_NAV_KEYS = {"left", "right", "up", "down"}
 
 class ChatInterface(App):
     CSS_PATH = str(Path(__file__).parent / "../styles/chat_interface.tcss")
@@ -391,6 +394,67 @@ class ChatInterface(App):
             "action-create-group",
             "action-add-users",
         ]
+
+    async def _on_key(self, event: Key) -> None:
+        """
+        Intercept arrow keys for pane navigation before any focused child widget can consume them.  
+        """
+        # Only intercept when no modal present
+        if self.current_pane is None:
+            return
+
+        if event.key not in _NAV_KEYS:
+            return
+
+        # Consume the event so focused children don't propogate it
+        event.stop()
+        event.prevent_default()
+
+        match self.current_pane:
+            case "left":
+                if event.key == "right":
+                    self.current_pane = "right"
+                    self._apply_pane_selection()
+
+                elif event.key == "down":
+                    self.selected_button = min(
+                        self.selected_button + 1, len(self.groups) - 1
+                    )
+                    self._apply_pane_selection()
+
+                elif event.key == "up":
+                    self.selected_button = max(self.selected_button - 1, 0)
+                    self._apply_pane_selection()
+
+            case "right":
+                if event.key == "left":
+                    self.current_pane = "left"
+                    self._apply_pane_selection()
+
+                elif event.key == "right":
+                    self.current_pane = "action"
+                    self._apply_pane_selection()
+
+                elif event.key == "down":
+                    self.query_one("#message-list", ListView).scroll_down()
+
+                elif event.key == "up":
+                    self.query_one("#message-list", ListView).scroll_up()
+
+            case "action":
+                if event.key == "left":
+                    self.current_pane = "right"
+                    self._apply_pane_selection()
+
+                elif event.key == "down":
+                    self.selected_action = min(
+                        self.selected_action + 1, len(self.action_ids) - 1
+                    )
+                    self._apply_pane_selection()
+
+                elif event.key == "up":
+                    self.selected_action = max(self.selected_action - 1, 0)
+                    self._apply_pane_selection()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
@@ -467,72 +531,19 @@ class ChatInterface(App):
         """Called when modal is dismissed — restore key handling."""
         if hasattr(self, "_saved_pane") and self._saved_pane is not None:
             self.current_pane = self._saved_pane
-            self.update_pane_selection()
-
-    async def on_key(self, event: Key) -> None:
-        """
-        Handle key press events for navigation.
-        """
-        logging.debug(
-            MOD_CODE
-            + f"[~] Active screen: {self.app.screen}, focused: {self.app.focused}"
-        )
-        match self.current_pane:
-            case "left":
-                if event.key == "right":
-                    self.current_pane = "right"
-                    self.update_pane_selection()
-
-                elif event.key == "down":
-                    self.selected_button = min(
-                        self.selected_button + 1, len(self.groups) - 1
-                    )
-                    self.update_pane_selection()
-
-                elif event.key == "up":
-                    self.selected_button = max(self.selected_button - 1, 0)
-                    self.update_pane_selection()
-
-            case "right":
-                if event.key == "down":
-                    self.query_one("#message-list", ListView).scroll_down()
-                    event.prevent_default()
-
-                elif event.key == "up":
-                    self.query_one("#message-list", ListView).scroll_up()
-                    event.prevent_default()
-
-                elif event.key == "left":
-                    self.current_pane = "left"
-                    self.update_pane_selection()
-
-                elif event.key == "right":
-                    self.current_pane = "action"
-                    self.update_pane_selection()
-
-            case "action":
-                if event.key == "left":
-                    self.current_pane = "right"
-                    self.update_pane_selection()
-
-                elif event.key == "down":
-                    self.selected_action = min(
-                        self.selected_action + 1, len(self.action_ids) - 1
-                    )
-                    self.update_pane_selection()
-                    event.prevent_default()
-
-                elif event.key == "up":
-                    self.selected_action = max(self.selected_action - 1, 0)
-                    self.update_pane_selection()
-                    event.prevent_default()
-
-        if client is not None and client.current_group is not None:
-            self.query_one("#right-pane", Vertical).disabled = False
+            self._apply_pane_selection()
 
     def update_pane_selection(self):
+        """Public alias kept for any external callers."""
+        self._apply_pane_selection()
+
+    def _apply_pane_selection(self):
         """
-        Update the selection based on the current pane
+        Update focus and visual selection to match self.current_pane.
+
+        Renamed from update_pane_selection so internal calls use the private
+        name (avoids accidental double-calls if Textual ever adds a hook with
+        the old name).
         """
         if self.current_pane == "left":
             group_buttons = [
@@ -541,12 +552,18 @@ class ChatInterface(App):
             for idx, button in enumerate(group_buttons):
                 button.remove_class("selected")
                 if idx == self.selected_button:
-                    group_id = int(button.id.split("-")[1])
-                    client.current_group = group_id
+                    if client is not None:
+                        group_id = int(button.id.split("-")[1])
+                        client.current_group = group_id
                     button.add_class("selected")
                     button.focus()
+
         elif self.current_pane == "right":
+            # Focus the message input so the user can type immediately.
+            # Arrow keys are still intercepted by _on_key above, so up/down
+            # scroll the message list rather than moving the cursor.
             self.query_one("#message-input", Input).focus()
+
         elif self.current_pane == "action":
             action_buttons = [
                 b for b in self.query(Button) if b.id and b.id.startswith("action-")
@@ -564,6 +581,7 @@ class ChatInterface(App):
         """
         Defines startup action.
         """
+        self.groups = {}  # ensure attribute exists before any key event fires
         self.push_screen(LoginModal(self))
 
     async def on_data_updated(self, message: DataUpdated) -> None:
@@ -609,9 +627,6 @@ class ChatInterface(App):
         logging.debug(MOD_CODE + f"[~] UI retrieved {len(events)} events from client.")
 
         group_name = client.groups[group_id].name
-        # group_members = client.AppState["groups"][group_id]["members"];
-        # group_banner = f"[bold]{group_name}[/bold]\n{' '.join(group_members)}"
-        # self.query_one("#group-banner", Static).update(f"{group_banner}")
         self.query_one("#group-banner", Static).update("")
         self.current_banner = f"[bold]{group_name}[/bold]\n"
 
