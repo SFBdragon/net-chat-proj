@@ -88,7 +88,7 @@ net-chat-proj/
 
 ## Documentation
 
-The documentation is generated from the docstring in the codebase using [Sphinx Doc](https://www.sphinx-doc.org/en/master/):
+The documentation is generated from the docstrings in the codebase using [Sphinx Doc](https://www.sphinx-doc.org/en/master/):
 
 ```
 cd docs
