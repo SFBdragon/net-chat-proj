@@ -431,8 +431,8 @@ class Server:
                                     status=protocol.STATUS_OK,
                                 )
                         case _:
-                            print(f"TODO handle {type(header)}")
-                            return
+                            # Execution shouldn't reach here. If it did, it's probably a bad request.
+                            raise protocol.Status(protocol.STATUS_BAD_REQUEST)
 
                 except protocol.Status as s:
                     response_header = protocol.GenericResponse(

@@ -120,7 +120,6 @@ def parse_request_header(header_bytes: bytes, expected_server_id: str) -> Reques
                 print(str(error))
                 raise Status(STATUS_MISSING_FIELD)
             elif error["type"] == "extra_forbidden":
-                # TODO extra field error?
                 raise Status(STATUS_BAD_REQUEST)
             else:
                 print(str(error))
